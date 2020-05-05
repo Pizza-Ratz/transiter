@@ -62,7 +62,6 @@ class SystemLarge(System):
     feeds: FeedsInSystem = NULL
     routes: RoutesInSystem = NULL
     stops: StopsInSystem = NULL
-    agency_alerts: list = dataclasses.field(default_factory=list)  # TODO: remove
 
 
 @dataclasses.dataclass
