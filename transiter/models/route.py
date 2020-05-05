@@ -12,8 +12,9 @@ class Route(Base):
 
     pk = Column(Integer, primary_key=True)
     id = Column(String)
-    system_pk = Column(Integer, ForeignKey("system.pk"), nullable=False)
+    agency_pk = Column(Integer, ForeignKey("agency.pk"))
     source_pk = Column(Integer, ForeignKey("feed_update.pk"), index=True)
+    system_pk = Column(Integer, ForeignKey("system.pk"), nullable=False)
 
     Type = parse.Route.Type
 
@@ -27,6 +28,7 @@ class Route(Base):
     sort_order = Column(Integer)
 
     system = relationship("System", back_populates="routes")
+    agency = relationship("Agency", back_populates="routes")
     source = relationship("FeedUpdate", cascade="none")
     trips = relationship("Trip", back_populates="route", cascade="all, delete-orphan")
     scheduled_trips = relationship(

@@ -10,6 +10,7 @@ import enum
 import io
 import typing
 import zipfile
+import uuid
 
 from transiter import parse
 
@@ -20,6 +21,21 @@ class GtfsStaticParser(parse.TransiterParser):
 
     def load_content(self, content: bytes) -> None:
         self.gtfs_static_file = _GtfsStaticFile(content)
+
+    def get_agencies(self) -> typing.Iterable[parse.Agency]:
+        for row in self.gtfs_static_file.agency():
+            yield parse.Agency(
+                id=row.get(
+                    "agency_id", "transiter_auto_generated_id_" + str(uuid.uuid4())
+                ),
+                name=row["agency_name"],
+                url=row["agency_url"],
+                timezone=row["agency_timezone"],
+                language=row.get("agency_language"),
+                phone=row.get("agency_phone"),
+                fare_url=row.get("agency_fare_url"),
+                email=row.get("agency_email"),
+            )
 
     def get_routes(self) -> typing.Iterable[parse.Route]:
         yield from _parse_routes(self.gtfs_static_file)
@@ -33,6 +49,7 @@ class GtfsStaticParser(parse.TransiterParser):
 
 class _GtfsStaticFile:
     class _InternalFileName(enum.Enum):
+        AGENCY = "agency.txt"
         CALENDAR = "calendar.txt"
         ROUTES = "routes.txt"
         STOP_TIMES = "stop_times.txt"
@@ -42,6 +59,9 @@ class _GtfsStaticFile:
 
     def __init__(self, binary_content):
         self._zip_file = zipfile.ZipFile(io.BytesIO(binary_content))
+
+    def agency(self):
+        return self._read_internal_file(self._InternalFileName.AGENCY)
 
     def calendar(self):
         return self._read_internal_file(self._InternalFileName.CALENDAR)
@@ -84,6 +104,7 @@ def _parse_routes(gtfs_static_file: _GtfsStaticFile):
         yield parse.Route(
             id=row["route_id"],
             type=parse.Route.Type(int(row["route_type"])),
+            agency_id=row.get("agency_id"),
             color=row.get("route_color", "FFFFF"),
             text_color=row.get("route_text_color", "000000"),
             url=row.get("route_url"),
