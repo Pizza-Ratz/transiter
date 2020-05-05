@@ -40,7 +40,7 @@ class Route(Base):
         primaryjoin="ServiceMap.route_pk==Route.pk",
         cascade="all, delete-orphan",
     )
-    route_statuses = relationship(
+    alerts = relationship(
         "Alert", secondary="alert_route", back_populates="routes", cascade="all"
     )
 

@@ -155,11 +155,12 @@ class RouteLarge(View):
     _system_id: str
     status: Route.Status
     periodicity: float
-    alerts: list
-    service_maps: list
+    agency: Agency = None
+    alerts: list = dataclasses.field(default_factory=list)
+    service_maps: list = dataclasses.field(default_factory=list)
 
     @classmethod
-    def from_model(cls, route: models.Route, status, periodicity, alerts, service_maps):
+    def from_model(cls, route: models.Route, status, periodicity):
         return cls(
             id=route.id,
             color=route.color,
@@ -171,8 +172,6 @@ class RouteLarge(View):
             _system_id=route.system.id,
             status=status,
             periodicity=periodicity,
-            alerts=alerts,
-            service_maps=service_maps,
         )
 
 
