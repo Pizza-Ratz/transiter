@@ -41,6 +41,7 @@ def get_by_id(system_id) -> views.SystemLarge:
     response = views.SystemLarge.from_model(system)
     if system.status != system.SystemStatus.ACTIVE:
         return response
+    response.agencies = views.AgenciesInSystem.from_model(system, 1)
     response.stops = views.StopsInSystem.from_model(
         system, systemdam.count_stops_in_system(system_id)
     )
