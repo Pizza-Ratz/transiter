@@ -42,10 +42,7 @@ class Alert(Base):
         "Agency", secondary="alert_agency", back_populates="alerts", cascade="none",
     )
     routes = relationship(
-        "Route",
-        secondary="alert_route",
-        back_populates="route_statuses",
-        cascade="none",
+        "Route", secondary="alert_route", back_populates="alerts", cascade="none",
     )
 
     __table_args__ = (UniqueConstraint("system_pk", "id"),)

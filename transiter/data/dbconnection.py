@@ -35,6 +35,7 @@ def create_engine():
         executemany_mode="values",
         executemany_values_page_size=1000,
         executemany_batch_page_size=200,
+        echo=True,
     )
 
 
