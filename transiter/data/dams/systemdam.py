@@ -1,6 +1,6 @@
 from typing import Optional
 
-from sqlalchemy import func, sql
+from sqlalchemy import func, sql, inspect
 from sqlalchemy.orm import joinedload
 
 from transiter import models

@@ -41,16 +41,20 @@ def get_by_id(system_id) -> views.SystemLarge:
     response = views.SystemLarge.from_model(system)
     if system.status != system.SystemStatus.ACTIVE:
         return response
-    response.agencies = views.AgenciesInSystem.from_model(system, 1)
-    response.stops = views.StopsInSystem.from_model(
-        system, systemdam.count_stops_in_system(system_id)
-    )
-    response.routes = views.RoutesInSystem.from_model(
-        system, systemdam.count_routes_in_system(system_id)
-    )
-    response.feeds = views.FeedsInSystem.from_model(
-        system, systemdam.count_feeds_in_system(system_id)
-    )
+    for attr, view, relationship in (
+        ("agencies", views.AgenciesInSystem, models.System.agencies),
+        ("stops", views.StopsInSystem, models.System.stops),
+        ("routes", views.RoutesInSystem, models.System.routes),
+        ("feeds", views.FeedsInSystem, models.System.feeds),
+    ):
+        setattr(
+            response,
+            attr,
+            view.from_model(
+                system,
+                genericqueries.count_number_of_related_entities(relationship, system),
+            ),
+        )
     return response
 
 

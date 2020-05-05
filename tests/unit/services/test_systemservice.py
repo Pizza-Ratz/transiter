@@ -70,9 +70,6 @@ def test_get_by_id(monkeypatch):
         id=SYSTEM_ONE_ID, name=SYSTEM_ONE_NAME, status=models.System.SystemStatus.ACTIVE
     )
     alert = models.Alert(id="alert_id", header="alert_header")
-    monkeypatch.setattr(
-        systemdam, "list_all_alerts_associated_to_system", lambda *args: [alert]
-    )
     expected = views.SystemLarge(
         id=SYSTEM_ONE_ID,
         status=models.System.SystemStatus.ACTIVE,
@@ -82,19 +79,6 @@ def test_get_by_id(monkeypatch):
             count=SYSTEM_ONE_NUM_ROUTES, _system_id=SYSTEM_ONE_ID
         ),
         feeds=views.FeedsInSystem(count=SYSTEM_ONE_NUM_FEEDS, _system_id=SYSTEM_ONE_ID),
-        agency_alerts=[
-            views.AlertLarge(
-                id="alert_id",
-                header="alert_header",
-                start_time=None,
-                end_time=None,
-                creation_time=None,
-                description=None,
-                url=None,
-                cause=None,
-                effect=None,
-            )
-        ],
     )
 
     monkeypatch.setattr(systemdam, "get_by_id", lambda *args: system)
