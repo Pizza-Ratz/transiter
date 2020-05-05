@@ -1,5 +1,5 @@
 """
-The GTFS Static Util contains the logic for reading feeds of this format.
+The GTFS Static module contains the logic for reading feeds of this format.
 
 The official reference is here: https://gtfs.org/reference/static
 """
@@ -8,9 +8,27 @@ import csv
 import datetime
 import enum
 import io
+import typing
 import zipfile
 
 from transiter import parse
+
+
+class GtfsStaticParser(parse.TransiterParser):
+
+    gtfs_static_file = None
+
+    def load_content(self, content: bytes) -> None:
+        self.gtfs_static_file = GtfsStaticFile(content)
+
+    def get_routes(self) -> typing.Iterable[parse.Route]:
+        yield from parse_routes(self.gtfs_static_file)
+
+    def get_stops(self) -> typing.Iterable[parse.Stop]:
+        yield from parse_stops(self.gtfs_static_file)
+
+    def get_scheduled_services(self) -> typing.Iterable[parse.ScheduledService]:
+        yield from parse_schedule(self.gtfs_static_file)
 
 
 # Additional arguments are accepted for forwards compatibility

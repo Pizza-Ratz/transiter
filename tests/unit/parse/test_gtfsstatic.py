@@ -52,9 +52,12 @@ def test_parse(monkeypatch):
     monkeypatch.setattr(gtfsstaticparser, "parse_schedule", lambda *args, **kwargs: [3])
     monkeypatch.setattr(gtfsstaticparser, "GtfsStaticFile", mock.MagicMock())
 
-    binary_content = mock.MagicMock()
+    parser = gtfsstaticparser.GtfsStaticParser()
+    parser.load_content(b"")
 
-    assert [1, 2, 3] == list(gtfsstaticparser.parse_gtfs_static(binary_content))
+    assert [1] == list(parser.get_routes())
+    assert [2] == list(parser.get_stops())
+    assert [3] == list(parser.get_scheduled_services())
 
 
 @pytest.fixture
