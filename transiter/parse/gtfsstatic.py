@@ -19,32 +19,19 @@ class GtfsStaticParser(parse.TransiterParser):
     gtfs_static_file = None
 
     def load_content(self, content: bytes) -> None:
-        self.gtfs_static_file = GtfsStaticFile(content)
+        self.gtfs_static_file = _GtfsStaticFile(content)
 
     def get_routes(self) -> typing.Iterable[parse.Route]:
-        yield from parse_routes(self.gtfs_static_file)
+        yield from _parse_routes(self.gtfs_static_file)
 
     def get_stops(self) -> typing.Iterable[parse.Stop]:
-        yield from parse_stops(self.gtfs_static_file)
+        yield from _parse_stops(self.gtfs_static_file)
 
     def get_scheduled_services(self) -> typing.Iterable[parse.ScheduledService]:
-        yield from parse_schedule(self.gtfs_static_file)
+        yield from _parse_schedule(self.gtfs_static_file)
 
 
-# Additional arguments are accepted for forwards compatibility
-# noinspection PyUnusedLocal
-def parse_gtfs_static(binary_content, *args, **kwargs):
-    """
-    Parse a GTFS Static feed
-
-    :param binary_content: raw binary GTFS static zip data
-    """
-    gtfs_static_file = GtfsStaticFile(binary_content)
-    for parsing_function in [parse_routes, parse_stops, parse_schedule]:
-        yield from parsing_function(gtfs_static_file)
-
-
-class GtfsStaticFile:
+class _GtfsStaticFile:
     class _InternalFileName(enum.Enum):
         CALENDAR = "calendar.txt"
         ROUTES = "routes.txt"
@@ -92,7 +79,7 @@ class GtfsStaticFile:
             return []
 
 
-def parse_routes(gtfs_static_file: GtfsStaticFile):
+def _parse_routes(gtfs_static_file: _GtfsStaticFile):
     for row in gtfs_static_file.routes():
         yield parse.Route(
             id=row["route_id"],
@@ -107,7 +94,7 @@ def parse_routes(gtfs_static_file: GtfsStaticFile):
         )
 
 
-def parse_stops(gtfs_static_file: GtfsStaticFile):
+def _parse_stops(gtfs_static_file: _GtfsStaticFile):
 
     stop_id_to_stop = {}
     stop_id_to_parent_stop_id = {}
@@ -161,14 +148,14 @@ def parse_stops(gtfs_static_file: GtfsStaticFile):
         if len(station_set) <= 1:
             continue
         child_stops = [stop_id_to_stop[stop_id] for stop_id in station_set]
-        parent_stop = create_station_from_child_stops(child_stops)
+        parent_stop = _create_station_from_child_stops(child_stops)
         for child_stop in child_stops:
             child_stop.parent_stop = parent_stop
         yield parent_stop
         station_set.clear()
 
 
-def create_station_from_child_stops(child_stops):
+def _create_station_from_child_stops(child_stops):
     """
     Create a station from child stops.
 
@@ -217,7 +204,7 @@ def create_station_from_child_stops(child_stops):
     )
 
 
-def parse_schedule(gtfs_static_file: GtfsStaticFile):
+def _parse_schedule(gtfs_static_file: _GtfsStaticFile):
     str_to_bool = {"0": False, "1": True}
 
     service_id_to_service = {}
