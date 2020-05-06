@@ -101,10 +101,10 @@ class AgencyLarge(View):
     name: str
     url: str
     timezone: str
-    language: str
-    phone: str
-    fare_url: str
-    email: str
+    language: str = None
+    phone: str = None
+    fare_url: str = None
+    email: str = None
     alerts: list = dataclasses.field(default_factory=list)
     routes: list = dataclasses.field(default_factory=list)
 
