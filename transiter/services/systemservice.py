@@ -24,17 +24,11 @@ logger = logging.getLogger(__name__)
 
 @dbconnection.unit_of_work
 def list_all() -> typing.List[views.System]:
-    """
-    List all installed systems.
-    """
     return list(map(views.System.from_model, systemdam.list_all()))
 
 
 @dbconnection.unit_of_work
 def get_by_id(system_id) -> views.SystemLarge:
-    """
-    Get information on a specific system.
-    """
     system = systemdam.get_by_id(system_id)
     if system is None:
         raise exceptions.IdNotFoundError(models.System, system_id=system_id)
