@@ -250,6 +250,27 @@ def test_create_station_from_child_stops_substring_case():
 def test_parse_services__with_trips():
     gtfs_static_file = mock.Mock()
 
+    gtfs_static_file.trip_frequencies.return_value = [
+        {
+            "trip_id": TRIP_ID,
+            "start_time": "03:04:05",
+            "end_time": "06:07:08",
+            "headway": 20,
+        },
+        {
+            "trip_id": "Unknown trip ID",
+            "start_time": "03:04:05",
+            "end_time": "06:07:08",
+            "headway": 26,
+        },
+    ]
+    frequency = parse.ScheduledTripFrequency(
+        start_time=datetime.time(3, 4, 5),
+        end_time=datetime.time(6, 7, 8),
+        headway=20,
+        frequency_based=True,
+    )
+
     gtfs_static_file.stop_times.return_value = [
         {
             "trip_id": TRIP_ID,
@@ -288,7 +309,11 @@ def test_parse_services__with_trips():
         },
     ]
     trip = parse.ScheduledTrip(
-        id=TRIP_ID, route_id=ROUTE_ID, direction_id=True, stop_times=[stop_time]
+        id=TRIP_ID,
+        route_id=ROUTE_ID,
+        direction_id=True,
+        stop_times=[stop_time],
+        frequencies=[frequency],
     )
 
     gtfs_static_file.calendar.return_value = [
@@ -339,6 +364,7 @@ def test_parse_services__exception_days_handling(
     gtfs_static_file = mock.Mock()
     gtfs_static_file.trips.return_value = []
     gtfs_static_file.stop_times.return_value = []
+    gtfs_static_file.trip_frequencies.return_value = []
 
     if calendar_set:
         gtfs_static_file.calendar.return_value = [

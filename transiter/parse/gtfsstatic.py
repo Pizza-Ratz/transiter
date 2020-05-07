@@ -52,6 +52,7 @@ class _GtfsStaticFile:
         AGENCY = "agency.txt"
         CALENDAR = "calendar.txt"
         CALENDAR_DATES = "calendar_dates.txt"
+        FREQUENCIES = "frequencies.txt"
         ROUTES = "routes.txt"
         STOP_TIMES = "stop_times.txt"
         STOPS = "stops.txt"
@@ -84,6 +85,9 @@ class _GtfsStaticFile:
 
     def trips(self):
         return self._read_internal_file(self._InternalFileName.TRIPS)
+
+    def trip_frequencies(self):
+        return self._read_internal_file(self._InternalFileName.FREQUENCIES)
 
     def _read_internal_file(self, file_name):
         """
@@ -286,6 +290,19 @@ def _parse_schedule(gtfs_static_file: _GtfsStaticFile):
                 hour=int(hour) % 24, minute=int(minute), second=int(second)
             )
         return cache[time_string]
+
+    for row in gtfs_static_file.trip_frequencies():
+        trip = trip_id_to_trip.get(row["trip_id"])
+        if trip is None:
+            continue
+        trip.frequencies.append(
+            parse.ScheduledTripFrequency(
+                start_time=time_string_to_datetime_time(row["start_time"]),
+                end_time=time_string_to_datetime_time(row["end_time"]),
+                headway=int(row["headway"]),
+                frequency_based=row.get("exact_times") != "1",
+            )
+        )
 
     for row in gtfs_static_file.stop_times():
         trip_id = row["trip_id"]

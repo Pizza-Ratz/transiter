@@ -10,7 +10,7 @@ from .scheduledservice import (
     ScheduledServiceAddition,
     ScheduledServiceRemoval,
 )
-from .scheduledtrip import ScheduledTrip
+from .scheduledtrip import ScheduledTrip, ScheduledTripFrequency
 from .scheduledtripstoptime import ScheduledTripStopTime
 from .servicemap import ServiceMap
 from .servicemapgroup import ServiceMapGroup

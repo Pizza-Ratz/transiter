@@ -50,6 +50,18 @@ def upgrade():
         "scheduled_service", sa.Column("start_date", sa.Date(), nullable=True)
     )
 
+    op.create_table(
+        "scheduled_trip_frequency",
+        sa.Column("pk", sa.Integer(), nullable=False),
+        sa.Column("trip_pk", sa.Integer(), nullable=False),
+        sa.Column("start_time", sa.Time(timezone=True), nullable=False),
+        sa.Column("end_time", sa.Time(timezone=True), nullable=False),
+        sa.Column("headway", sa.Integer(), nullable=False),
+        sa.Column("frequency_based", sa.Boolean(), nullable=False),
+        sa.ForeignKeyConstraint(["trip_pk"], ["scheduled_trip.pk"],),
+        sa.PrimaryKeyConstraint("pk"),
+    )
+
 
 def downgrade():
     pass

@@ -87,6 +87,15 @@ class ScheduledTrip:
     route_id: str
     direction_id: bool
     stop_times: typing.List["ScheduledTripStopTime"] = field(default_factory=list)
+    frequencies: typing.List["ScheduledTripFrequency"] = field(default_factory=list)
+
+
+@dataclass
+class ScheduledTripFrequency:
+    start_time: datetime.time
+    end_time: datetime.time
+    headway: int
+    frequency_based: bool = True
 
 
 @dataclass
