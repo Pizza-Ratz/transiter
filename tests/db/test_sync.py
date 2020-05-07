@@ -304,11 +304,15 @@ def test_schedule(db_session, stop_1_1, route_1_1, previous_update, current_upda
         saturday=True,
         sunday=True,
         trips=[trip],
+        added_dates=[datetime.date(2016, 9, 10)],
+        removed_dates=[datetime.date(2016, 9, 11), datetime.date(2016, 9, 12)],
     )
 
     actual_counts = sync.sync(current_update.pk, ParserForTesting([schedule]))
 
     assert 1 == len(db_session.query(models.ScheduledService).all())
+    assert 1 == len(db_session.query(models.ScheduledServiceAddition).all())
+    assert 2 == len(db_session.query(models.ScheduledServiceRemoval).all())
     assert 1 == len(db_session.query(models.ScheduledTrip).all())
     assert 1 == len(db_session.query(models.ScheduledTripStopTime).all())
     assert (1, 0, 0) == actual_counts
