@@ -51,6 +51,7 @@ class _GtfsStaticFile:
     class _InternalFileName(enum.Enum):
         AGENCY = "agency.txt"
         CALENDAR = "calendar.txt"
+        CALENDAR_DATES = "calendar_dates.txt"
         ROUTES = "routes.txt"
         STOP_TIMES = "stop_times.txt"
         STOPS = "stops.txt"
@@ -65,6 +66,9 @@ class _GtfsStaticFile:
 
     def calendar(self):
         return self._read_internal_file(self._InternalFileName.CALENDAR)
+
+    def calendar_dates(self):
+        return self._read_internal_file(self._InternalFileName.CALENDAR_DATES)
 
     def routes(self):
         return self._read_internal_file(self._InternalFileName.ROUTES)
@@ -240,7 +244,21 @@ def _parse_schedule(gtfs_static_file: _GtfsStaticFile):
             friday=str_to_bool[row["friday"]],
             saturday=str_to_bool[row["saturday"]],
             sunday=str_to_bool[row["sunday"]],
+            start_date=date_string_to_datetime_date(row["start_date"]),
+            end_date=date_string_to_datetime_date(row["end_date"]),
         )
+
+    for row in gtfs_static_file.calendar_dates():
+        service_id = row["service_id"]
+        if service_id not in service_id_to_service:
+            service_id_to_service[service_id] = parse.ScheduledService.create_empty(
+                service_id
+            )
+        date = date_string_to_datetime_date(row["date"])
+        if row["exception_type"] == "1":
+            service_id_to_service[service_id].added_dates.append(date)
+        else:
+            service_id_to_service[service_id].removed_dates.append(date)
 
     trip_id_to_trip = {}
     for row in gtfs_static_file.trips():
@@ -282,3 +300,11 @@ def _parse_schedule(gtfs_static_file: _GtfsStaticFile):
         trip_id_to_trip[trip_id].stop_times.append(stop_time)
 
     yield from service_id_to_service.values()
+
+
+def date_string_to_datetime_date(date_string):
+    return datetime.date(
+        year=int(date_string[0:4]),
+        month=int(date_string[4:6]),
+        day=int(date_string[6:8]),
+    )

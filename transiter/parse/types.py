@@ -61,11 +61,11 @@ class ScheduledService:
     friday: bool
     saturday: bool
     sunday: bool
-    # start_date: datetime.date = None
-    # end_date: datetime.date = None
+    start_date: datetime.date = None
+    end_date: datetime.date = None
     trips: typing.List["ScheduledTrip"] = field(default_factory=list)
-    # added_dates: typing.List[datetime.date] = field(default_factory=list)
-    # removed_dates: typing.List[datetime.date] = field(default_factory=list)
+    added_dates: typing.List[datetime.date] = field(default_factory=list)
+    removed_dates: typing.List[datetime.date] = field(default_factory=list)
 
     @classmethod
     def create_empty(cls, id_) -> "ScheduledService":
