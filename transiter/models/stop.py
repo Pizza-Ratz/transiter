@@ -65,5 +65,5 @@ class Stop(Base):
             latitude=stop.latitude,
             longitude=stop.longitude,
             url=stop.url,
-            is_station=stop.is_station,
+            is_station=stop.type != parse.Stop.Type.PLATFORM,
         )
