@@ -59,7 +59,7 @@ def build_stop_pk_to_group_id_to_inherited_routes_map(stop_pks):
     result = {stop_pk: collections.defaultdict(list) for stop_pk in stop_pks}
     for stop_pk in stop_pks:
         for descendent_pk in stop_pk_to_descendent_pks[stop_pk]:
-            group_id_to_routes = stop_pk_to_group_id_to_routes[descendent_pk]
+            group_id_to_routes = stop_pk_to_group_id_to_routes.get(descendent_pk, {})
             for group_id, routes in group_id_to_routes.items():
                 result[stop_pk][group_id].extend(routes)
     for group_id_to_routes in result.values():

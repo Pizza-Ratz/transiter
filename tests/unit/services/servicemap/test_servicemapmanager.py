@@ -158,6 +158,39 @@ def test_build_stop_pk_to_service_maps_response(monkeypatch):
     assert expected == actual
 
 
+def test_build_stop_pk_to_group_id_to_inherited_routes_map(monkeypatch):
+    monkeypatch.setattr(
+        stopqueries,
+        "build_stop_pk_to_descendant_pks_map",
+        lambda *args, **kwargs: {1: [1, 2, 3]},
+    )
+    monkeypatch.setattr(
+        servicemapqueries,
+        "get_stop_pk_to_group_id_to_routes_map",
+        lambda *args: {
+            2: {"group": [models.Route(id="2"), models.Route(id="3")]},
+            3: {"group": [models.Route(id="4"), models.Route(id="1")]},
+        },
+    )
+
+    expected_result = {
+        1: {
+            "group": [
+                models.Route(id="1"),
+                models.Route(id="2"),
+                models.Route(id="3"),
+                models.Route(id="4"),
+            ]
+        }
+    }
+
+    actual_result = servicemapmanager.build_stop_pk_to_group_id_to_inherited_routes_map(
+        [1]
+    )
+
+    assert expected_result == actual_result
+
+
 def test_build_sorted_graph_from_paths__empty_graph():
     empty_graph = datastructures.Graph.build_from_edge_label_tuples([])
 
