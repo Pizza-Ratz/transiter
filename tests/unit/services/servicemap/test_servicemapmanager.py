@@ -136,8 +136,8 @@ def test_build_stop_pk_to_service_maps_response(monkeypatch):
     route_2 = models.Route(id=ROUTE_2_ID, system=system)
 
     monkeypatch.setattr(
-        servicemapqueries,
-        "get_stop_pk_to_group_id_to_routes_map",
+        servicemapmanager,
+        "build_stop_pk_to_group_id_to_inherited_routes_map",
         lambda *args: {STOP_1_PK: {GROUP_ID: [route_1, route_2]}},
     )
 
