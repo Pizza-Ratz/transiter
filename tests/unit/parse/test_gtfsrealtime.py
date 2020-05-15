@@ -4,7 +4,7 @@ from unittest import mock
 
 import pytest
 from google.protobuf.message import DecodeError
-from google.transit import gtfs_realtime_pb2 as gtfs
+from transiter.parse.proto import gtfs_realtime_pb2 as gtfs
 
 from transiter import parse
 from transiter.parse import gtfsrealtime

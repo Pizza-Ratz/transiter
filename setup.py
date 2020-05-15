@@ -25,6 +25,7 @@ setup(
         "gunicorn==20.0.4",
         "inflection==0.4.0",
         "Jinja2==2.11.2",
+        "protobuf==3.11.3",
         "psycopg2-binary==2.8.5",
         "pytimeparse==1.1.8",
         "pytz==2019.3",
