@@ -10,7 +10,7 @@ from .base import Base
 
 
 class AlertMessage(Base):
-    __tablename__ = "alert_active_period"
+    __tablename__ = "alert_message"
 
     pk = Column(Integer, primary_key=True)
     alert_pk = Column(Integer, ForeignKey("alert.pk"), index=True, nullable=False)
