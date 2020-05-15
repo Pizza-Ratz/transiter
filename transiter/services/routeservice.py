@@ -64,6 +64,11 @@ def _construct_route_status(route_pk):
     return _construct_route_pk_to_status_map([route_pk])[route_pk]
 
 
+# TODO: figure this all out
+# Maybe we should just return the list of small alerts (id/cause/effect) and let consumers
+# to their thing
+# And have a separate: current service field that just checks if there are trips
+# associated to the route
 def _construct_route_pk_to_status_map(route_pks_iter):
     """
     Construct the statuses for multiple routes.

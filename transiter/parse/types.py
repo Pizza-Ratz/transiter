@@ -18,7 +18,7 @@ class Agency:
 
 @dataclass
 class Route:
-    class Type(enum.Enum):
+    class Type(enum.Enum):  # TODO: is this exhaustive?
         LIGHT_RAIL = 0
         SUBWAY = 1
         RAIL = 2
