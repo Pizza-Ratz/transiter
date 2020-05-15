@@ -31,7 +31,7 @@ class Alert(Base):
 
     cause = Column(Enum(Cause, native_enum=False), nullable=False)
     effect = Column(Enum(Effect, native_enum=False), nullable=False)
-    sort_order = Column(Integer)
+    sort_order = Column(Integer, default=-1)
     created_at = Column(TIMESTAMP(timezone=True))
     updated_at = Column(TIMESTAMP(timezone=True))
 

@@ -179,15 +179,15 @@ class Alert:
         MEDICAL_EMERGENCY = 12
 
     class Effect(enum.Enum):
-        NO_SERVICE = 0
-        REDUCED_SERVICE = 1
-        SIGNIFICANT_DELAYS = 2
-        DETOUR = 3
-        ADDITIONAL_SERVICE = 4
-        MODIFIED_SERVICE = 5
-        OTHER_EFFECT = 6
-        UNKNOWN_EFFECT = 7
-        STOP_MOVED = 8
+        NO_SERVICE = 1
+        REDUCED_SERVICE = 2
+        SIGNIFICANT_DELAYS = 3
+        DETOUR = 4
+        ADDITIONAL_SERVICE = 5
+        MODIFIED_SERVICE = 6
+        OTHER_EFFECT = 7
+        UNKNOWN_EFFECT = 8
+        STOP_MOVED = 9
 
     id: str
     cause: Cause = Cause.UNKNOWN_CAUSE

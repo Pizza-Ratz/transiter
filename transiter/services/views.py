@@ -352,27 +352,36 @@ class FeedUpdate(View):
 
 
 @dataclasses.dataclass
-class AlertLarge(View):
-    id: str
-    start_time: datetime.datetime
-    end_time: datetime.datetime
-    creation_time: datetime.datetime
+class AlertMessage(View):
     header: str
     description: str
-    url: str
+    url: str = None
+    language: str = None
+
+    @classmethod
+    def from_model(cls, alert_message: models.AlertMessage):
+        return cls(
+            header=alert_message.header,
+            description=alert_message.description,
+            url=alert_message.url,
+            language=alert_message.language,
+        )
+
+
+@dataclasses.dataclass
+class AlertLarge(View):  # TODO: rename Alert
+    id: str
     cause: models.Alert.Cause
     effect: models.Alert.Effect
+    started_at: datetime.datetime = None
+    ends_at: datetime.datetime = None  # TODO: populate using the AlertActivePeriod
+    messages: typing.List[AlertMessage] = dataclasses.field(default_factory=list)
 
     @classmethod
     def from_model(cls, alert: models.Alert):
         return cls(
             id=alert.id,
-            start_time=alert.start_time,
-            end_time=alert.end_time,
-            creation_time=alert.creation_time,
-            header=alert.header,
-            description=alert.description,
-            url=alert.url,
             cause=alert.cause,
             effect=alert.effect,
+            messages=list(map(AlertMessage.from_model, alert.messages)),
         )
