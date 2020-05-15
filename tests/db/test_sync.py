@@ -47,7 +47,7 @@ def other_feed_update(add_model, feed_2):
 
 
 new_agency = parse.Agency(id="agency", name="New Agency", timezone="", url="")
-new_alert = parse.Alert(id="alert")  #, header="header", description="description")
+new_alert = parse.Alert(id="alert")  # , header="header", description="description")
 new_route = parse.Route(id="route", type=parse.Route.Type.RAIL, description="new_route")
 new_stop = parse.Stop(
     id="route", name="new stop", latitude=0, longitude=0, type=parse.Stop.Type.STATION
@@ -60,13 +60,13 @@ new_stop = parse.Stop(
         [models.Alert, [], [new_alert], (1, 0, 0)],
         [
             models.Alert,
-            [], #[models.Alert(id="alert", header="old header", description="old route")],
+            [],  # [models.Alert(id="alert", header="old header", description="old route")],
             [new_alert],
             (0, 1, 0),
         ],
         [
             models.Alert,
-            [], # [models.Alert(id="alert", header="old header", description="old route")],
+            [],  # [models.Alert(id="alert", header="old header", description="old route")],
             [],
             (0, 0, 1),
         ],
@@ -507,7 +507,7 @@ def test_trip__stop_time_reconciliation(
         parse.Trip(
             id="my_special_trip_id", route_id=route_data.ROUTE_1_1_ID, direction_id=True
         ),
-        parse.Alert(id="my_special_alert_id", header="header", description="desc"),
+        parse.Alert(id="my_special_alert_id"),
         parse.DirectionRule(id="my_special_direction_id", name="uptown"),
         parse.ScheduledService.create_empty("my_special_service_id"),
     ],
