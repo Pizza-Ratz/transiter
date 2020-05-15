@@ -27,16 +27,18 @@ class Alert(Base):
     Cause = parse.Alert.Cause
     Effect = parse.Alert.Effect
 
-    header = Column(String)
-    description = Column(String)
-    url = Column(String)
     cause = Column(Enum(Cause, native_enum=False))
     effect = Column(Enum(Effect, native_enum=False))
-    priority = Column(Integer)
-    start_time = Column(TIMESTAMP(timezone=True))
-    end_time = Column(TIMESTAMP(timezone=True))
-    creation_time = Column(TIMESTAMP(timezone=True))
+    sort_order = Column(Integer)
+    created_at = Column(TIMESTAMP(timezone=True))
+    updated_at = Column(TIMESTAMP(timezone=True))
 
+    messages = relationship(
+        "AlertMessages", back_populates="alert", cascade="all, delete-orphan"
+    )
+    active_periods = relationship(
+        "AlertActivePeriod", back_populates="alert", cascade="all, delete-orphan"
+    )
     source = relationship("FeedUpdate", cascade="none")
     agencies = relationship(
         "Agency", secondary="alert_agency", back_populates="alerts", cascade="none",
@@ -44,35 +46,44 @@ class Alert(Base):
     routes = relationship(
         "Route", secondary="alert_route", back_populates="alerts", cascade="none",
     )
+    stops = relationship(
+        "Stop", secondary="alert_stop", back_populates="alerts", cascade="none",
+    )
+    trips = relationship(
+        "Trip", secondary="alert_trip", back_populates="alerts", cascade="none",
+    )
 
     __table_args__ = (UniqueConstraint("system_pk", "id"),)
 
     @staticmethod
     def from_parsed_alert(alert: parse.Alert) -> "Alert":
-        return Alert(
-            id=alert.id,
-            cause=alert.cause,
-            effect=alert.effect,
-            header=alert.header,
-            description=alert.description,
-            url=alert.url,
-            start_time=alert.start_time,
-            end_time=alert.end_time,
-            priority=alert.priority,
-        )
+        return Alert(id=alert.id, cause=alert.cause, effect=alert.effect,)
 
 
 alert_agency = Table(
     "alert_agency",
     Base.metadata,
-    Column("alert_pk", Integer, ForeignKey("alert.pk")),
+    Column("alert_pk", Integer, ForeignKey("alert.pk"), index=True),
     Column("agency_pk", Integer, ForeignKey("agency.pk"), index=True),
 )
-
 
 alert_route = Table(
     "alert_route",
     Base.metadata,
-    Column("alert_pk", Integer, ForeignKey("alert.pk")),
+    Column("alert_pk", Integer, ForeignKey("alert.pk"), index=True),
     Column("route_pk", Integer, ForeignKey("route.pk"), index=True),
+)
+
+alert_stop = Table(
+    "alert_stop",
+    Base.metadata,
+    Column("alert_pk", Integer, ForeignKey("alert.pk"), index=True),
+    Column("stop_pk", Integer, ForeignKey("stop.pk"), index=True),
+)
+
+alert_trip = Table(
+    "alert_trip",
+    Base.metadata,
+    Column("alert_pk", Integer, ForeignKey("alert.pk"), index=True),
+    Column("trip_pk", Integer, ForeignKey("trip.pk"), index=True),
 )
