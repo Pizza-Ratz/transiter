@@ -13,6 +13,8 @@ from sqlalchemy.orm import relationship
 from transiter import parse
 from .base import Base
 from .updatableentity import updatable_from
+from .alertmessage import AlertMessage
+from .alertactiveperiod import AlertActivePeriod
 
 
 @updatable_from(parse.Alert)
@@ -27,14 +29,14 @@ class Alert(Base):
     Cause = parse.Alert.Cause
     Effect = parse.Alert.Effect
 
-    cause = Column(Enum(Cause, native_enum=False))
-    effect = Column(Enum(Effect, native_enum=False))
+    cause = Column(Enum(Cause, native_enum=False), nullable=False)
+    effect = Column(Enum(Effect, native_enum=False), nullable=False)
     sort_order = Column(Integer)
     created_at = Column(TIMESTAMP(timezone=True))
     updated_at = Column(TIMESTAMP(timezone=True))
 
     messages = relationship(
-        "AlertMessages", back_populates="alert", cascade="all, delete-orphan"
+        "AlertMessage", back_populates="alert", cascade="all, delete-orphan"
     )
     active_periods = relationship(
         "AlertActivePeriod", back_populates="alert", cascade="all, delete-orphan"
@@ -57,7 +59,18 @@ class Alert(Base):
 
     @staticmethod
     def from_parsed_alert(alert: parse.Alert) -> "Alert":
-        return Alert(id=alert.id, cause=alert.cause, effect=alert.effect,)
+        return Alert(
+            id=alert.id,
+            cause=alert.cause,
+            effect=alert.effect,
+            created_at=alert.created_at,
+            updated_at=alert.updated_at,
+            sort_order=alert.sort_order,
+            messages=list(map(AlertMessage.from_parsed_message, alert.messages)),
+            active_periods=list(
+                map(AlertActivePeriod.from_parsed_active_period, alert.active_periods)
+            ),
+        )
 
 
 alert_agency = Table(

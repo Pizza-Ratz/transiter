@@ -7,6 +7,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 
 from .base import Base
+from transiter import parse
 
 
 class AlertActivePeriod(Base):
@@ -19,3 +20,11 @@ class AlertActivePeriod(Base):
     ends_at = Column(TIMESTAMP(timezone=True))
 
     alert = relationship("Alert", back_populates="active_periods", cascade="none")
+
+    @staticmethod
+    def from_parsed_active_period(
+        active_period: parse.AlertActivePeriod,
+    ) -> "AlertActivePeriod":
+        return AlertActivePeriod(
+            starts_at=active_period.starts_at, ends_at=active_period.ends_at
+        )

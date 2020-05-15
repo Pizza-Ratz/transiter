@@ -6,6 +6,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
+from transiter import parse
 from .base import Base
 
 
@@ -21,3 +22,12 @@ class AlertMessage(Base):
     language = Column(String)
 
     alert = relationship("Alert", back_populates="messages", cascade="none")
+
+    @staticmethod
+    def from_parsed_message(message: parse.AlertMessage) -> "AlertMessage":
+        return AlertMessage(
+            header=message.header,
+            description=message.description,
+            url=message.url,
+            language=message.language,
+        )

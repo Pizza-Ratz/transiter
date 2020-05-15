@@ -190,20 +190,33 @@ class Alert:
         STOP_MOVED = 8
 
     id: str
-    header: str
-    description: str
-    start_time: datetime.datetime = None
-    end_time: datetime.datetime = None
-    cause: Cause = None
-    effect: Effect = None
-    url: str = None
-    priority: int = None  # Transiter-only non-GTFS field
+    cause: Cause = Cause.UNKNOWN_CAUSE
+    effect: Effect = Effect.UNKNOWN_EFFECT
+    created_at: datetime.datetime = None  # Non-GTFS field
+    updated_at: datetime.datetime = None  # Non-GTFS field
+    sort_order: int = None  # Non-GTFS field
 
+    messages: typing.List["AlertMessage"] = field(default_factory=list)
+    active_periods: typing.List["AlertActivePeriod"] = field(default_factory=list)
     agency_ids: typing.List[str] = field(default_factory=list)
     route_ids: typing.List[str] = field(default_factory=list)
     route_types: typing.List[Route.Type] = field(default_factory=list)
     trip_ids: typing.List[str] = field(default_factory=list)
     stop_ids: typing.List[str] = field(default_factory=list)
+
+
+@dataclass
+class AlertMessage:
+    header: str
+    description: str
+    url: str = None
+    language: str = None
+
+
+@dataclass
+class AlertActivePeriod:
+    starts_at: datetime.datetime = None
+    ends_at: datetime.datetime = None
 
 
 @dataclass
