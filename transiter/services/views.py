@@ -124,6 +124,7 @@ class AgencyLarge(View):
 
 @dataclasses.dataclass
 class Route(View):
+    # TODO: remove
     class Status(enum.Enum):
         NO_SERVICE = 0
         GOOD_SERVICE = 1

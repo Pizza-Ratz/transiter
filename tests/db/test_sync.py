@@ -47,7 +47,9 @@ def other_feed_update(add_model, feed_2):
 
 
 new_agency = parse.Agency(id="agency", name="New Agency", timezone="", url="")
-new_alert = parse.Alert(id="alert")  # , header="header", description="description")
+new_alert = parse.Alert(
+    id="alert", cause=parse.Alert.Cause.DEMONSTRATION, effect=parse.Alert.Effect.DETOUR
+)
 new_route = parse.Route(id="route", type=parse.Route.Type.RAIL, description="new_route")
 new_stop = parse.Stop(
     id="route", name="new stop", latitude=0, longitude=0, type=parse.Stop.Type.STATION
@@ -60,13 +62,25 @@ new_stop = parse.Stop(
         [models.Alert, [], [new_alert], (1, 0, 0)],
         [
             models.Alert,
-            [],  # [models.Alert(id="alert", header="old header", description="old route")],
+            [
+                models.Alert(
+                    id="alert",
+                    cause=models.Alert.Cause.DEMONSTRATION,
+                    effect=models.Alert.Effect.DETOUR,
+                )
+            ],
             [new_alert],
             (0, 1, 0),
         ],
         [
             models.Alert,
-            [],  # [models.Alert(id="alert", header="old header", description="old route")],
+            [
+                models.Alert(
+                    id="alert",
+                    cause=models.Alert.Cause.DEMONSTRATION,
+                    effect=models.Alert.Effect.DETOUR,
+                )
+            ],
             [],
             (0, 0, 1),
         ],
@@ -105,11 +119,16 @@ new_stop = parse.Stop(
         [models.Stop, [], [new_stop], (1, 0, 0)],
         [
             models.Stop,
-            [models.Stop(id="route", name="old stop")],
+            [models.Stop(id="route", name="old stop", type=models.Stop.Type.STATION)],
             [new_stop],
             (0, 1, 0),
         ],
-        [models.Stop, [models.Stop(id="route", name="old stop")], [], (0, 0, 1)],
+        [
+            models.Stop,
+            [models.Stop(id="route", name="old stop", type=models.Stop.Type.STATION)],
+            [],
+            (0, 0, 1),
+        ],
     ],
 )
 def test_simple_create_update_delete(
@@ -136,7 +155,7 @@ def test_simple_create_update_delete(
         if entity_type is models.Stop:
             return entity.id, entity.name, entity.source_pk
         if entity_type is models.Alert:
-            return entity.id, entity.description, entity.header
+            return entity.id, entity.cause, entity.effect
         if entity_type is models.Agency:
             return entity.id, entity.name
         raise NotImplementedError
@@ -177,7 +196,7 @@ def test_stop__tree_linking(
                 source=previous_update,
                 longitude=0,
                 latitude=0,
-                is_station=True,
+                type=parse.Stop.Type.STATION,
             )
         )
         for id_ in old_id_to_parent_id.keys()
@@ -223,9 +242,7 @@ def test_route__agency_linking(db_session, current_update):
 
 
 def test_alert__route_linking(db_session, previous_update, current_update, route_1_1):
-    alert = parse.Alert(
-        id="alert", header="header", description="description", route_ids=[route_1_1.id]
-    )
+    alert = parse.Alert(id="alert", route_ids=[route_1_1.id])
 
     sync.sync(current_update.pk, ParserForTesting([alert]))
 
@@ -356,8 +373,14 @@ def test_unknown_type(current_update):
 def test_flush(db_session, add_model, system_1, previous_update, current_update):
     current_update.update_type = models.FeedUpdate.Type.FLUSH
 
-    add_model(models.Stop(system=system_1, source_pk=previous_update.pk))
-    add_model(models.Route(system=system_1, source_pk=previous_update.pk))
+    add_model(
+        models.Stop(
+            system=system_1,
+            source_pk=previous_update.pk,
+            type=models.Stop.Type.STATION,
+        )
+    )
+    add_model(models.Route(system=system_1, source_pk=previous_update.pk,))
 
     sync.sync(current_update.pk, ParserForTesting([]))
 
@@ -469,7 +492,9 @@ def test_trip__stop_time_reconciliation(
         for trip_stop_time in itertools.chain(old_stop_time_data, new_stop_time_data)
     )
     for stop_id in all_stop_ids:
-        stop = add_model(models.Stop(id=stop_id, system=system_1))
+        stop = add_model(
+            models.Stop(id=stop_id, system=system_1, type=models.Stop.Type.STATION)
+        )
         stop_pk_to_stop[stop.pk] = stop
 
     trip = parse.Trip(
@@ -553,12 +578,7 @@ def test_parse_error(current_update):
 
 
 def test_alert__buggy_route(db_session, current_update):
-    alert = parse.Alert(
-        id="my_alert",
-        header="header",
-        description="description",
-        route_ids=["buggy_route_id"],
-    )
+    alert = parse.Alert(id="my_alert", route_ids=["buggy_route_id"],)
 
     sync.sync(current_update.pk, ParserForTesting([alert]))
 
