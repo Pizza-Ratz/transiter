@@ -101,33 +101,3 @@ def list_route_pks_with_current_service(route_pks):
         )
     )
     return [route_pk for (route_pk,) in session.execute(stmt)]
-
-
-def get_route_pk_to_highest_priority_alerts_map(route_pks):
-    """
-    Get a map mapping route PK to the list of alerts for that route with the
-    highest priority. The highest priority if determined on a route-by-route
-    basis.
-
-    :param route_pks: list of route PKs
-    :return: map of route PK to list of Alerts
-    """
-    route_pk_to_alerts = {route_pk: [] for route_pk in route_pks}
-    session = dbconnection.get_session()
-    inner_query = (
-        session.query(models.Route.pk, sql.func.max(models.Alert.sort_order))
-        .join(models.alert_route, models.alert_route.c.route_pk == models.Route.pk)
-        .join(models.Alert, models.Alert.pk == models.alert_route.c.alert_pk)
-        .filter(models.Route.pk.in_(route_pks))
-        .group_by(models.Route.pk)
-    )
-    query = (
-        session.query(models.Route.pk, models.Alert)
-        .join(models.alert_route, models.alert_route.c.route_pk == models.Route.pk)
-        .join(models.Alert, models.Alert.pk == models.alert_route.c.alert_pk)
-        .filter(sql.tuple_(models.Route.pk, models.Alert.sort_order).in_(inner_query))
-        .order_by(models.Alert.pk)
-    )
-    for route_pk, alert in query:
-        route_pk_to_alerts[route_pk].append(alert)
-    return route_pk_to_alerts
