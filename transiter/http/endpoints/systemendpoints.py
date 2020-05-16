@@ -14,6 +14,8 @@ from transiter.services import systemservice, views
 
 system_endpoints = flask.Blueprint(__name__, __name__)
 
+# TODO add list alerts endpoint
+
 
 @http_endpoint(system_endpoints, "")
 @link_target(httpviews.SystemsInstalled)

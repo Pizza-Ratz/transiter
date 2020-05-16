@@ -23,6 +23,7 @@ def list_all_in_system(system_id) -> typing.List[views.Route]:
     route_pk_to_status = _construct_route_pk_to_status_map(route.pk for route in routes)
     for route in routes:
         route_response = views.Route.from_model(route)
+        # TODO: add alerts
         route_response.status = route_pk_to_status[route.pk]
         response.append(route_response)
     return response
@@ -34,6 +35,7 @@ def get_in_system_by_id(system_id, route_id) -> views.RouteLarge:
     Get data for a specific route in a specific system.
     """
     route = routequeries.get_in_system_by_id(system_id, route_id)
+    # TODO get alerts separately using active time
     if route is None:
         raise exceptions.IdNotFoundError(
             models.Route, system_id=system_id, route_id=route_id
@@ -54,6 +56,7 @@ def get_in_system_by_id(system_id, route_id) -> views.RouteLarge:
 Status = views.Route.Status
 
 
+# TODO: destroy
 def _construct_route_status(route_pk):
     """
     Construct the status for a specific route.

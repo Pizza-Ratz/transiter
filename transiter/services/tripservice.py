@@ -40,6 +40,7 @@ def get_in_route_by_id(system_id, route_id, trip_id):
         raise exceptions.IdNotFoundError(
             models.Trip, system_id=system_id, route_id=route_id, trip_id=trip_id
         )
+    # TODO: add alerts
     trip_response = views.Trip.from_model(trip)
     trip_response.route = views.Route.from_model(trip.route)
     trip_response.stop_times = []

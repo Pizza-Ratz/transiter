@@ -24,8 +24,6 @@ class GtfsRealtimeParser(parse.TransiterParser):
     _gtfs_feed_message = None
 
     def load_content(self, content: bytes) -> None:
-        with open("alerts.gtfsrt", "rb") as f:
-            content = f.read()
         if self.GTFS_REALTIME_PB2_MODULE is not None:
             pb2_module = self.GTFS_REALTIME_PB2_MODULE
         else:
@@ -117,15 +115,20 @@ def attach_informed_entities(alert, parsed_alert: parse.Alert):
 
 
 def build_alert_messages(alert):
+    def get_language(translated_string):
+        if translated_string.HasField("language"):
+            return translated_string.language
+        return None
+
     language_to_message = collections.defaultdict(
         lambda: parse.AlertMessage(header="", description="")
     )
     for header in alert.header_text.translation:
-        language_to_message[header.language].header = header.text
+        language_to_message[get_language(header)].header = header.text
     for description in alert.description_text.translation:
-        language_to_message[description.language].description = description.text
+        language_to_message[get_language(description)].description = description.text
     for url in alert.url.translation:
-        language_to_message[url.language].url = url.text
+        language_to_message[get_language(url)].url = url.text
     for language, message in language_to_message.items():
         message.language = language
         yield message
