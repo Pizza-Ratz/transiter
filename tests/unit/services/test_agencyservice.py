@@ -27,7 +27,7 @@ def test_list_all_in_system(monkeypatch):
 
     monkeypatch.setattr(systemqueries, "get_by_id", lambda *args, **kwargs: system)
     monkeypatch.setattr(
-        genericqueries, "list_all_in_system", lambda *args: [agency_1, agency_2]
+        genericqueries, "list_in_system", lambda *args: [agency_1, agency_2]
     )
 
     expected = [

@@ -31,7 +31,7 @@ def test_list_all_in_system(monkeypatch):
     route_two = models.Route(system=system, id=ROUTE_TWO_ID, pk=ROUTE_TWO_PK)
     monkeypatch.setattr(systemqueries, "get_by_id", lambda *args, **kwargs: system)
     monkeypatch.setattr(
-        routequeries, "list_all_in_system", lambda *args: [route_one, route_two]
+        routequeries, "list_in_system", lambda *args: [route_one, route_two]
     )
 
     expected = [
