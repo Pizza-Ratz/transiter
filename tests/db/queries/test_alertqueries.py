@@ -13,7 +13,9 @@ TIME_3 = datetime.datetime.utcfromtimestamp(3000)
 @pytest.mark.parametrize(
     "alert_start,alert_end,current_time,expect_result",
     [
+        [TIME_1, TIME_3, TIME_1, True],
         [TIME_1, TIME_3, TIME_2, True],
+        [TIME_1, TIME_3, TIME_3, True],
         [TIME_1, TIME_2, TIME_3, False],
         [TIME_2, TIME_3, TIME_1, False],
     ],
@@ -49,7 +51,9 @@ def test_list_alerts__routes(
     )
     alert_2.routes = [route_1_2]
 
-    result = alertqueries.list_alerts([route_1_1.pk], current_time=current_time)
+    result = alertqueries.list_alerts(
+        route_pks=[route_1_1.pk], current_time=current_time
+    )
 
     if expect_result:
         assert [alert] == [alert for _, alert in result]
