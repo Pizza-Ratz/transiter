@@ -12,6 +12,9 @@ from transiter.parse import gtfsrealtime
 from transiter.parse.proto import (
     gtfs_realtime_transiter_vendorized_pb2 as transiter_gtfs_rt_pb2,
 )
+from transiter.parse.proto import (
+    gtfs_realtime_transiter_extension_pb2 as transiter_gtfs_rt_ext_pb2,
+)
 
 timestamp_to_datetime = gtfsrealtime._GtfsRealtimeToTransiterTransformer(
     ""
@@ -159,7 +162,34 @@ def test_parse_alerts(input_alert, expected_alert, gtfs):
 
     parser = gtfsrealtime.GtfsRealtimeParser()
     parser.load_content(alert_message.SerializeToString())
+    actual_alerts = list(parser.get_alerts())
 
+    assert [expected_alert] == actual_alerts
+
+
+def test_parse_alerts__transiter_extension():
+    gtfs = transiter_gtfs_rt_pb2
+
+    alert_extension_key = gtfs.Alert._extensions_by_number[
+        gtfsrealtime.TRANSITER_EXTENSION_ID
+    ]
+
+    input_alert = gtfs.Alert()
+    additional_data = input_alert.Extensions[alert_extension_key]
+    additional_data.created_at = int(TIME_1.timestamp())
+    additional_data.updated_at = int(TIME_2.timestamp())
+    additional_data.sort_order = 59
+    alert_message = gtfs.FeedMessage(
+        header=gtfs.FeedHeader(gtfs_realtime_version="2.0"),
+        entity=[gtfs.FeedEntity(id=ALERT_ID, alert=input_alert)],
+    )
+
+    expected_alert = parse.Alert(
+        id=ALERT_ID, created_at=TIME_1, updated_at=TIME_2, sort_order=59
+    )
+
+    parser = gtfsrealtime.GtfsRealtimeParser()
+    parser.load_content(alert_message.SerializeToString())
     actual_alerts = list(parser.get_alerts())
 
     assert [expected_alert] == actual_alerts
