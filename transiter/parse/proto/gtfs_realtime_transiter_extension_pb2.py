@@ -14,31 +14,33 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-from . import gtfs_realtime_pb2 as gtfs__realtime__pb2
+from . import (
+    gtfs_realtime_transiter_vendorized_pb2 as gtfs__realtime__transiter__vendorized__pb2,
+)
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
     name="gtfs-realtime-transiter-extension.proto",
-    package="transit_realtime",
+    package="gtfs_realtime_transiter_vendorized",
     syntax="proto2",
     serialized_options=None,
     serialized_pb=_b(
-        '\n\'gtfs-realtime-transiter-extension.proto\x12\x10transit_realtime\x1a\x13gtfs-realtime.proto"\xa4\x01\n\x1cStopTimeUpdateAdditionalData\x12\r\n\x05track\x18\x01 \x01(\t2u\n\x0f\x61\x64\x64itional_data\x12+.transit_realtime.TripUpdate.StopTimeUpdate\x18\xc1\r \x01(\x0b\x32..transit_realtime.StopTimeUpdateAdditionalData"\xab\x01\n\x13\x41lertAdditionalData\x12\x12\n\ncreated_at\x18\x01 \x01(\x04\x12\x12\n\nupdated_at\x18\x02 \x01(\x04\x12\x12\n\nsort_order\x18\x03 \x01(\x04\x32X\n\x0f\x61\x64\x64itional_data\x12\x17.transit_realtime.Alert\x18\xc1\r \x01(\x0b\x32%.transit_realtime.AlertAdditionalData'
+        '\n\'gtfs-realtime-transiter-extension.proto\x12"gtfs_realtime_transiter_vendorized\x1a(gtfs-realtime-transiter-vendorized.proto"\xc9\x01\n\x1cStopTimeUpdateAdditionalData\x12\r\n\x05track\x18\x01 \x01(\t2\x99\x01\n\x0f\x61\x64\x64itional_data\x12=.gtfs_realtime_transiter_vendorized.TripUpdate.StopTimeUpdate\x18\xc1\r \x01(\x0b\x32@.gtfs_realtime_transiter_vendorized.StopTimeUpdateAdditionalData"\xcf\x01\n\x13\x41lertAdditionalData\x12\x12\n\ncreated_at\x18\x01 \x01(\x04\x12\x12\n\nupdated_at\x18\x02 \x01(\x04\x12\x12\n\nsort_order\x18\x03 \x01(\x04\x32|\n\x0f\x61\x64\x64itional_data\x12).gtfs_realtime_transiter_vendorized.Alert\x18\xc1\r \x01(\x0b\x32\x37.gtfs_realtime_transiter_vendorized.AlertAdditionalData'
     ),
-    dependencies=[gtfs__realtime__pb2.DESCRIPTOR,],
+    dependencies=[gtfs__realtime__transiter__vendorized__pb2.DESCRIPTOR,],
 )
 
 
 _STOPTIMEUPDATEADDITIONALDATA = _descriptor.Descriptor(
     name="StopTimeUpdateAdditionalData",
-    full_name="transit_realtime.StopTimeUpdateAdditionalData",
+    full_name="gtfs_realtime_transiter_vendorized.StopTimeUpdateAdditionalData",
     filename=None,
     file=DESCRIPTOR,
     containing_type=None,
     fields=[
         _descriptor.FieldDescriptor(
             name="track",
-            full_name="transit_realtime.StopTimeUpdateAdditionalData.track",
+            full_name="gtfs_realtime_transiter_vendorized.StopTimeUpdateAdditionalData.track",
             index=0,
             number=1,
             type=9,
@@ -58,7 +60,7 @@ _STOPTIMEUPDATEADDITIONALDATA = _descriptor.Descriptor(
     extensions=[
         _descriptor.FieldDescriptor(
             name="additional_data",
-            full_name="transit_realtime.StopTimeUpdateAdditionalData.additional_data",
+            full_name="gtfs_realtime_transiter_vendorized.StopTimeUpdateAdditionalData.additional_data",
             index=0,
             number=1729,
             type=11,
@@ -82,21 +84,21 @@ _STOPTIMEUPDATEADDITIONALDATA = _descriptor.Descriptor(
     syntax="proto2",
     extension_ranges=[],
     oneofs=[],
-    serialized_start=83,
-    serialized_end=247,
+    serialized_start=122,
+    serialized_end=323,
 )
 
 
 _ALERTADDITIONALDATA = _descriptor.Descriptor(
     name="AlertAdditionalData",
-    full_name="transit_realtime.AlertAdditionalData",
+    full_name="gtfs_realtime_transiter_vendorized.AlertAdditionalData",
     filename=None,
     file=DESCRIPTOR,
     containing_type=None,
     fields=[
         _descriptor.FieldDescriptor(
             name="created_at",
-            full_name="transit_realtime.AlertAdditionalData.created_at",
+            full_name="gtfs_realtime_transiter_vendorized.AlertAdditionalData.created_at",
             index=0,
             number=1,
             type=4,
@@ -114,7 +116,7 @@ _ALERTADDITIONALDATA = _descriptor.Descriptor(
         ),
         _descriptor.FieldDescriptor(
             name="updated_at",
-            full_name="transit_realtime.AlertAdditionalData.updated_at",
+            full_name="gtfs_realtime_transiter_vendorized.AlertAdditionalData.updated_at",
             index=1,
             number=2,
             type=4,
@@ -132,7 +134,7 @@ _ALERTADDITIONALDATA = _descriptor.Descriptor(
         ),
         _descriptor.FieldDescriptor(
             name="sort_order",
-            full_name="transit_realtime.AlertAdditionalData.sort_order",
+            full_name="gtfs_realtime_transiter_vendorized.AlertAdditionalData.sort_order",
             index=2,
             number=3,
             type=4,
@@ -152,7 +154,7 @@ _ALERTADDITIONALDATA = _descriptor.Descriptor(
     extensions=[
         _descriptor.FieldDescriptor(
             name="additional_data",
-            full_name="transit_realtime.AlertAdditionalData.additional_data",
+            full_name="gtfs_realtime_transiter_vendorized.AlertAdditionalData.additional_data",
             index=0,
             number=1729,
             type=11,
@@ -176,8 +178,8 @@ _ALERTADDITIONALDATA = _descriptor.Descriptor(
     syntax="proto2",
     extension_ranges=[],
     oneofs=[],
-    serialized_start=250,
-    serialized_end=421,
+    serialized_start=326,
+    serialized_end=533,
 )
 
 DESCRIPTOR.message_types_by_name[
@@ -192,7 +194,7 @@ StopTimeUpdateAdditionalData = _reflection.GeneratedProtocolMessageType(
     dict(
         DESCRIPTOR=_STOPTIMEUPDATEADDITIONALDATA,
         __module__="gtfs_realtime_transiter_extension_pb2"
-        # @@protoc_insertion_point(class_scope:transit_realtime.StopTimeUpdateAdditionalData)
+        # @@protoc_insertion_point(class_scope:gtfs_realtime_transiter_vendorized.StopTimeUpdateAdditionalData)
     ),
 )
 _sym_db.RegisterMessage(StopTimeUpdateAdditionalData)
@@ -203,7 +205,7 @@ AlertAdditionalData = _reflection.GeneratedProtocolMessageType(
     dict(
         DESCRIPTOR=_ALERTADDITIONALDATA,
         __module__="gtfs_realtime_transiter_extension_pb2"
-        # @@protoc_insertion_point(class_scope:transit_realtime.AlertAdditionalData)
+        # @@protoc_insertion_point(class_scope:gtfs_realtime_transiter_vendorized.AlertAdditionalData)
     ),
 )
 _sym_db.RegisterMessage(AlertAdditionalData)
@@ -211,13 +213,13 @@ _sym_db.RegisterMessage(AlertAdditionalData)
 _STOPTIMEUPDATEADDITIONALDATA.extensions_by_name[
     "additional_data"
 ].message_type = _STOPTIMEUPDATEADDITIONALDATA
-gtfs__realtime__pb2.TripUpdate.StopTimeUpdate.RegisterExtension(
+gtfs__realtime__transiter__vendorized__pb2.TripUpdate.StopTimeUpdate.RegisterExtension(
     _STOPTIMEUPDATEADDITIONALDATA.extensions_by_name["additional_data"]
 )
 _ALERTADDITIONALDATA.extensions_by_name[
     "additional_data"
 ].message_type = _ALERTADDITIONALDATA
-gtfs__realtime__pb2.Alert.RegisterExtension(
+gtfs__realtime__transiter__vendorized__pb2.Alert.RegisterExtension(
     _ALERTADDITIONALDATA.extensions_by_name["additional_data"]
 )
 

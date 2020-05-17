@@ -10,9 +10,9 @@ import typing
 import pytz
 
 from transiter import parse
-from .proto import gtfs_realtime_pb2 as transiter_gtfsrt__pb2
+from .proto import gtfs_realtime_transiter_vendorized_pb2 as transiter_gtfs_rt_pb2
 
-# We need to import the module as it modifies the transiter_gtfsrt_pb2 module
+# We need to import the module as it modifies the transiter_gtfs_rt_pb2 module
 # noinspection PyUnresolvedReferences
 from .proto import gtfs_realtime_transiter_extension_pb2
 
@@ -27,7 +27,7 @@ class GtfsRealtimeParser(parse.TransiterParser):
         if self.GTFS_REALTIME_PB2_MODULE is not None:
             pb2_module = self.GTFS_REALTIME_PB2_MODULE
         else:
-            pb2_module = transiter_gtfsrt__pb2
+            pb2_module = transiter_gtfs_rt_pb2
         self._gtfs_feed_message = pb2_module.FeedMessage()
         self._gtfs_feed_message.ParseFromString(content)
         self.post_process_feed_message(self._gtfs_feed_message)

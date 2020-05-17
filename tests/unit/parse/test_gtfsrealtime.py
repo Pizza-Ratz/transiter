@@ -1,16 +1,17 @@
 import datetime
-import unittest
+import itertools
 
 import pytest
 import pytz
+from google.transit import gtfs_realtime_pb2 as library_gtfs_rt_pb2
 
 from transiter import parse
 from transiter.parse import gtfsrealtime
 
-# TODO: don't use the vendorized protobuf reader for the basic tests
-# - or use both?
 # TODO: use this protobuf for special tests
-from transiter.parse.proto import gtfs_realtime_pb2 as gtfs
+from transiter.parse.proto import (
+    gtfs_realtime_transiter_vendorized_pb2 as transiter_gtfs_rt_pb2,
+)
 
 timestamp_to_datetime = gtfsrealtime._GtfsRealtimeToTransiterTransformer(
     ""
@@ -18,55 +19,6 @@ timestamp_to_datetime = gtfsrealtime._GtfsRealtimeToTransiterTransformer(
 
 RAW_CONTENT = "Some content"
 PARSED_CONTENT = "Transformed"
-
-
-class TestReadProtobufMessage(unittest.TestCase):
-    GTFS_REALTIME_VERSION = "2.0"
-    INCREMENTALITY = "FULL_DATASET"
-    INCREMENTALITY_INT = gtfs.FeedHeader.Incrementality.Value(INCREMENTALITY)
-    TIMESTAMP = 4
-    ENTITY_1_ID = "1"
-    ENTITY_2_ID = "2"
-    CONGESTION_ONE = "STOP_AND_GO"
-    CONGESTION_ONE_INT = gtfs.VehiclePosition.CongestionLevel.Value(CONGESTION_ONE)
-    CONGESTION_TWO = "CONGESTION"
-    CONGESTION_TWO_INT = gtfs.VehiclePosition.CongestionLevel.Value(CONGESTION_TWO)
-
-    def test_read_protobuf_message(self):
-        """[GTFS Realtime Util] Read protobuf message"""
-        root = gtfs.FeedMessage()
-        header = root.header
-        header.gtfs_realtime_version = self.GTFS_REALTIME_VERSION
-        header.incrementality = self.INCREMENTALITY_INT
-        header.timestamp = self.TIMESTAMP
-        entity_1 = root.entity.add()
-        entity_1.id = self.ENTITY_1_ID
-        entity_1.vehicle.congestion_level = self.CONGESTION_ONE_INT
-        entity_2 = root.entity.add()
-        entity_2.id = self.ENTITY_2_ID
-        entity_2.vehicle.congestion_level = self.CONGESTION_TWO_INT
-
-        expected_data = {
-            "header": {
-                "gtfs_realtime_version": self.GTFS_REALTIME_VERSION,
-                "incrementality": self.INCREMENTALITY,
-                "timestamp": self.TIMESTAMP,
-            },
-            "entity": [
-                {
-                    "id": self.ENTITY_1_ID,
-                    "vehicle": {"congestion_level": self.CONGESTION_ONE},
-                },
-                {
-                    "id": self.ENTITY_2_ID,
-                    "vehicle": {"congestion_level": self.CONGESTION_TWO},
-                },
-            ],
-        }
-
-        actual_data = gtfsrealtime._read_protobuf_message(root)
-
-        self.assertDictEqual(actual_data, expected_data)
 
 
 ALERT_ID = "alert_id"
@@ -82,9 +34,8 @@ STOP_ID = "stop_id"
 AGENCY_ID = "agency_id"
 
 
-@pytest.mark.parametrize(
-    "input_alert,expected_alert",
-    [
+def build_test_parse_alerts_params(gtfs):
+    return [
         [
             gtfs.Alert(cause=parse.Alert.Cause.DEMONSTRATION.value),
             parse.Alert(
@@ -185,9 +136,22 @@ AGENCY_ID = "agency_id"
             gtfs.Alert(informed_entity=[gtfs.EntitySelector(stop_id=STOP_ID)]),
             parse.Alert(id=ALERT_ID, stop_ids=[STOP_ID]),
         ],
-    ],
+    ]
+
+
+@pytest.mark.parametrize(
+    "input_alert,expected_alert,gtfs",
+    itertools.chain.from_iterable(
+        [
+            (input_alert, expected_alert, gtfs_rt_pb2)
+            for input_alert, expected_alert in build_test_parse_alerts_params(
+                gtfs_rt_pb2
+            )
+        ]
+        for gtfs_rt_pb2 in [transiter_gtfs_rt_pb2, library_gtfs_rt_pb2]
+    ),
 )
-def test_parse_alerts(input_alert, expected_alert):
+def test_parse_alerts(input_alert, expected_alert, gtfs):
     alert_message = gtfs.FeedMessage(
         header=gtfs.FeedHeader(gtfs_realtime_version="2.0"),
         entity=[gtfs.FeedEntity(id=ALERT_ID, alert=input_alert)],
@@ -203,7 +167,7 @@ def test_parse_alerts(input_alert, expected_alert):
 
 GTFS_REALTIME_VERSION = "2.0"
 INCREMENTALITY = "FULL_DATASET"
-INCREMENTALITY_INT = gtfs.FeedHeader.Incrementality.Value(INCREMENTALITY)
+INCREMENTALITY_INT = 0
 FEED_UPDATE_TIMESTAMP = 4
 TRIP_UPDATE_TIMESTAMP = 5
 STOP_ONE_ID = "Stop 1"

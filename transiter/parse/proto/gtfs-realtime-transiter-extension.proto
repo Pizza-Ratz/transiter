@@ -4,9 +4,9 @@
 //
 syntax = "proto2";
 
-import "gtfs-realtime.proto";
+import "gtfs-realtime-transiter-vendorized.proto";
 
-package transit_realtime;
+package gtfs_realtime_transiter_vendorized;
 
 message StopTimeUpdateAdditionalData {
   optional string track = 1;
