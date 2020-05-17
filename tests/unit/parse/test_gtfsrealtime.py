@@ -8,12 +8,8 @@ from google.transit import gtfs_realtime_pb2 as library_gtfs_rt_pb2
 from transiter import parse
 from transiter.parse import gtfsrealtime
 
-# TODO: use this protobuf for special tests
 from transiter.parse.proto import (
     gtfs_realtime_transiter_vendorized_pb2 as transiter_gtfs_rt_pb2,
-)
-from transiter.parse.proto import (
-    gtfs_realtime_transiter_extension_pb2 as transiter_gtfs_rt_ext_pb2,
 )
 
 timestamp_to_datetime = gtfsrealtime._GtfsRealtimeToTransiterTransformer(

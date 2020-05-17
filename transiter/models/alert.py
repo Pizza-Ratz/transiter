@@ -25,12 +25,19 @@ class Alert(Base):
     id = Column(String)
     source_pk = Column(Integer, ForeignKey("feed_update.pk"), index=True)
     system_pk = Column(Integer, ForeignKey("system.pk"), index=True)
+    # TODO: system relationship
+    # TODO: add raise if access alerts through relationship?
+    #  Or perhaps not back populate and document?
 
     Cause = parse.Alert.Cause
     Effect = parse.Alert.Effect
 
-    cause = Column(Enum(Cause, native_enum=False), nullable=False)
-    effect = Column(Enum(Effect, native_enum=False), nullable=False)
+    cause = Column(
+        Enum(Cause, native_enum=False), nullable=False, default=Cause.UNKNOWN_CAUSE
+    )
+    effect = Column(
+        Enum(Effect, native_enum=False), nullable=False, default=Effect.UNKNOWN_EFFECT
+    )
     sort_order = Column(Integer, default=-1)
     created_at = Column(TIMESTAMP(timezone=True))
     updated_at = Column(TIMESTAMP(timezone=True))
