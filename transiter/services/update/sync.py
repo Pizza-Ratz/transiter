@@ -26,6 +26,7 @@ from transiter.data import (
     routequeries,
     stopqueries,
 )
+from transiter.data import systemqueries
 from transiter.models import updatableentity
 from transiter.services.servicemap import servicemapmanager
 from transiter.services.update import fastscheduleoperations
@@ -473,7 +474,7 @@ class TripSyncer(syncer(models.Trip)):
             {
                 trip.id: trip
                 for trip in tripqueries.list_by_system_and_trip_ids(
-                    self.feed_update.feed.system.pk, missing_trip_ids
+                    self.feed_update.feed.system.id, missing_trip_ids
                 )
             }
         )
@@ -631,9 +632,7 @@ class TripSyncer(syncer(models.Trip)):
             return
         route_pk_to_route = {
             route.pk: route
-            for route in routequeries.list_all_in_system(
-                self.feed_update.feed.system.id
-            )
+            for route in routequeries.list_in_system(self.feed_update.feed.system.id)
         }
         for route_pk in changed_route_pks:
             servicemapmanager.calculate_realtime_service_map_for_route(
@@ -643,15 +642,26 @@ class TripSyncer(syncer(models.Trip)):
 
 @dataclasses.dataclass
 class _AlertLinkingHelper:
-    alert_to_ids_func: typing.Callable
-    list_entities_func: typing.Callable
+    alert_to_ids_func: typing.Callable[[parse.Alert], typing.List[str]]
+    list_entities_func: typing.Callable[[str, typing.List[str]], list]
     alert_field_name: str
 
 
 _alert_linking_helpers = [
     _AlertLinkingHelper(
+        lambda alert: alert.route_ids, routequeries.list_in_system, "routes"
+    ),
+    _AlertLinkingHelper(
+        lambda alert: alert.stop_ids, stopqueries.list_all_in_system, "stops"
+    ),
+    _AlertLinkingHelper(
+        lambda alert: alert.agency_ids,
+        systemqueries.list_agencies_in_system,
+        "agencies",
+    ),
+    _AlertLinkingHelper(
         lambda alert: alert.trip_ids, tripqueries.list_by_system_and_trip_ids, "trips"
-    )
+    ),
 ]
 
 
@@ -661,6 +671,8 @@ class AlertSyncer(syncer(models.Alert)):
         persisted_alerts, num_added, num_updated = self._merge_entities(
             list(map(models.Alert.from_parsed_alert, parsed_alerts))
         )
+        for alert in persisted_alerts:
+            alert.system_pk = self.feed_update.feed.system.pk
         for linking_helper in _alert_linking_helpers:
             all_ids = []
             for parsed_alert in parsed_alerts:
@@ -668,7 +680,7 @@ class AlertSyncer(syncer(models.Alert)):
             entity_id_to_entity = {
                 entity.id: entity
                 for entity in linking_helper.list_entities_func(
-                    self.feed_update.feed.system.pk, all_ids
+                    self.feed_update.feed.system.id, all_ids
                 )
             }
             for alert in persisted_alerts:
@@ -683,36 +695,4 @@ class AlertSyncer(syncer(models.Alert)):
                         if entity_id in entity_id_to_entity
                     ],
                 )
-
-        route_id_to_route = {
-            route.id: route
-            for route in self.feed_update.feed.system.routes  # TODO: don't get all routes
-        }
-        stop_id_to_stop = {
-            stop.id: stop
-            for stop in stopqueries.list_all_in_system(
-                self.feed_update.feed.system.id
-            )  # TODO: don't get all stops
-        }
-        agency_id_to_agency = {
-            agency.id: agency for agency in self.feed_update.feed.system.agencies
-        }
-        for alert in persisted_alerts:
-            parsed_alert = alert_id_to_parsed_alert[alert.id]
-            alert.system_pk = self.feed_update.feed.system.pk
-            alert.routes = [
-                route_id_to_route[route_id]
-                for route_id in parsed_alert.route_ids
-                if route_id in route_id_to_route
-            ]
-            alert.stops = [
-                stop_id_to_stop[stop_id]
-                for stop_id in parsed_alert.stop_ids
-                if stop_id in stop_id_to_stop
-            ]
-            alert.agencies = [
-                agency_id_to_agency[agency_id]
-                for agency_id in parsed_alert.agency_ids
-                if agency_id in agency_id_to_agency
-            ]
         return num_added, num_updated

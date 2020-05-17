@@ -13,7 +13,7 @@ def list_all_in_system(system_id) -> typing.List[views.Agency]:
     return list(
         map(
             views.Agency.from_model,
-            genericqueries.list_all_in_system(models.Agency, system_id),
+            genericqueries.list_in_system(models.Agency, system_id),
         )
     )
 

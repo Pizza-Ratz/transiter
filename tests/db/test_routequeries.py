@@ -3,11 +3,11 @@ from transiter.data import routequeries
 
 
 def test_list_all_in_system(system_1, route_1_1, route_1_2, route_2_1):
-    assert [route_1_1, route_1_2] == (routequeries.list_all_in_system(system_1.id))
+    assert [route_1_1, route_1_2] == (routequeries.list_in_system(system_1.id))
 
 
 def test_list_all_in_system__empty(system_1, route_2_1):
-    assert [] == (routequeries.list_all_in_system(system_1.id))
+    assert [] == (routequeries.list_in_system(system_1.id))
 
 
 def test_get_in_system_by_id(system_1, route_1_1):

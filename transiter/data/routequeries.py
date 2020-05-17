@@ -6,14 +6,16 @@ from transiter import models
 from transiter.data import dbconnection, genericqueries
 
 
-def list_all_in_system(system_id):
+def list_in_system(system_id, ids=None):
     """
     List all routes in a system.
 
     :param system_id: the system's ID
     :return: a list of Routes
     """
-    return genericqueries.list_all_in_system(models.Route, system_id, models.Route.id)
+    return genericqueries.list_in_system(
+        models.Route, system_id, order_by_field=models.Route.id, ids=ids
+    )
 
 
 def get_in_system_by_id(system_id, route_id) -> Optional[models.Route]:

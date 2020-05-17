@@ -19,7 +19,7 @@ def list_all_in_system(system_id) -> typing.List[views.Route]:
     if system is None:
         raise exceptions.IdNotFoundError(models.System, system_id=system_id)
     response = []
-    routes = list(routequeries.list_all_in_system(system_id))
+    routes = list(routequeries.list_in_system(system_id))
     for route in routes:
         route_response = views.Route.from_model(route)
         # TODO: add alerts
