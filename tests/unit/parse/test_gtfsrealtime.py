@@ -1,13 +1,15 @@
 import datetime
 import unittest
-from unittest import mock
 
 import pytest
 import pytz
-from google.protobuf.message import DecodeError
 
 from transiter import parse
 from transiter.parse import gtfsrealtime
+
+# TODO: don't use the vendorized protobuf reader for the basic tests
+# - or use both?
+# TODO: use this protobuf for special tests
 from transiter.parse.proto import gtfs_realtime_pb2 as gtfs
 
 timestamp_to_datetime = gtfsrealtime._GtfsRealtimeToTransiterTransformer(

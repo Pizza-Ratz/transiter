@@ -641,26 +641,78 @@ class TripSyncer(syncer(models.Trip)):
             )
 
 
+@dataclasses.dataclass
+class _AlertLinkingHelper:
+    alert_to_ids_func: typing.Callable
+    list_entities_func: typing.Callable
+    alert_field_name: str
+
+
+_alert_linking_helpers = [
+    _AlertLinkingHelper(
+        lambda alert: alert.trip_ids, tripqueries.list_by_system_and_trip_ids, "trips"
+    )
+]
+
+
 class AlertSyncer(syncer(models.Alert)):
     def sync(self, parsed_alerts):
-        # NOTE: when working on this function as part of the full alerts support,
-        # we should make it less efficient by not relying on ORM methods like
-        # models.System.routes.
+        alert_id_to_parsed_alert = {alert.id: alert for alert in parsed_alerts}
         persisted_alerts, num_added, num_updated = self._merge_entities(
             list(map(models.Alert.from_parsed_alert, parsed_alerts))
         )
+        for linking_helper in _alert_linking_helpers:
+            all_ids = []
+            for parsed_alert in parsed_alerts:
+                all_ids.extend(linking_helper.alert_to_ids_func(parsed_alert))
+            entity_id_to_entity = {
+                entity.id: entity
+                for entity in linking_helper.list_entities_func(
+                    self.feed_update.feed.system.pk, all_ids
+                )
+            }
+            for alert in persisted_alerts:
+                setattr(
+                    alert,
+                    linking_helper.alert_field_name,
+                    [
+                        entity_id_to_entity[entity_id]
+                        for entity_id in linking_helper.alert_to_ids_func(
+                            alert_id_to_parsed_alert[alert.id]
+                        )
+                        if entity_id in entity_id_to_entity
+                    ],
+                )
+
         route_id_to_route = {
-            route.id: route for route in self.feed_update.feed.system.routes
+            route.id: route
+            for route in self.feed_update.feed.system.routes  # TODO: don't get all routes
         }
-        alert_id_to_route_ids = {alert.id: alert.route_ids for alert in parsed_alerts}
-        alert_id_to_agency_ids = {alert.id: alert.agency_ids for alert in parsed_alerts}
+        stop_id_to_stop = {
+            stop.id: stop
+            for stop in stopqueries.list_all_in_system(
+                self.feed_update.feed.system.id
+            )  # TODO: don't get all stops
+        }
+        agency_id_to_agency = {
+            agency.id: agency for agency in self.feed_update.feed.system.agencies
+        }
         for alert in persisted_alerts:
+            parsed_alert = alert_id_to_parsed_alert[alert.id]
+            alert.system_pk = self.feed_update.feed.system.pk
             alert.routes = [
                 route_id_to_route[route_id]
-                for route_id in alert_id_to_route_ids.get(alert.id, [])
+                for route_id in parsed_alert.route_ids
                 if route_id in route_id_to_route
             ]
-            # NOTE: this is a temporary thing pending the creation of models.Agency
-            if len(alert_id_to_agency_ids.get(alert.id, [])) > 0:
-                alert.system_pk = self.feed_update.feed.system.pk
+            alert.stops = [
+                stop_id_to_stop[stop_id]
+                for stop_id in parsed_alert.stop_ids
+                if stop_id in stop_id_to_stop
+            ]
+            alert.agencies = [
+                agency_id_to_agency[agency_id]
+                for agency_id in parsed_alert.agency_ids
+                if agency_id in agency_id_to_agency
+            ]
         return num_added, num_updated

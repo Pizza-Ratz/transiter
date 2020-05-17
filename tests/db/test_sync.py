@@ -241,16 +241,6 @@ def test_route__agency_linking(db_session, current_update):
     assert persisted_route.agency is not None
 
 
-def test_alert__route_linking(db_session, previous_update, current_update, route_1_1):
-    alert = parse.Alert(id="alert", route_ids=[route_1_1.id])
-
-    sync.sync(current_update.pk, ParserForTesting([alert]))
-
-    persisted_alert = db_session.query(models.Alert).all()[0]
-
-    assert persisted_alert.routes == [route_1_1]
-
-
 @pytest.mark.parametrize(
     "previous,current,expected_counts",
     [
@@ -577,12 +567,40 @@ def test_parse_error(current_update):
         sync.sync(current_update.pk, BuggyParser())
 
 
-def test_alert__buggy_route(db_session, current_update):
-    alert = parse.Alert(id="my_alert", route_ids=["buggy_route_id"],)
+@pytest.mark.parametrize("entity_type", ["routes", "stops", "trips", "agencies"])
+@pytest.mark.parametrize("valid_id", [True, False])
+def test_alert__route_linking(
+    db_session,
+    current_update,
+    route_1_1,
+    stop_1_1,
+    trip_1,
+    agency_1_1,
+    entity_type,
+    valid_id,
+):
+    alert_kwargs = {}
+    entity = None
+    if entity_type == "routes":
+        alert_kwargs["route_ids"] = [route_1_1.id if valid_id else "buggy_route_id"]
+        entity = route_1_1
+    elif entity_type == "stops":
+        alert_kwargs["stop_ids"] = [stop_1_1.id if valid_id else "buggy_stop_id"]
+        entity = stop_1_1
+    elif entity_type == "trips":
+        alert_kwargs["trip_ids"] = [trip_1.id if valid_id else "buggy_trip_id"]
+        entity = trip_1
+    elif entity_type == "agencies":
+        alert_kwargs["agency_ids"] = [agency_1_1.id if valid_id else "buggy_agency_id"]
+        entity = agency_1_1
+
+    alert = parse.Alert(id="alert", **alert_kwargs)
 
     sync.sync(current_update.pk, ParserForTesting([alert]))
 
-    persisted_alerts = db_session.query(models.Alert).all()
+    persisted_alert = db_session.query(models.Alert).all()[0]
 
-    assert 1 == len(persisted_alerts)
-    assert [] == persisted_alerts[0].routes
+    if valid_id:
+        assert getattr(persisted_alert, entity_type) == [entity]
+    else:
+        assert getattr(persisted_alert, entity_type) == []
