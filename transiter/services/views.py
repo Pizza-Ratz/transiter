@@ -124,14 +124,6 @@ class AgencyLarge(View):
 
 @dataclasses.dataclass
 class Route(View):
-    # TODO: remove
-    class Status(enum.Enum):
-        NO_SERVICE = 0
-        GOOD_SERVICE = 1
-        PLANNED_SERVICE_CHANGE = 2
-        UNPLANNED_SERVICE_CHANGE = 3
-        DELAYS = 4
-
     id: str
     color: str
     _system_id: str
@@ -153,14 +145,13 @@ class RouteLarge(View):
     url: str
     type: models.Route.Type
     _system_id: str
-    status: Route.Status
     periodicity: float
     agency: Agency = None
     alerts: list = dataclasses.field(default_factory=list)
     service_maps: list = dataclasses.field(default_factory=list)
 
     @classmethod
-    def from_model(cls, route: models.Route, status, periodicity):
+    def from_model(cls, route: models.Route, periodicity):
         return cls(
             id=route.id,
             color=route.color,
@@ -170,7 +161,6 @@ class RouteLarge(View):
             url=route.url,
             type=route.type,
             _system_id=route.system.id,
-            status=status,
             periodicity=periodicity,
         )
 
@@ -385,15 +375,25 @@ class AlertLarge(View):  # TODO: rename Alert
     id: str
     cause: models.Alert.Cause
     effect: models.Alert.Effect
-    started_at: datetime.datetime = None
-    ends_at: datetime.datetime = None  # TODO: populate using the AlertActivePeriod
+    active_period: "AlertActivePeriod"
     messages: typing.List[AlertMessage] = dataclasses.field(default_factory=list)
 
     @classmethod
-    def from_model(cls, alert: models.Alert):
+    def from_models(cls, active_period: models.AlertActivePeriod, alert: models.Alert):
         return cls(
             id=alert.id,
             cause=alert.cause,
             effect=alert.effect,
+            active_period=AlertActivePeriod.from_model(active_period),
             messages=list(map(AlertMessage.from_model, alert.messages)),
         )
+
+
+@dataclasses.dataclass
+class AlertActivePeriod(View):
+    starts_at: datetime.datetime
+    ends_at: datetime.datetime
+
+    @classmethod
+    def from_model(cls, active_period: models.AlertActivePeriod):
+        return cls(starts_at=active_period.starts_at, ends_at=active_period.ends_at)

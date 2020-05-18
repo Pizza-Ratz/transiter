@@ -1,7 +1,7 @@
 import collections
 import datetime
 import typing
-
+from sqlalchemy import sql
 from transiter import models
 from transiter.data import dbconnection
 
@@ -20,8 +20,18 @@ def get_route_pk_to_active_alerts(
         dbconnection.get_session()
         .query(models.Route.pk, models.AlertActivePeriod, models.Alert)
         .filter(models.AlertActivePeriod.alert_pk == models.Alert.pk)
-        .filter(models.AlertActivePeriod.starts_at <= current_time)
-        .filter(models.AlertActivePeriod.ends_at >= current_time)
+        .filter(
+            sql.or_(
+                models.AlertActivePeriod.starts_at <= current_time,
+                models.AlertActivePeriod.starts_at.is_(None),
+            )
+        )
+        .filter(
+            sql.or_(
+                models.AlertActivePeriod.ends_at >= current_time,
+                models.AlertActivePeriod.ends_at.is_(None),
+            )
+        )
         .order_by(models.AlertActivePeriod.starts_at)
         .join(models.Alert.routes)
         .filter(models.Route.pk.in_(route_pks))

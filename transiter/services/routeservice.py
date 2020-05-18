@@ -41,7 +41,6 @@ def get_in_system_by_id(system_id, route_id) -> views.RouteLarge:
     Get data for a specific route in a specific system.
     """
     route = routequeries.get_in_system_by_id(system_id, route_id)
-    # TODO get alerts separately using active time
     if route is None:
         raise exceptions.IdNotFoundError(
             models.Route, system_id=system_id, route_id=route_id
@@ -49,15 +48,15 @@ def get_in_system_by_id(system_id, route_id) -> views.RouteLarge:
     periodicity = routequeries.calculate_periodicity(route.pk)
     if periodicity is not None:
         periodicity = int(periodicity / 6) / 10
-    result = views.RouteLarge.from_model(
-        route, views.Route.Status.GOOD_SERVICE, periodicity
-    )
+    result = views.RouteLarge.from_model(route, periodicity)
     if route.agency is not None:
         result.agency = views.Agency.from_model(route.agency)
-    result.alerts = list(map(views.AlertLarge.from_model, route.alerts))
+    active_periods_and_alerts = alertqueries.get_route_pk_to_active_alerts([route.pk])[
+        route.pk
+    ]
+    result.alerts = list(
+        views.AlertLarge.from_models(active_period, alert)
+        for active_period, alert in active_periods_and_alerts
+    )
     result.service_maps = servicemapmanager.build_route_service_maps_response(route.pk)
     return result
-
-
-# TODO: destroy
-Status = views.Route.Status

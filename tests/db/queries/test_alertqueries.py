@@ -15,11 +15,15 @@ TIME_3 = datetime.datetime.utcfromtimestamp(3000)
 @pytest.mark.parametrize(
     "alert_start,alert_end,current_time,expect_result",
     [
+        [None, TIME_3, TIME_2, True],
+        [TIME_1, None, TIME_2, True],
         [TIME_1, TIME_3, TIME_1, True],
         [TIME_1, TIME_3, TIME_2, True],
         [TIME_1, TIME_3, TIME_3, True],
         [TIME_1, TIME_2, TIME_3, False],
         [TIME_2, TIME_3, TIME_1, False],
+        [TIME_2, None, TIME_1, False],
+        [None, TIME_2, TIME_3, False],
     ],
 )
 def test_list_alerts__routes(
