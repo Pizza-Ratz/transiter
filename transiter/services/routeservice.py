@@ -5,7 +5,7 @@ import typing
 
 from transiter import exceptions, models
 from transiter.data import dbconnection, systemqueries, routequeries
-from transiter.models import Alert
+from transiter.data.queries import alertqueries
 from transiter.services import views
 from transiter.services.servicemap import servicemapmanager
 
@@ -20,10 +20,17 @@ def list_all_in_system(system_id) -> typing.List[views.Route]:
         raise exceptions.IdNotFoundError(models.System, system_id=system_id)
     response = []
     routes = list(routequeries.list_in_system(system_id))
+    route_pk_to_active_alert_tuples = alertqueries.get_route_pk_to_active_alerts(
+        route.pk for route in routes
+    )
     for route in routes:
         route_response = views.Route.from_model(route)
-        # TODO: add alerts
-        route_response.status = views.Route.Status.GOOD_SERVICE
+        route_response.alerts = list(
+            map(
+                views.AlertSmall.from_model,
+                (alert for _, alert in route_pk_to_active_alert_tuples[route.pk]),
+            )
+        )
         response.append(route_response)
     return response
 
@@ -52,4 +59,5 @@ def get_in_system_by_id(system_id, route_id) -> views.RouteLarge:
     return result
 
 
+# TODO: destroy
 Status = views.Route.Status

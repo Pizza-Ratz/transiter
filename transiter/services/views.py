@@ -135,7 +135,7 @@ class Route(View):
     id: str
     color: str
     _system_id: str
-    status: Status = NULL
+    alerts: typing.List["AlertSmall"] = NULL
 
     @classmethod
     def from_model(cls, route: models.Route):
@@ -367,6 +367,17 @@ class AlertMessage(View):
             url=alert_message.url,
             language=alert_message.language,
         )
+
+
+@dataclasses.dataclass
+class AlertSmall(View):
+    id: str
+    cause: models.Alert.Cause
+    effect: models.Alert.Effect
+
+    @classmethod
+    def from_model(cls, alert: models.Alert):
+        return cls(id=alert.id, cause=alert.cause, effect=alert.effect)
 
 
 @dataclasses.dataclass

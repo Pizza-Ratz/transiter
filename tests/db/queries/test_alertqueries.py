@@ -9,6 +9,8 @@ TIME_1 = datetime.datetime.utcfromtimestamp(1000)
 TIME_2 = datetime.datetime.utcfromtimestamp(2000)
 TIME_3 = datetime.datetime.utcfromtimestamp(3000)
 
+# TODO: empty input test
+
 
 @pytest.mark.parametrize(
     "alert_start,alert_end,current_time,expect_result",
@@ -51,11 +53,33 @@ def test_list_alerts__routes(
     )
     alert_2.routes = [route_1_2]
 
-    result = alertqueries.list_alerts(
+    result = alertqueries.get_route_pk_to_active_alerts(
         route_pks=[route_1_1.pk], current_time=current_time
     )
 
     if expect_result:
-        assert [alert] == [alert for _, alert in result]
+        assert {route_1_1.pk: [(alert.active_periods[0], alert)]} == result
     else:
-        assert [] == result
+        assert {route_1_1.pk: []} == result
+
+
+def test_list_alerts__de_duplicate_active_periods(
+    add_model, system_1, route_1_1,
+):
+    alert = add_model(
+        models.Alert(
+            id=ALERT_ID_1,
+            system_pk=system_1.pk,
+            active_periods=[
+                models.AlertActivePeriod(starts_at=TIME_1, ends_at=TIME_3),
+                models.AlertActivePeriod(starts_at=TIME_1, ends_at=TIME_3),
+            ],
+        )
+    )
+    alert.routes = [route_1_1]
+
+    result = alertqueries.get_route_pk_to_active_alerts(
+        route_pks=[route_1_1.pk], current_time=TIME_2
+    )
+
+    assert [alert] == [alert for _, alert in result[route_1_1.pk]]
