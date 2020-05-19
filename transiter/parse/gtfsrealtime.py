@@ -10,11 +10,7 @@ import typing
 import pytz
 
 from transiter import parse
-from .proto import gtfs_realtime_transiter_vendorized_pb2 as transiter_gtfs_rt_pb2
-
-# We need to import the module as it modifies the transiter_gtfs_rt_pb2 module
-# noinspection PyUnresolvedReferences
-from .proto import gtfs_realtime_transiter_extension_pb2
+from . import transiter_gtfs_rt_pb2
 
 
 class GtfsRealtimeParser(parse.TransiterParser):

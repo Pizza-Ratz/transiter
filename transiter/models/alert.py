@@ -25,9 +25,6 @@ class Alert(Base):
     id = Column(String)
     source_pk = Column(Integer, ForeignKey("feed_update.pk"), index=True)
     system_pk = Column(Integer, ForeignKey("system.pk"), index=True)
-    # TODO: system relationship
-    # TODO: add raise if access alerts through relationship?
-    #  Or perhaps not back populate and document?
 
     Cause = parse.Alert.Cause
     Effect = parse.Alert.Effect
@@ -48,12 +45,13 @@ class Alert(Base):
     active_periods: list = relationship(
         "AlertActivePeriod", back_populates="alert", cascade="all, delete-orphan"
     )
+    system = relationship("System", back_populates="alerts", cascade="none")
     source = relationship("FeedUpdate", cascade="none")
     agencies = relationship(
         "Agency", secondary="alert_agency", back_populates="alerts", cascade="none",
     )
     routes = relationship(
-        "Route", secondary="alert_route", cascade="none",
+        "Route", secondary="alert_route", back_populates="alerts", cascade="none",
     )
     stops = relationship(
         "Stop", secondary="alert_stop", back_populates="alerts", cascade="none",

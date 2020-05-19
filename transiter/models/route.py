@@ -40,6 +40,9 @@ class Route(Base):
         primaryjoin="ServiceMap.route_pk==Route.pk",
         cascade="all, delete-orphan",
     )
+    alerts = relationship(
+        "Alert", secondary="alert_route", back_populates="routes", cascade="all"
+    )
 
     __table_args__ = (UniqueConstraint("system_pk", "id"),)
 

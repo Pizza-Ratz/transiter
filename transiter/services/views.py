@@ -371,7 +371,7 @@ class AlertSmall(View):
 
 
 @dataclasses.dataclass
-class AlertLarge(View):  # TODO: rename Alert
+class AlertLarge(View):
     id: str
     cause: models.Alert.Cause
     effect: models.Alert.Effect
