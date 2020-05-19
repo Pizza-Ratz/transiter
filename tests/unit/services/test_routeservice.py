@@ -57,6 +57,21 @@ def alert_1_large_view():
     )
 
 
+@pytest.fixture
+def system_1_model():
+    return models.System(id=SYSTEM_ID)
+
+
+@pytest.fixture
+def route_1_model(system_1_model):
+    return models.Route(system=system_1_model, id=ROUTE_ONE_ID, pk=ROUTE_ONE_PK)
+
+
+@pytest.fixture
+def route_2_model(system_1_model):
+    return models.Route(system=system_1_model, id=ROUTE_TWO_ID, pk=ROUTE_TWO_PK)
+
+
 def test_list_all_in_system__system_not_found(monkeypatch):
     monkeypatch.setattr(systemqueries, "get_by_id", lambda *args, **kwargs: None)
 
@@ -66,15 +81,21 @@ def test_list_all_in_system__system_not_found(monkeypatch):
 
 @pytest.mark.parametrize("return_alerts", [True, False])
 def test_list_all_in_system(
-    monkeypatch, alert_1_model, alert_1_small_view, return_alerts
+    monkeypatch,
+    system_1_model,
+    route_1_model,
+    route_2_model,
+    alert_1_model,
+    alert_1_small_view,
+    return_alerts,
 ):
-    system = models.System(id=SYSTEM_ID)
-    route_one = models.Route(system=system, id=ROUTE_ONE_ID, pk=ROUTE_ONE_PK)
-    route_two = models.Route(system=system, id=ROUTE_TWO_ID, pk=ROUTE_TWO_PK)
-
-    monkeypatch.setattr(systemqueries, "get_by_id", lambda *args, **kwargs: system)
     monkeypatch.setattr(
-        routequeries, "list_in_system", lambda *args, **kwargs: [route_one, route_two]
+        systemqueries, "get_by_id", lambda *args, **kwargs: system_1_model
+    )
+    monkeypatch.setattr(
+        routequeries,
+        "list_in_system",
+        lambda *args, **kwargs: [route_1_model, route_2_model],
     )
     monkeypatch.setattr(
         alertqueries,
