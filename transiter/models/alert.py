@@ -53,7 +53,7 @@ class Alert(Base):
         "Agency", secondary="alert_agency", back_populates="alerts", cascade="none",
     )
     routes = relationship(
-        "Route", secondary="alert_route", back_populates="alerts", cascade="none",
+        "Route", secondary="alert_route", cascade="none",
     )
     stops = relationship(
         "Stop", secondary="alert_stop", back_populates="alerts", cascade="none",

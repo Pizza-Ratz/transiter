@@ -18,7 +18,7 @@ class Agency:
 
 @dataclass
 class Route:
-    class Type(enum.Enum):  # TODO: is this exhaustive?
+    class Type(enum.Enum):
         LIGHT_RAIL = 0
         SUBWAY = 1
         RAIL = 2
@@ -27,6 +27,8 @@ class Route:
         CABLE_CAR = 5
         GONDOLA = 6
         FUNICULAR = 7
+        TROLLEYBUS = 11
+        MONORAIL = 12
 
     id: str
     type: Type
