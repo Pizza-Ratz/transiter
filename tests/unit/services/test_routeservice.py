@@ -64,12 +64,49 @@ def system_1_model():
 
 @pytest.fixture
 def route_1_model(system_1_model):
-    return models.Route(system=system_1_model, id=ROUTE_ONE_ID, pk=ROUTE_ONE_PK)
+    return models.Route(
+        system=system_1_model,
+        id=ROUTE_ONE_ID,
+        color="route_1_color",
+        short_name="route_1_short_name",
+        long_name="route_1_long_name",
+        description="route_1_description",
+        url="route_1_url",
+        type=models.Route.Type.FUNICULAR,
+        pk=ROUTE_ONE_PK,
+    )
+
+
+@pytest.fixture
+def route_1_small_view():
+    return views.Route(id=ROUTE_ONE_ID, color="route_1_color", _system_id=SYSTEM_ID)
+
+
+@pytest.fixture
+def route_1_large_view():
+    return views.RouteLarge(
+        id=ROUTE_ONE_ID,
+        periodicity=0,
+        color="route_1_color",
+        short_name="route_1_short_name",
+        long_name="route_1_long_name",
+        description="route_1_description",
+        url="route_1_url",
+        type=models.Route.Type.FUNICULAR,
+        _system_id=SYSTEM_ID,
+    )
 
 
 @pytest.fixture
 def route_2_model(system_1_model):
-    return models.Route(system=system_1_model, id=ROUTE_TWO_ID, pk=ROUTE_TWO_PK)
+    return models.Route(
+        system=system_1_model, id=ROUTE_TWO_ID, color="route_2_color", pk=ROUTE_TWO_PK
+    )
+
+
+@pytest.fixture
+def route_2_small_view():
+    return views.Route(id=ROUTE_TWO_ID, color="route_2_color", _system_id=SYSTEM_ID)
 
 
 def test_list_all_in_system__system_not_found(monkeypatch):
@@ -84,6 +121,8 @@ def test_list_all_in_system(
     monkeypatch,
     system_1_model,
     route_1_model,
+    route_1_small_view,
+    route_2_small_view,
     route_2_model,
     alert_1_model,
     alert_1_small_view,
@@ -106,10 +145,7 @@ def test_list_all_in_system(
         },
     )
 
-    expected = [
-        views.Route(id=ROUTE_ONE_ID, color=None, _system_id=SYSTEM_ID),
-        views.Route(id=ROUTE_TWO_ID, color=None, _system_id=SYSTEM_ID),
-    ]
+    expected = [route_1_small_view, route_2_small_view]
     if return_alerts:
         expected[0].alerts = [alert_1_small_view]
         expected[1].alerts = []
@@ -130,12 +166,16 @@ def test_get_in_system_by_id__route_not_found(monkeypatch):
 
 @pytest.mark.parametrize("return_alerts", [True, False])
 def test_get_in_system_by_id(
-    monkeypatch, alert_1_large_view, alert_1_model, return_alerts
+    monkeypatch,
+    route_1_model,
+    route_1_large_view,
+    alert_1_large_view,
+    alert_1_model,
+    return_alerts,
 ):
-    system = models.System(id=SYSTEM_ID)
-    route_one = models.Route(system=system, id=ROUTE_ONE_ID, pk=ROUTE_ONE_PK)
-
-    monkeypatch.setattr(routequeries, "get_in_system_by_id", lambda *args: route_one)
+    monkeypatch.setattr(
+        routequeries, "get_in_system_by_id", lambda *args: route_1_model
+    )
     monkeypatch.setattr(
         routequeries, "calculate_periodicity", lambda *args: RAW_FREQUENCY
     )
@@ -150,18 +190,8 @@ def test_get_in_system_by_id(
         servicemapmanager, "build_route_service_maps_response", lambda *args: []
     )
 
-    expected = views.RouteLarge(
-        id=ROUTE_ONE_ID,
-        periodicity=int(RAW_FREQUENCY / 6) / 10,
-        color=None,
-        short_name=None,
-        long_name=None,
-        description=None,
-        url=None,
-        type=None,
-        _system_id=SYSTEM_ID,
-        service_maps=[],
-    )
+    expected = route_1_large_view
+    route_1_large_view.periodicity = int(RAW_FREQUENCY / 6) / 10
     if return_alerts:
         expected.alerts = [alert_1_large_view]
 
