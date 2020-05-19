@@ -23,7 +23,7 @@ def test_list_alerts__empty_list(add_model, system_1):
         route_pks=[], current_time=TIME_2
     )
 
-    assert [] == result
+    assert {} == result
 
 
 @pytest.mark.parametrize(
