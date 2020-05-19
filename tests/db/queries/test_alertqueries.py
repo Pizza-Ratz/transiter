@@ -2,6 +2,7 @@ from transiter import models
 from transiter.data.queries import alertqueries
 import datetime
 import pytest
+import typing
 
 ALERT_ID_1 = "1"
 ALERT_ID_2 = "2"
@@ -10,7 +11,16 @@ TIME_2 = datetime.datetime.utcfromtimestamp(2000)
 TIME_3 = datetime.datetime.utcfromtimestamp(3000)
 
 
-def test_list_alerts__empty_list(add_model, system_1):
+@pytest.mark.parametrize(
+    "model_type,query_function",
+    [
+        [models.Route, alertqueries.get_route_pk_to_active_alerts],
+        [models.Stop, alertqueries.get_stop_pk_to_active_alerts],
+    ],
+)
+def test_list_alerts__empty_list(
+    add_model, system_1, model_type, query_function: typing.Callable
+):
     alert = add_model(
         models.Alert(
             id=ALERT_ID_1,
@@ -19,13 +29,19 @@ def test_list_alerts__empty_list(add_model, system_1):
         )
     )
 
-    result = alertqueries.get_route_pk_to_active_alerts(
-        route_pks=[], current_time=TIME_2
-    )
+    result = query_function([], current_time=TIME_2)
 
     assert {} == result
 
 
+@pytest.mark.parametrize("load_messages", [True, False])
+@pytest.mark.parametrize(
+    "model_type,query_function",
+    [
+        [models.Route, alertqueries.get_route_pk_to_active_alerts],
+        [models.Stop, alertqueries.get_stop_pk_to_active_alerts],
+    ],
+)
 @pytest.mark.parametrize(
     "alert_start,alert_end,current_time,expect_result",
     [
@@ -40,15 +56,20 @@ def test_list_alerts__empty_list(add_model, system_1):
         [None, TIME_2, TIME_3, False],
     ],
 )
-def test_list_alerts__routes(
+def test_list_alerts__base(
     add_model,
     system_1,
     route_1_1,
     route_1_2,
+    stop_1_1,
+    stop_1_2,
     alert_start,
     alert_end,
     current_time,
     expect_result,
+    model_type,
+    query_function: typing.Callable,
+    load_messages,
 ):
     alert = add_model(
         models.Alert(
@@ -59,7 +80,6 @@ def test_list_alerts__routes(
             ],
         )
     )
-    alert.routes = [route_1_1]
     alert_2 = add_model(
         models.Alert(
             id=ALERT_ID_2,
@@ -69,20 +89,41 @@ def test_list_alerts__routes(
             ],
         )
     )
-    alert_2.routes = [route_1_2]
+    if model_type == models.Route:
+        pk = route_1_1.pk
+        alert.routes = [route_1_1]
+        alert_2.routes = [route_1_2]
+    elif model_type == models.Stop:
+        pk = stop_1_1.pk
+        alert.stops = [stop_1_1]
+        alert_2.stops = [stop_1_2]
+    else:
+        assert False
 
-    result = alertqueries.get_route_pk_to_active_alerts(
-        route_pks=[route_1_1.pk], current_time=current_time
+    result = query_function(
+        [pk], current_time=current_time, load_messages=load_messages
     )
 
     if expect_result:
-        assert {route_1_1.pk: [(alert.active_periods[0], alert)]} == result
+        assert {pk: [(alert.active_periods[0], alert)]} == result
     else:
-        assert {route_1_1.pk: []} == result
+        assert {pk: []} == result
 
 
+@pytest.mark.parametrize(
+    "model_type,query_function",
+    [
+        [models.Route, alertqueries.get_route_pk_to_active_alerts],
+        [models.Stop, alertqueries.get_stop_pk_to_active_alerts],
+    ],
+)
 def test_list_alerts__de_duplicate_active_periods(
-    add_model, system_1, route_1_1,
+    add_model,
+    system_1,
+    route_1_1,
+    stop_1_1,
+    model_type,
+    query_function: typing.Callable,
 ):
     alert = add_model(
         models.Alert(
@@ -94,10 +135,15 @@ def test_list_alerts__de_duplicate_active_periods(
             ],
         )
     )
-    alert.routes = [route_1_1]
+    if model_type == models.Route:
+        pk = route_1_1.pk
+        alert.routes = [route_1_1]
+    elif model_type == models.Stop:
+        pk = stop_1_1.pk
+        alert.stops = [stop_1_1]
+    else:
+        assert False
 
-    result = alertqueries.get_route_pk_to_active_alerts(
-        route_pks=[route_1_1.pk], current_time=TIME_2
-    )
+    result = query_function([pk], current_time=TIME_2)
 
-    assert [alert] == [alert for _, alert in result[route_1_1.pk]]
+    assert [alert] == [alert for _, alert in result[pk]]
