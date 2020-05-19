@@ -26,6 +26,7 @@ def list_all_in_system(system_id) -> typing.List[views.Stop]:
     if system is None:
         raise exceptions.IdNotFoundError(models.System, system_id=system_id)
 
+    # TODO: add alerts
     return list(map(views.Stop.from_model, stopqueries.list_all_in_system(system_id)))
 
 

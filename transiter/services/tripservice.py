@@ -27,6 +27,7 @@ def list_all_in_route(system_id, route_id) -> typing.List[views.Trip]:
         if last_stop is not None:
             trip_response.last_stop = views.Stop.from_model(last_stop)
         response.append(trip_response)
+    # TODO: add alerts
     return response
 
 

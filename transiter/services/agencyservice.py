@@ -10,6 +10,7 @@ def list_all_in_system(system_id) -> typing.List[views.Agency]:
     system = systemqueries.get_by_id(system_id, only_return_active=True)
     if system is None:
         raise exceptions.IdNotFoundError(models.System, system_id=system_id)
+    # TODO: add alerts
     return list(
         map(
             views.Agency.from_model,
