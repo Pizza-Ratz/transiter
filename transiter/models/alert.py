@@ -32,20 +32,20 @@ class Alert(Base):
     Cause = parse.Alert.Cause
     Effect = parse.Alert.Effect
 
-    cause = Column(
+    cause: Cause = Column(
         Enum(Cause, native_enum=False), nullable=False, default=Cause.UNKNOWN_CAUSE
     )
-    effect = Column(
+    effect: Effect = Column(
         Enum(Effect, native_enum=False), nullable=False, default=Effect.UNKNOWN_EFFECT
     )
     sort_order = Column(Integer, default=-1)
     created_at = Column(TIMESTAMP(timezone=True))
     updated_at = Column(TIMESTAMP(timezone=True))
 
-    messages = relationship(
+    messages: list = relationship(
         "AlertMessage", back_populates="alert", cascade="all, delete-orphan"
     )
-    active_periods = relationship(
+    active_periods: list = relationship(
         "AlertActivePeriod", back_populates="alert", cascade="all, delete-orphan"
     )
     source = relationship("FeedUpdate", cascade="none")

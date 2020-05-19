@@ -64,35 +64,38 @@ def test_list_all_in_system__system_not_found(monkeypatch):
         routeservice.list_all_in_system(SYSTEM_ID)
 
 
-def test_list_all_in_system(monkeypatch, alert_1_model, alert_1_small_view):
+@pytest.mark.parametrize("return_alerts", [True, False])
+def test_list_all_in_system(
+    monkeypatch, alert_1_model, alert_1_small_view, return_alerts
+):
     system = models.System(id=SYSTEM_ID)
     route_one = models.Route(system=system, id=ROUTE_ONE_ID, pk=ROUTE_ONE_PK)
     route_two = models.Route(system=system, id=ROUTE_TWO_ID, pk=ROUTE_TWO_PK)
 
     monkeypatch.setattr(systemqueries, "get_by_id", lambda *args, **kwargs: system)
     monkeypatch.setattr(
-        routequeries, "list_in_system", lambda *args: [route_one, route_two]
+        routequeries, "list_in_system", lambda *args, **kwargs: [route_one, route_two]
     )
     monkeypatch.setattr(
         alertqueries,
         "get_route_pk_to_active_alerts",
-        lambda *args: {
+        lambda *args, **kwargs: {
             ROUTE_ONE_PK: [(alert_1_model.active_periods[0], alert_1_model)],
             ROUTE_TWO_PK: [],
         },
     )
 
     expected = [
-        views.Route(
-            id=ROUTE_ONE_ID,
-            color=None,
-            _system_id=SYSTEM_ID,
-            alerts=[alert_1_small_view],
-        ),
-        views.Route(id=ROUTE_TWO_ID, color=None, _system_id=SYSTEM_ID, alerts=[]),
+        views.Route(id=ROUTE_ONE_ID, color=None, _system_id=SYSTEM_ID),
+        views.Route(id=ROUTE_TWO_ID, color=None, _system_id=SYSTEM_ID),
     ]
+    if return_alerts:
+        expected[0].alerts = [alert_1_small_view]
+        expected[1].alerts = []
 
-    actual = routeservice.list_all_in_system(SYSTEM_ID)
+    actual = routeservice.list_all_in_system(
+        SYSTEM_ID, None if return_alerts else views.AlertDetail.NONE
+    )
 
     assert actual == expected
 
@@ -104,7 +107,10 @@ def test_get_in_system_by_id__route_not_found(monkeypatch):
         routeservice.get_in_system_by_id(SYSTEM_ID, ROUTE_ONE_ID)
 
 
-def test_get_in_system_by_id(monkeypatch, alert_1_large_view, alert_1_model):
+@pytest.mark.parametrize("return_alerts", [True, False])
+def test_get_in_system_by_id(
+    monkeypatch, alert_1_large_view, alert_1_model, return_alerts
+):
     system = models.System(id=SYSTEM_ID)
     route_one = models.Route(system=system, id=ROUTE_ONE_ID, pk=ROUTE_ONE_PK)
 
@@ -115,7 +121,7 @@ def test_get_in_system_by_id(monkeypatch, alert_1_large_view, alert_1_model):
     monkeypatch.setattr(
         alertqueries,
         "get_route_pk_to_active_alerts",
-        lambda *args: {
+        lambda *args, **kwargs: {
             ROUTE_ONE_PK: [(alert_1_model.active_periods[0], alert_1_model)]
         },
     )
@@ -133,10 +139,13 @@ def test_get_in_system_by_id(monkeypatch, alert_1_large_view, alert_1_model):
         url=None,
         type=None,
         _system_id=SYSTEM_ID,
-        alerts=[alert_1_large_view],
         service_maps=[],
     )
+    if return_alerts:
+        expected.alerts = [alert_1_large_view]
 
-    actual = routeservice.get_in_system_by_id(SYSTEM_ID, ROUTE_ONE_ID)
+    actual = routeservice.get_in_system_by_id(
+        SYSTEM_ID, ROUTE_ONE_ID, None if return_alerts else views.AlertDetail.NONE
+    )
 
     assert expected == actual

@@ -147,7 +147,7 @@ class RouteLarge(View):
     _system_id: str
     periodicity: float
     agency: Agency = None
-    alerts: list = dataclasses.field(default_factory=list)
+    alerts: list = NULL
     service_maps: list = dataclasses.field(default_factory=list)
 
     @classmethod
@@ -366,7 +366,7 @@ class AlertSmall(View):
     effect: models.Alert.Effect
 
     @classmethod
-    def from_model(cls, alert: models.Alert):
+    def from_models(cls, active_period, alert: models.Alert):
         return cls(id=alert.id, cause=alert.cause, effect=alert.effect)
 
 
@@ -397,3 +397,15 @@ class AlertActivePeriod(View):
     @classmethod
     def from_model(cls, active_period: models.AlertActivePeriod):
         return cls(starts_at=active_period.starts_at, ends_at=active_period.ends_at)
+
+
+class AlertDetail(enum.Enum):
+    @dataclasses.dataclass
+    class _Value:
+        clazz: typing.Optional[typing.Type[View]]
+        need_messages: bool
+
+    NONE = _Value(None, False)
+    CAUSE_AND_EFFECT = _Value(AlertSmall, False)
+    MESSAGES = _Value(AlertLarge, True)
+    ALL = _Value(AlertLarge, True)
