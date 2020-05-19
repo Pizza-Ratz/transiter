@@ -9,7 +9,21 @@ TIME_1 = datetime.datetime.utcfromtimestamp(1000)
 TIME_2 = datetime.datetime.utcfromtimestamp(2000)
 TIME_3 = datetime.datetime.utcfromtimestamp(3000)
 
-# TODO: empty input test
+
+def test_list_alerts__empty_list(add_model, system_1):
+    alert = add_model(
+        models.Alert(
+            id=ALERT_ID_1,
+            system_pk=system_1.pk,
+            active_periods=[models.AlertActivePeriod(starts_at=TIME_1, ends_at=TIME_3)],
+        )
+    )
+
+    result = alertqueries.get_route_pk_to_active_alerts(
+        route_pks=[], current_time=TIME_2
+    )
+
+    assert [] == result
 
 
 @pytest.mark.parametrize(
