@@ -27,7 +27,7 @@ def get_in_system_by_id(system_id, agency_id) -> views.AgencyLarge:
             models.Route, system_id=system_id, route_id=agency_id
         )
     response = views.AgencyLarge.from_model(agency)
-    # TODO
+    # TODO add alerts
     # response.alerts = list(map(views.AlertLarge.from_model, agency.alerts))
     response.routes = list(map(views.Route.from_model, agency.routes))
     return response

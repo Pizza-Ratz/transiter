@@ -1,6 +1,6 @@
 import datetime
 import time
-
+import pytest
 import requests
 from google.transit import gtfs_realtime_pb2 as gtfs
 
@@ -8,9 +8,37 @@ ONE_DAY_IN_SECONDS = 60 * 60 * 24
 TIME_1 = datetime.datetime.utcfromtimestamp(time.time() - ONE_DAY_IN_SECONDS)
 TIME_2 = datetime.datetime.utcfromtimestamp(time.time() + ONE_DAY_IN_SECONDS)
 
+ALERT_SMALL_JSON = [
+    {"id": "alert_id", "cause": "STRIKE", "effect": "MODIFIED_SERVICE",}
+]
 
-def test_alerts(install_system_1, transiter_host, source_server):
-    __, realtime_feed_url = install_system_1("test_alerts")
+ALERT_LARGE_JSON = [
+    dict(
+        **ALERT_SMALL_JSON[0],
+        **{
+            "active_period": {
+                "starts_at": int(TIME_1.timestamp()),
+                "ends_at": int(TIME_2.timestamp()),
+            },
+            "messages": [
+                {
+                    "header": "Advertencia",
+                    "description": "",
+                    "url": None,
+                    "language": "es",
+                }
+            ],
+        }
+    )
+]
+# TODO: 3 more end to end tests: stops, agencies and trips
+
+
+def setup_test(
+    system_id, informed_entity, install_system_1, transiter_host, source_server
+):
+
+    __, realtime_feed_url = install_system_1(system_id)
 
     message = gtfs.FeedMessage(
         header=gtfs.FeedHeader(gtfs_realtime_version="2.0", timestamp=int(time.time())),
@@ -30,7 +58,7 @@ def test_alerts(install_system_1, transiter_host, source_server):
                             )
                         ],
                     ),
-                    informed_entity=[gtfs.EntitySelector(route_id="A")],
+                    informed_entity=[informed_entity],
                     cause=gtfs.Alert.Cause.STRIKE,
                     effect=gtfs.Alert.Effect.MODIFIED_SERVICE,
                 ),
@@ -40,27 +68,66 @@ def test_alerts(install_system_1, transiter_host, source_server):
 
     source_server.put(realtime_feed_url, message.SerializeToString())
     requests.post(
-        transiter_host + "/systems/test_alerts/feeds/GtfsRealtimeFeed?sync=true"
+        "{}/systems/{}/feeds/GtfsRealtimeFeed?sync=true".format(
+            transiter_host, system_id
+        )
     )
 
-    actual_data = requests.get(transiter_host + "/systems/test_alerts/routes/A").json()
 
-    assert actual_data["alerts"] == [
-        {
-            "id": "alert_id",
-            "cause": "STRIKE",
-            "effect": "MODIFIED_SERVICE",
-            "active_period": {
-                "starts_at": int(TIME_1.timestamp()),
-                "ends_at": int(TIME_2.timestamp()),
-            },
-            "messages": [
-                {
-                    "header": "Advertencia",
-                    "description": "",
-                    "url": None,
-                    "language": "es",
-                }
-            ],
-        }
-    ]
+@pytest.mark.parametrize(
+    "path,entity_id,entity_selector,expected_json",
+    [["routes", "A", gtfs.EntitySelector(route_id="A"), ALERT_SMALL_JSON]],
+)
+def test_alerts_list_entities(
+    install_system_1,
+    transiter_host,
+    source_server,
+    path,
+    entity_id,
+    entity_selector,
+    expected_json,
+):
+    system_id = "test_alerts__get_entity_" + str(hash(path))
+    setup_test(
+        system_id=system_id,
+        informed_entity=entity_selector,
+        install_system_1=install_system_1,
+        transiter_host=transiter_host,
+        source_server=source_server,
+    )
+
+    actual_data = requests.get(
+        "{}/systems/{}/{}".format(transiter_host, system_id, path)
+    ).json()
+
+    entity_id_to_response = {response["id"]: response for response in actual_data}
+
+    assert expected_json == entity_id_to_response[entity_id]["alerts"]
+
+
+@pytest.mark.parametrize(
+    "path,entity_selector,expected_json",
+    [["routes/A", gtfs.EntitySelector(route_id="A"), ALERT_LARGE_JSON]],
+)
+def test_alerts__get_entity(
+    install_system_1,
+    transiter_host,
+    source_server,
+    path,
+    entity_selector,
+    expected_json,
+):
+    system_id = "test_alerts__get_entity_" + str(hash(path))
+    setup_test(
+        system_id=system_id,
+        informed_entity=entity_selector,
+        install_system_1=install_system_1,
+        transiter_host=transiter_host,
+        source_server=source_server,
+    )
+
+    actual_data = requests.get(
+        "{}/systems/{}/{}".format(transiter_host, system_id, path)
+    ).json()
+
+    assert expected_json == actual_data["alerts"]
