@@ -9,7 +9,7 @@ TIME_1 = datetime.datetime.utcfromtimestamp(time.time() - ONE_DAY_IN_SECONDS)
 TIME_2 = datetime.datetime.utcfromtimestamp(time.time() + ONE_DAY_IN_SECONDS)
 
 ALERT_SMALL_JSON = [
-    {"id": "alert_id", "cause": "STRIKE", "effect": "MODIFIED_SERVICE",}
+    {"id": "alert_id", "cause": "STRIKE", "effect": "MODIFIED_SERVICE"}
 ]
 
 ALERT_LARGE_JSON = [
