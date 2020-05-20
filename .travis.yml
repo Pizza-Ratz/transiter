@@ -1,7 +1,7 @@
 # Python is used here just to install coveralls and docker. It is not necessary to
 # keep the version in sync with Transiter's Python version.
 language: python
-python: "3.6"
+python: "3.7"
 
 jobs:
   include:
@@ -20,5 +20,10 @@ jobs:
       - make docker-ci
       - docker-compose -p transiter -f docker/docker-compose.yml up -d
       - make containerized-db-tests
+    - name: "Unit tests"
+      script:
+        - pip install .
+        - pip install -r dev-requirements.txt
+        - pytest tests/unit
 
 
