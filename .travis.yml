@@ -13,7 +13,7 @@ jobs:
       - make docker-ci
       - docker-compose -p transiter -f docker/docker-compose.yml up -d
       - make containerized-unit-tests
-    - name: "DB tests"
+    - name: "Database tests"
       script:
       - pip install --quiet docker
       - python travis.py before
@@ -25,9 +25,10 @@ jobs:
         - pip install .
         - pip install -r dev-requirements.txt
         - pytest tests/unit
-    - name: "Formatting check"
+    - name: "Formatting enforcement"
       script:
         - pip install black
-        - make black
+        - black transiter tests *py
+        - pycodestyle --exclude="*pb2.py" transiter tests *py
 
 
