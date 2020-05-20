@@ -234,6 +234,7 @@ class Trip(View):
     route: Route = NULL
     last_stop: Stop = NULL
     stop_times: list = NULL
+    alerts: list = NULL
 
     @classmethod
     def from_model(cls, trip: models.Trip):

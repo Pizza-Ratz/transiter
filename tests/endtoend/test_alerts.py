@@ -29,8 +29,6 @@ ALERT_LARGE_JSON = [
         }
     )
 ]
-# TODO: 2 more end to end tests: stops, agencies and trips
-# TODO: tests for passing in a Get parameter
 
 
 def setup_test(
@@ -42,6 +40,12 @@ def setup_test(
     message = gtfs.FeedMessage(
         header=gtfs.FeedHeader(gtfs_realtime_version="2.0", timestamp=int(time.time())),
         entity=[
+            gtfs.FeedEntity(
+                id="trip_id",
+                trip_update=gtfs.TripUpdate(
+                    trip=gtfs.TripDescriptor(trip_id="trip_id", route_id="A")
+                ),
+            ),
             gtfs.FeedEntity(
                 id="alert_id",
                 alert=gtfs.Alert(
@@ -61,7 +65,7 @@ def setup_test(
                     cause=gtfs.Alert.Cause.STRIKE,
                     effect=gtfs.Alert.Effect.MODIFIED_SERVICE,
                 ),
-            )
+            ),
         ],
     )
 
@@ -88,6 +92,19 @@ def setup_test(
         ["routes", "A", gtfs.EntitySelector(route_id="A"), ALERT_SMALL_JSON],
         ["routes/A", None, gtfs.EntitySelector(route_id="A"), ALERT_LARGE_JSON],
         ["stops", "1A", gtfs.EntitySelector(stop_id="1A"), None],
+        ["stops/1A", None, gtfs.EntitySelector(stop_id="1A"), ALERT_SMALL_JSON],
+        [
+            "routes/A/trips",
+            "trip_id",
+            gtfs.EntitySelector(trip=gtfs.TripDescriptor(trip_id="trip_id")),
+            ALERT_SMALL_JSON,
+        ],
+        [
+            "routes/A/trips/trip_id",
+            None,
+            gtfs.EntitySelector(trip=gtfs.TripDescriptor(trip_id="trip_id")),
+            ALERT_LARGE_JSON,
+        ],
         ["stops/1A", None, gtfs.EntitySelector(stop_id="1A"), ALERT_SMALL_JSON],
         [
             "agencies",
@@ -130,6 +147,7 @@ def test_alerts_list_entities(
         expected_json = default_expected_json
 
     actual_data = requests.get(url).json()
+    print(actual_data)
 
     if entity_id is not None:
         actual_data = {response["id"]: response for response in actual_data}[entity_id]
