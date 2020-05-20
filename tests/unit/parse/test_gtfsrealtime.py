@@ -161,6 +161,25 @@ def test_parse_alerts(input_alert, expected_alert, gtfs):
     assert [expected_alert] == actual_alerts
 
 
+@pytest.mark.parametrize("gtfs", [transiter_gtfs_rt_pb2, library_gtfs_rt_pb2])
+def test_parse_alerts__trip_ignored(gtfs):
+    alert_message = gtfs.FeedMessage(
+        header=gtfs.FeedHeader(gtfs_realtime_version="2.0"),
+        entity=[
+            gtfs.FeedEntity(
+                id=ALERT_ID,
+                trip_update=gtfs.TripUpdate(trip=gtfs.TripDescriptor(trip_id=ALERT_ID)),
+            )
+        ],
+    )
+
+    parser = gtfsrealtime.GtfsRealtimeParser()
+    parser.load_content(alert_message.SerializeToString())
+    actual_alerts = list(parser.get_alerts())
+
+    assert [] == actual_alerts
+
+
 def test_parse_alerts__transiter_extension():
     gtfs = transiter_gtfs_rt_pb2
 
