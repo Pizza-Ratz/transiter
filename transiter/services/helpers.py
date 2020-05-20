@@ -16,6 +16,8 @@ def add_alerts_to_views(
     _model_type_to_alert_query = {
         models.Route: alertqueries.get_route_pk_to_active_alerts,
         models.Stop: alertqueries.get_stop_pk_to_active_alerts,
+        models.Trip: alertqueries.get_trip_pk_to_active_alerts,
+        models.Agency: alertqueries.get_agency_pk_to_active_alerts,
     }
     query = _model_type_to_alert_query[type(db_models[0])]
     entity_id_to_pk = {entity.id: entity.pk for entity in db_models}

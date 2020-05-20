@@ -27,6 +27,26 @@ def get_stop_pk_to_active_alerts(
     )
 
 
+def get_agency_pk_to_active_alerts(
+    agency_pks, current_time=None, load_messages=False,
+) -> typing.Dict[
+    int, typing.List[typing.Tuple[models.AlertActivePeriod, models.Alert]]
+]:
+    return _get_entity_pk_to_active_alerts(
+        models.Agency, models.Alert.agencies, agency_pks, current_time, load_messages
+    )
+
+
+def get_trip_pk_to_active_alerts(
+    trip_pks, current_time=None, load_messages=False,
+) -> typing.Dict[
+    int, typing.List[typing.Tuple[models.AlertActivePeriod, models.Alert]]
+]:
+    return _get_entity_pk_to_active_alerts(
+        models.Trip, models.Alert.trips, trip_pks, current_time, load_messages
+    )
+
+
 def _get_entity_pk_to_active_alerts(
     entity_type, entity_relationship, pks, current_time, load_messages
 ):

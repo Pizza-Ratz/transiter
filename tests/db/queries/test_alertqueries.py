@@ -40,6 +40,8 @@ def test_list_alerts__empty_list(
     [
         [models.Route, alertqueries.get_route_pk_to_active_alerts],
         [models.Stop, alertqueries.get_stop_pk_to_active_alerts],
+        [models.Agency, alertqueries.get_agency_pk_to_active_alerts],
+        [models.Trip, alertqueries.get_trip_pk_to_active_alerts],
     ],
 )
 @pytest.mark.parametrize(
@@ -63,6 +65,9 @@ def test_list_alerts__base(
     route_1_2,
     stop_1_1,
     stop_1_2,
+    trip_1,
+    trip_2,
+    agency_1_1,
     alert_start,
     alert_end,
     current_time,
@@ -97,6 +102,13 @@ def test_list_alerts__base(
         pk = stop_1_1.pk
         alert.stops = [stop_1_1]
         alert_2.stops = [stop_1_2]
+    elif model_type == models.Agency:
+        pk = agency_1_1.pk
+        alert.agencies = [agency_1_1]
+    elif model_type == models.Trip:
+        pk = trip_1.pk
+        alert.trips = [trip_1]
+        alert_2.trips = [trip_2]
     else:
         assert False
 
