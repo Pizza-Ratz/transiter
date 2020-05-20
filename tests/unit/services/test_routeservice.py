@@ -151,7 +151,7 @@ def test_list_all_in_system(
         expected[1].alerts = []
 
     actual = routeservice.list_all_in_system(
-        SYSTEM_ID, None if return_alerts else views.AlertDetail.NONE
+        SYSTEM_ID, None if return_alerts else views.AlertsDetail.NONE
     )
 
     assert actual == expected
@@ -196,7 +196,7 @@ def test_get_in_system_by_id(
         expected.alerts = [alert_1_large_view]
 
     actual = routeservice.get_in_system_by_id(
-        SYSTEM_ID, ROUTE_ONE_ID, None if return_alerts else views.AlertDetail.NONE
+        SYSTEM_ID, ROUTE_ONE_ID, None if return_alerts else views.AlertsDetail.NONE
     )
 
     assert expected == actual

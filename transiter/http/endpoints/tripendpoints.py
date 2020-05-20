@@ -15,7 +15,7 @@ def list_all_in_route(system_id, route_id):
     return tripservice.list_all_in_route(
         system_id,
         route_id,
-        alerts_detail=get_enum_url_parameter("alerts_detail", views.AlertDetail),
+        alerts_detail=get_enum_url_parameter("alerts_detail", views.AlertsDetail),
     )
 
 
@@ -26,5 +26,5 @@ def get_in_route_by_id(system_id, route_id, trip_id):
         system_id,
         route_id,
         trip_id,
-        alerts_detail=get_enum_url_parameter("alerts_detail", views.AlertDetail),
+        alerts_detail=get_enum_url_parameter("alerts_detail", views.AlertsDetail),
     )

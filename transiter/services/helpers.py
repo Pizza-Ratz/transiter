@@ -7,9 +7,9 @@ from transiter.data.queries import alertqueries
 def add_alerts_to_views(
     built_views: typing.List[views.View],
     db_models: typing.List[models.Base],
-    alerts_detail: views.AlertDetail,
+    alerts_detail: views.AlertsDetail,
 ):
-    if alerts_detail == views.AlertDetail.NONE:
+    if alerts_detail == views.AlertsDetail.NONE:
         return
     if len(db_models) == 0:
         return

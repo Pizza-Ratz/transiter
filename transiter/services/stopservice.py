@@ -27,7 +27,7 @@ def list_all_in_system(system_id, alerts_detail=None) -> typing.List[views.Stop]
     stops = stopqueries.list_all_in_system(system_id)
     response = list(map(views.Stop.from_model, stops))
     helpers.add_alerts_to_views(
-        response, stops, alerts_detail or views.AlertDetail.NONE,
+        response, stops, alerts_detail or views.AlertsDetail.NONE,
     )
     return response
 
@@ -98,7 +98,7 @@ def get_in_system_by_id(
             )
         )
     helpers.add_alerts_to_views(
-        [response], [stop], alerts_detail or views.AlertDetail.CAUSE_AND_EFFECT,
+        [response], [stop], alerts_detail or views.AlertsDetail.CAUSE_AND_EFFECT,
     )
     return response
 

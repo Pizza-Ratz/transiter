@@ -8,7 +8,7 @@ from transiter.services.servicemap import servicemapmanager
 
 @dbconnection.unit_of_work
 def list_all_in_system(
-    system_id, alerts_detail: views.AlertDetail = None
+    system_id, alerts_detail: views.AlertsDetail = None
 ) -> typing.List[views.Route]:
     system = systemqueries.get_by_id(system_id, only_return_active=True)
     if system is None:
@@ -20,14 +20,14 @@ def list_all_in_system(
         route_response = views.Route.from_model(route)
         response.append(route_response)
     helpers.add_alerts_to_views(
-        response, routes, alerts_detail or views.AlertDetail.CAUSE_AND_EFFECT,
+        response, routes, alerts_detail or views.AlertsDetail.CAUSE_AND_EFFECT,
     )
     return response
 
 
 @dbconnection.unit_of_work
 def get_in_system_by_id(
-    system_id, route_id, alerts_detail: views.AlertDetail = None
+    system_id, route_id, alerts_detail: views.AlertsDetail = None
 ) -> views.RouteLarge:
     route = routequeries.get_in_system_by_id(system_id, route_id)
     if route is None:
@@ -42,7 +42,7 @@ def get_in_system_by_id(
     if route.agency is not None:
         result.agency = views.Agency.from_model(route.agency)
     helpers.add_alerts_to_views(
-        [result], [route], alerts_detail or views.AlertDetail.MESSAGES,
+        [result], [route], alerts_detail or views.AlertsDetail.MESSAGES,
     )
     result.service_maps = servicemapmanager.build_route_service_maps_response(route.pk)
     return result

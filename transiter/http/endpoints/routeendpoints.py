@@ -15,7 +15,7 @@ route_endpoints = flask.Blueprint(__name__, __name__)
 def list_all_in_system(system_id):
     return routeservice.list_all_in_system(
         system_id,
-        alerts_detail=get_enum_url_parameter("alerts_detail", views.AlertDetail),
+        alerts_detail=get_enum_url_parameter("alerts_detail", views.AlertsDetail),
     )
 
 
@@ -25,5 +25,5 @@ def get_in_system_by_id(system_id, route_id):
     return routeservice.get_in_system_by_id(
         system_id,
         route_id,
-        alerts_detail=get_enum_url_parameter("alerts_detail", views.AlertDetail),
+        alerts_detail=get_enum_url_parameter("alerts_detail", views.AlertsDetail),
     )

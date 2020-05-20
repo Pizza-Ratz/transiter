@@ -7,7 +7,7 @@ from transiter.services import views, helpers
 
 @dbconnection.unit_of_work
 def list_all_in_route(
-    system_id, route_id, alerts_detail: views.AlertDetail = None
+    system_id, route_id, alerts_detail: views.AlertsDetail = None
 ) -> typing.List[views.Trip]:
     route = routequeries.get_in_system_by_id(system_id, route_id)
     if route is None:
@@ -27,14 +27,14 @@ def list_all_in_route(
             trip_response.last_stop = views.Stop.from_model(last_stop)
         response.append(trip_response)
     helpers.add_alerts_to_views(
-        response, trips, alerts_detail or views.AlertDetail.CAUSE_AND_EFFECT
+        response, trips, alerts_detail or views.AlertsDetail.CAUSE_AND_EFFECT
     )
     return response
 
 
 @dbconnection.unit_of_work
 def get_in_route_by_id(
-    system_id, route_id, trip_id, alerts_detail: views.AlertDetail = None
+    system_id, route_id, trip_id, alerts_detail: views.AlertsDetail = None
 ):
     trip = tripqueries.get_in_route_by_id(system_id, route_id, trip_id)
     if trip is None:
@@ -49,6 +49,6 @@ def get_in_route_by_id(
         stop_time_response.stop = views.Stop.from_model(stop_time.stop)
         trip_response.stop_times.append(stop_time_response)
     helpers.add_alerts_to_views(
-        [trip_response], [trip], alerts_detail or views.AlertDetail.MESSAGES
+        [trip_response], [trip], alerts_detail or views.AlertsDetail.MESSAGES
     )
     return trip_response

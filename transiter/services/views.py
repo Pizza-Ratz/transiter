@@ -410,8 +410,7 @@ class _AlertsDetailValue:
     need_all_active_periods: bool
 
 
-# TODO: rename AlertsDetail
-class AlertDetail(enum.Enum):
+class AlertsDetail(enum.Enum):
     NONE = _AlertsDetailValue(None, False, False)
     CAUSE_AND_EFFECT = _AlertsDetailValue(AlertSmall, False, False)
     MESSAGES = _AlertsDetailValue(AlertLarge, True, False)
