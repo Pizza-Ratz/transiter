@@ -3,32 +3,22 @@
 language: python
 python: "3.6"
 
-install:
-  - pip install --quiet docker
-  - python travis.py before
-  - make docker-ci
-  - docker-compose -p transiter -f docker/docker-compose.yml up -d
+jobs:
+  include:
+    - stage: docker
+      name: "Build Docker image"
+      script:
+      - pip install --quiet docker
+      - python travis.py before
+      - make docker-ci
+      - docker-compose -p transiter -f docker/docker-compose.yml up -d
+      - make containerized-unit-tests
+    - name: "DB tests"
+      script:
+      - pip install --quiet docker
+      - python travis.py before
+      - make docker-ci
+      - docker-compose -p transiter -f docker/docker-compose.yml up -d
+      - make containerized-db-tests
 
-script:
-  - make containerized-unit-tests
-  - make containerized-db-tests
-  - make end-to-end-tests
-  - docker run --entrypoint black jamespfennell/transiter-ci:latest --check {/transiter/source/transiter,/transiter-ci/tests}
-  - docker run --entrypoint pycodestyle jamespfennell/transiter-ci:latest --ignore=E203,E501,W503 --exclude="*pb2.py" {/transiter/source/transiter,/transiter-ci/tests}
 
-after_success:
-  - python travis.py after
-  # In order to submit code coverage numbers, we need to perform some
-  # pre-processing steps:
-  # 1. Install the coveralls package.
-  # 1. Make the coverage file writable. This file is often created
-  #    inside a directory mounted as a Docker volume, and by default
-  #    is only writable by root.
-  # 2. Transform paths in the .coverage file from being relative
-  #    to the Docker container to be relative to the Travis CI build
-  #    directory. Necessary for correct coverage reporting.
-  - pip install --quiet coverage==5.1
-  - pip install --quiet coveralls
-  - sudo chmod -R 0777 coverage
-  - coverage combine
-  - coveralls
