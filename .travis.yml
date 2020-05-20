@@ -27,7 +27,7 @@ jobs:
         - pytest tests/unit
     - name: "Formatting enforcement"
       script:
-        - pip install black
+        - pip install black pycodestyle
         - black transiter tests *py
         - pycodestyle --exclude="*pb2.py" transiter tests *py
 
