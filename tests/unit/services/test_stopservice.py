@@ -201,6 +201,7 @@ def test_get_in_system_by_id(monkeypatch):
         child_stops=child_stops,
         directions=[DIRECTION_NAME],
         stop_times=[fake_trip_stop_time_response],
+        alerts=[],
     )
 
     actual = stopservice.get_in_system_by_id(

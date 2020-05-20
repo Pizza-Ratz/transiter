@@ -191,6 +191,7 @@ class StopLarge(View):
     parent_stop: typing.Optional["Stop"] = NULL
     child_stops: list = NULL
     directions: list = NULL
+    alerts: typing.List["AlertSmall"] = NULL
     stop_times: list = dataclasses.field(default_factory=list)
 
     @classmethod

@@ -12,13 +12,14 @@ import typing
 
 from transiter import exceptions, models
 from transiter.data import dbconnection, tripqueries, systemqueries, stopqueries
+from transiter.data.queries import alertqueries
 from transiter.services import views
 from transiter.services.servicemap import servicemapmanager
 from transiter.services.servicemap.graphutils import datastructures
 
 
 @dbconnection.unit_of_work
-def list_all_in_system(system_id) -> typing.List[views.Stop]:
+def list_all_in_system(system_id, alert_detail=None) -> typing.List[views.Stop]:
     """
     Get information on all stops in a specific system.
     """
@@ -26,21 +27,27 @@ def list_all_in_system(system_id) -> typing.List[views.Stop]:
     if system is None:
         raise exceptions.IdNotFoundError(models.System, system_id=system_id)
 
-    # TODO: add alerts
-    return list(map(views.Stop.from_model, stopqueries.list_all_in_system(system_id)))
+    stops = stopqueries.list_all_in_system(system_id)
+    response = list(map(views.Stop.from_model, stops))
+    _add_alerts(
+        response,
+        {stop.id: stop.pk for stop in stops},
+        alert_detail or views.AlertDetail.NONE,
+    )
+    return response
 
 
 @dbconnection.unit_of_work
 def get_in_system_by_id(
     system_id,
     stop_id,
-    return_links=True,
     return_only_stations=True,
     earliest_time=None,
     latest_time=None,
     minimum_number_of_trips=None,
     include_all_trips_within=None,
     exclude_trips_before=None,
+    alert_detail=None,
 ):
     """
     Get information about a specific stop.
@@ -95,7 +102,11 @@ def get_in_system_by_id(
                 trip_stop_time, direction, trip_pk_to_last_stop
             )
         )
-    # TODO: add alerts
+    _add_alerts(
+        [response],
+        {stop.id: stop.pk},
+        alert_detail or views.AlertDetail.CAUSE_AND_EFFECT,
+    )
     return response
 
 
@@ -369,3 +380,18 @@ class _DirectionNameMatcher:
                 break
 
         return self._cache[cache_key]
+
+
+def _add_alerts(
+    stops: typing.List[views.Stop], stop_id_to_pk, alert_detail: views.AlertDetail
+):
+    if alert_detail == views.AlertDetail.NONE:
+        return
+    stop_pk_to_alerts = alertqueries.get_stop_pk_to_active_alerts(
+        stop_id_to_pk.values(), load_messages=alert_detail.value.need_messages
+    )
+    for stop in stops:
+        stop.alerts = [
+            alert_detail.value.clazz.from_models(active_period, alert)
+            for active_period, alert in stop_pk_to_alerts[stop_id_to_pk[stop.id]]
+        ]

@@ -8,9 +8,7 @@ ONE_DAY_IN_SECONDS = 60 * 60 * 24
 TIME_1 = datetime.datetime.utcfromtimestamp(time.time() - ONE_DAY_IN_SECONDS)
 TIME_2 = datetime.datetime.utcfromtimestamp(time.time() + ONE_DAY_IN_SECONDS)
 
-ALERT_SMALL_JSON = [
-    {"id": "alert_id", "cause": "STRIKE", "effect": "MODIFIED_SERVICE"}
-]
+ALERT_SMALL_JSON = [{"id": "alert_id", "cause": "STRIKE", "effect": "MODIFIED_SERVICE"}]
 
 ALERT_LARGE_JSON = [
     dict(
@@ -76,7 +74,7 @@ def setup_test(
 
 @pytest.mark.parametrize(
     "path,entity_id,entity_selector,expected_json",
-    [["routes", "A", gtfs.EntitySelector(route_id="A"), ALERT_SMALL_JSON]],
+    [["routes", "A", gtfs.EntitySelector(route_id="A"), ALERT_SMALL_JSON],],
 )
 def test_alerts_list_entities(
     install_system_1,
@@ -107,7 +105,10 @@ def test_alerts_list_entities(
 
 @pytest.mark.parametrize(
     "path,entity_selector,expected_json",
-    [["routes/A", gtfs.EntitySelector(route_id="A"), ALERT_LARGE_JSON]],
+    [
+        ["routes/A", gtfs.EntitySelector(route_id="A"), ALERT_LARGE_JSON],
+        ["stops/1A", gtfs.EntitySelector(stop_id="1A"), ALERT_SMALL_JSON],
+    ],
 )
 def test_alerts__get_entity(
     install_system_1,
