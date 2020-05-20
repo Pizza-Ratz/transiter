@@ -400,13 +400,16 @@ class AlertActivePeriod(View):
         return cls(starts_at=active_period.starts_at, ends_at=active_period.ends_at)
 
 
-class AlertDetail(enum.Enum):
-    @dataclasses.dataclass
-    class _Value:
-        clazz: typing.Optional[typing.Type[View]]
-        need_messages: bool
+@dataclasses.dataclass
+class _AlertsDetailValue:
+    clazz: typing.Optional[typing.Type[View]]
+    need_messages: bool
+    need_all_active_periods: bool
 
-    NONE = _Value(None, False)
-    CAUSE_AND_EFFECT = _Value(AlertSmall, False)
-    MESSAGES = _Value(AlertLarge, True)
-    ALL = _Value(AlertLarge, True)
+
+# TODO: rename AlertsDetail
+class AlertDetail(enum.Enum):
+    NONE = _AlertsDetailValue(None, False, False)
+    CAUSE_AND_EFFECT = _AlertsDetailValue(AlertSmall, False, False)
+    MESSAGES = _AlertsDetailValue(AlertLarge, True, False)
+    ALL = _AlertsDetailValue(AlertLarge, True, True)

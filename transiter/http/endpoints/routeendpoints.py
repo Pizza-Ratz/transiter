@@ -1,6 +1,10 @@
 import flask
 
-from transiter.http.httpmanager import http_endpoint, link_target
+from transiter.http.httpmanager import (
+    http_endpoint,
+    link_target,
+    get_enum_url_parameter,
+)
 from transiter.services import routeservice, views
 
 route_endpoints = flask.Blueprint(__name__, __name__)
@@ -9,8 +13,10 @@ route_endpoints = flask.Blueprint(__name__, __name__)
 @http_endpoint(route_endpoints, "")
 @link_target(views.RoutesInSystem, ["_system_id"])
 def list_all_in_system(system_id):
-    """List all routes for a specific system."""
-    return routeservice.list_all_in_system(system_id)
+    return routeservice.list_all_in_system(
+        system_id,
+        alert_detail=get_enum_url_parameter("alerts_detail", views.AlertDetail),
+    )
 
 
 @http_endpoint(route_endpoints, "/<route_id>")

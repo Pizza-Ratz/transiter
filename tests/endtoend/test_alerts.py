@@ -29,7 +29,8 @@ ALERT_LARGE_JSON = [
         }
     )
 ]
-# TODO: 3 more end to end tests: stops, agencies and trips
+# TODO: 2 more end to end tests: stops, agencies and trips
+# TODO: tests for passing in a Get parameter
 
 
 def setup_test(
@@ -73,7 +74,16 @@ def setup_test(
 
 
 @pytest.mark.parametrize(
-    "path,entity_id,entity_selector,expected_json",
+    "alerts_detail,expected_json",
+    [
+        [None, None],
+        ["none", None],
+        ["cause_and_effect", ALERT_SMALL_JSON],
+        ["messages", ALERT_LARGE_JSON],
+    ],
+)
+@pytest.mark.parametrize(
+    "path,entity_id,entity_selector,default_expected_json",
     [["routes", "A", gtfs.EntitySelector(route_id="A"), ALERT_SMALL_JSON]],
 )
 def test_alerts_list_entities(
@@ -83,6 +93,8 @@ def test_alerts_list_entities(
     path,
     entity_id,
     entity_selector,
+    default_expected_json,
+    alerts_detail: str,
     expected_json,
 ):
     system_id = "test_alerts__get_entity_" + str(hash(path))
@@ -94,13 +106,19 @@ def test_alerts_list_entities(
         source_server=source_server,
     )
 
-    actual_data = requests.get(
-        "{}/systems/{}/{}".format(transiter_host, system_id, path)
-    ).json()
+    url = "{}/systems/{}/{}".format(transiter_host, system_id, path)
+    if alerts_detail is not None:
+        url += "?alerts_detail=" + alerts_detail
+    else:
+        expected_json = default_expected_json
+    actual_data = requests.get(url).json()
 
     entity_id_to_response = {response["id"]: response for response in actual_data}
 
-    assert expected_json == entity_id_to_response[entity_id]["alerts"]
+    if expected_json is None:
+        assert "alerts" not in entity_id_to_response[entity_id]
+    else:
+        assert expected_json == entity_id_to_response[entity_id]["alerts"]
 
 
 @pytest.mark.parametrize(
