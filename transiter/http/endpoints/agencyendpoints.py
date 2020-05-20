@@ -25,5 +25,5 @@ def get_in_system_by_id(system_id, agency_id):
     return agencyservice.get_in_system_by_id(
         system_id,
         agency_id,
-        alerts_details=get_enum_url_parameter("alerts_detail", views.AlertDetail),
+        alerts_detail=get_enum_url_parameter("alerts_detail", views.AlertDetail),
     )

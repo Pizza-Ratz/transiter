@@ -22,7 +22,7 @@ def list_all_in_system(
 
 @dbconnection.unit_of_work
 def get_in_system_by_id(
-    system_id, agency_id, alerts_details: views.AlertDetail = None
+    system_id, agency_id, alerts_detail: views.AlertDetail = None
 ) -> views.AgencyLarge:
     agency = genericqueries.get_in_system_by_id(models.Agency, system_id, agency_id)
     if agency is None:
@@ -31,7 +31,7 @@ def get_in_system_by_id(
         )
     response = views.AgencyLarge.from_model(agency)
     helpers.add_alerts_to_views(
-        [response], [agency], alerts_details or views.AlertDetail.MESSAGES
+        [response], [agency], alerts_detail or views.AlertDetail.MESSAGES
     )
     response.routes = list(map(views.Route.from_model, agency.routes))
     return response
