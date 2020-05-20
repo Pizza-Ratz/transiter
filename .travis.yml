@@ -25,5 +25,9 @@ jobs:
         - pip install .
         - pip install -r dev-requirements.txt
         - pytest tests/unit
+    - name: "Formatting check"
+      script:
+        - pip install black
+        - make black
 
 
