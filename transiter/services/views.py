@@ -89,6 +89,7 @@ class Agency(View):
     id: str
     name: str
     _system_id: str
+    alerts: list = NULL
 
     @classmethod
     def from_model(cls, agency: models.Agency):
@@ -105,7 +106,7 @@ class AgencyLarge(View):
     phone: str = None
     fare_url: str = None
     email: str = None
-    alerts: list = dataclasses.field(default_factory=list)
+    alerts: list = NULL
     routes: list = dataclasses.field(default_factory=list)
 
     @classmethod
