@@ -13,7 +13,7 @@ import typing
 from transiter import exceptions, models
 from transiter.data import dbconnection, tripqueries, systemqueries, stopqueries
 from transiter.data.queries import alertqueries
-from transiter.services import views
+from transiter.services import views, helpers
 from transiter.services.servicemap import servicemapmanager
 from transiter.services.servicemap.graphutils import datastructures
 
@@ -26,10 +26,8 @@ def list_all_in_system(system_id, alerts_detail=None) -> typing.List[views.Stop]
 
     stops = stopqueries.list_all_in_system(system_id)
     response = list(map(views.Stop.from_model, stops))
-    _add_alerts(
-        response,
-        {stop.id: stop.pk for stop in stops},
-        alerts_detail or views.AlertDetail.NONE,
+    helpers.add_alerts_to_views(
+        response, stops, alerts_detail or views.AlertDetail.NONE,
     )
     return response
 
@@ -99,10 +97,8 @@ def get_in_system_by_id(
                 trip_stop_time, direction, trip_pk_to_last_stop
             )
         )
-    _add_alerts(
-        [response],
-        {stop.id: stop.pk},
-        alerts_detail or views.AlertDetail.CAUSE_AND_EFFECT,
+    helpers.add_alerts_to_views(
+        [response], [stop], alerts_detail or views.AlertDetail.CAUSE_AND_EFFECT,
     )
     return response
 
@@ -377,18 +373,3 @@ class _DirectionNameMatcher:
                 break
 
         return self._cache[cache_key]
-
-
-def _add_alerts(
-    stops: typing.List[views.Stop], stop_id_to_pk, alert_detail: views.AlertDetail
-):
-    if alert_detail == views.AlertDetail.NONE:
-        return
-    stop_pk_to_alerts = alertqueries.get_stop_pk_to_active_alerts(
-        stop_id_to_pk.values(), load_messages=alert_detail.value.need_messages
-    )
-    for stop in stops:
-        stop.alerts = [
-            alert_detail.value.clazz.from_models(active_period, alert)
-            for active_period, alert in stop_pk_to_alerts[stop_id_to_pk[stop.id]]
-        ]

@@ -1,12 +1,8 @@
-"""
-The route service is used to retrieve data about routes.
-"""
 import typing
 
 from transiter import exceptions, models
 from transiter.data import dbconnection, systemqueries, routequeries
-from transiter.data.queries import alertqueries
-from transiter.services import views
+from transiter.services import views, helpers
 from transiter.services.servicemap import servicemapmanager
 
 
@@ -23,10 +19,8 @@ def list_all_in_system(
     for route in routes:
         route_response = views.Route.from_model(route)
         response.append(route_response)
-    _add_alerts(
-        response,
-        {route.id: route.pk for route in routes},
-        alerts_detail or views.AlertDetail.CAUSE_AND_EFFECT,
+    helpers.add_alerts_to_views(
+        response, routes, alerts_detail or views.AlertDetail.CAUSE_AND_EFFECT,
     )
     return response
 
@@ -47,23 +41,8 @@ def get_in_system_by_id(
     result = views.RouteLarge.from_model(route, periodicity)
     if route.agency is not None:
         result.agency = views.Agency.from_model(route.agency)
-    _add_alerts(
-        [result], {route.id: route.pk}, alerts_detail or views.AlertDetail.MESSAGES,
+    helpers.add_alerts_to_views(
+        [result], [route], alerts_detail or views.AlertDetail.MESSAGES,
     )
     result.service_maps = servicemapmanager.build_route_service_maps_response(route.pk)
     return result
-
-
-def _add_alerts(
-    routes: typing.List[views.Route], route_id_to_pk, alert_detail: views.AlertDetail
-):
-    if alert_detail == views.AlertDetail.NONE:
-        return
-    route_pk_to_alerts = alertqueries.get_route_pk_to_active_alerts(
-        route_id_to_pk.values(), load_messages=alert_detail.value.need_messages
-    )
-    for route in routes:
-        route.alerts = [
-            alert_detail.value.clazz.from_models(active_period, alert)
-            for active_period, alert in route_pk_to_alerts[route_id_to_pk[route.id]]
-        ]
