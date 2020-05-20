@@ -84,7 +84,10 @@ def setup_test(
 )
 @pytest.mark.parametrize(
     "path,entity_id,entity_selector,default_expected_json",
-    [["routes", "A", gtfs.EntitySelector(route_id="A"), ALERT_SMALL_JSON]],
+    [
+        ["routes", "A", gtfs.EntitySelector(route_id="A"), ALERT_SMALL_JSON],
+        ["stops", "1A", gtfs.EntitySelector(stop_id="1A"), None],
+    ],
 )
 def test_alerts_list_entities(
     install_system_1,

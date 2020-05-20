@@ -20,9 +20,6 @@ from transiter.services.servicemap.graphutils import datastructures
 
 @dbconnection.unit_of_work
 def list_all_in_system(system_id, alert_detail=None) -> typing.List[views.Stop]:
-    """
-    Get information on all stops in a specific system.
-    """
     system = systemqueries.get_by_id(system_id, only_return_active=True)
     if system is None:
         raise exceptions.IdNotFoundError(models.System, system_id=system_id)

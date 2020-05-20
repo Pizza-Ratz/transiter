@@ -1,6 +1,11 @@
 import flask
 
-from transiter.http.httpmanager import http_endpoint, link_target, get_url_parameters
+from transiter.http.httpmanager import (
+    http_endpoint,
+    link_target,
+    get_url_parameters,
+    get_enum_url_parameter,
+)
 from transiter.services import stopservice, views
 
 stop_endpoints = flask.Blueprint(__name__, __name__)
@@ -9,8 +14,10 @@ stop_endpoints = flask.Blueprint(__name__, __name__)
 @http_endpoint(stop_endpoints, "")
 @link_target(views.StopsInSystem, ["_system_id"])
 def list_all_in_system(system_id):
-    """List all stops for a specific system."""
-    return stopservice.list_all_in_system(system_id)
+    return stopservice.list_all_in_system(
+        system_id,
+        alert_detail=get_enum_url_parameter("alerts_detail", views.AlertDetail),
+    )
 
 
 @http_endpoint(stop_endpoints, "/<stop_id>")

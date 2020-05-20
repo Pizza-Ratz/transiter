@@ -173,6 +173,7 @@ class Stop(View):
     service_maps: list = NULL
     parent_stop: typing.Optional["Stop"] = NULL
     child_stops: list = NULL
+    alerts: typing.List["AlertSmall"] = NULL
 
     @classmethod
     def from_model(cls, stop: models.Stop):
