@@ -16,7 +16,7 @@ stop_endpoints = flask.Blueprint(__name__, __name__)
 def list_all_in_system(system_id):
     return stopservice.list_all_in_system(
         system_id,
-        alert_detail=get_enum_url_parameter("alerts_detail", views.AlertDetail),
+        alerts_detail=get_enum_url_parameter("alerts_detail", views.AlertDetail),
     )
 
 

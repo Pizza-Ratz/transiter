@@ -85,49 +85,88 @@ def test_permission_denied__admin_read_endpoints(
 
 
 @pytest.mark.parametrize(
-    "endpoints_module,service_module,function_name,function_args",
+    "endpoints_module,service_module,function_name,function_args,function_kwargs",
     [
-        pytest.param(systemendpoints, systemservice, "list_all", []),
-        pytest.param(systemendpoints, systemservice, "get_by_id", ["system_id"]),
-        pytest.param(routeendpoints, routeservice, "list_all_in_system", ["system_id"]),
+        pytest.param(systemendpoints, systemservice, "list_all", [], {}),
+        pytest.param(systemendpoints, systemservice, "get_by_id", ["system_id"], {}),
+        pytest.param(
+            routeendpoints,
+            routeservice,
+            "list_all_in_system",
+            ["system_id"],
+            {"alerts_detail": None},
+        ),
         pytest.param(
             routeendpoints,
             routeservice,
             "get_in_system_by_id",
             ["system_id", "route_id"],
-        ),
-        pytest.param(feedendpoints, feedservice, "list_all_in_system", ["system_id"]),
-        pytest.param(
-            feedendpoints, feedservice, "get_in_system_by_id", ["system_id", "feed_id"]
+            {},
         ),
         pytest.param(
-            feedendpoints, feedservice, "list_updates_in_feed", ["system_id", "feed_id"]
+            feedendpoints, feedservice, "list_all_in_system", ["system_id"], {}
         ),
-        pytest.param(stopendpoints, stopservice, "list_all_in_system", ["system_id"]),
         pytest.param(
-            tripendpoints, tripservice, "list_all_in_route", ["system_id", "route_id"]
+            feedendpoints,
+            feedservice,
+            "get_in_system_by_id",
+            ["system_id", "feed_id"],
+            {},
+        ),
+        pytest.param(
+            feedendpoints,
+            feedservice,
+            "list_updates_in_feed",
+            ["system_id", "feed_id"],
+            {},
+        ),
+        pytest.param(
+            stopendpoints,
+            stopservice,
+            "list_all_in_system",
+            ["system_id"],
+            {"alerts_detail": None},
+        ),
+        pytest.param(
+            tripendpoints,
+            tripservice,
+            "list_all_in_route",
+            ["system_id", "route_id"],
+            {},
         ),
         pytest.param(
             tripendpoints,
             tripservice,
             "get_in_route_by_id",
             ["system_id", "route_id", "trip_id"],
+            {},
         ),
-        [agencyendpoints, agencyservice, "list_all_in_system", ["system_id"]],
+        [agencyendpoints, agencyservice, "list_all_in_system", ["system_id"], {}],
         [
             agencyendpoints,
             agencyservice,
             "get_in_system_by_id",
             ["system_id", "agency_id"],
+            {},
         ],
     ],
 )
 def test_simple_endpoints(
-    monkeypatch, endpoints_module, service_module, function_name, function_args
+    monkeypatch,
+    endpoints_module,
+    service_module,
+    function_name,
+    function_args,
+    function_kwargs,
 ):
     """[Endpoints] Test pass-through endpoints"""
     endpoints_test_helper(
-        monkeypatch, endpoints_module, service_module, function_name, function_args
+        monkeypatch,
+        endpoints_module,
+        service_module,
+        function_name,
+        function_args,
+        function_kwargs,
     )
 
 

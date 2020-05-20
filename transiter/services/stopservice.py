@@ -19,7 +19,7 @@ from transiter.services.servicemap.graphutils import datastructures
 
 
 @dbconnection.unit_of_work
-def list_all_in_system(system_id, alert_detail=None) -> typing.List[views.Stop]:
+def list_all_in_system(system_id, alerts_detail=None) -> typing.List[views.Stop]:
     system = systemqueries.get_by_id(system_id, only_return_active=True)
     if system is None:
         raise exceptions.IdNotFoundError(models.System, system_id=system_id)
@@ -29,7 +29,7 @@ def list_all_in_system(system_id, alert_detail=None) -> typing.List[views.Stop]:
     _add_alerts(
         response,
         {stop.id: stop.pk for stop in stops},
-        alert_detail or views.AlertDetail.NONE,
+        alerts_detail or views.AlertDetail.NONE,
     )
     return response
 
@@ -44,7 +44,7 @@ def get_in_system_by_id(
     minimum_number_of_trips=None,
     include_all_trips_within=None,
     exclude_trips_before=None,
-    alert_detail=None,
+    alerts_detail=None,
 ):
     """
     Get information about a specific stop.
@@ -102,7 +102,7 @@ def get_in_system_by_id(
     _add_alerts(
         [response],
         {stop.id: stop.pk},
-        alert_detail or views.AlertDetail.CAUSE_AND_EFFECT,
+        alerts_detail or views.AlertDetail.CAUSE_AND_EFFECT,
     )
     return response
 
