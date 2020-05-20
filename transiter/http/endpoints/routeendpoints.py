@@ -22,5 +22,8 @@ def list_all_in_system(system_id):
 @http_endpoint(route_endpoints, "/<route_id>")
 @link_target(views.Route, ["_system_id", "id"])
 def get_in_system_by_id(system_id, route_id):
-    """Retrieve a specific route in a specific system."""
-    return routeservice.get_in_system_by_id(system_id, route_id)
+    return routeservice.get_in_system_by_id(
+        system_id,
+        route_id,
+        alerts_detail=get_enum_url_parameter("alerts_detail", views.AlertDetail),
+    )

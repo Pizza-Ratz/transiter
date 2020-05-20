@@ -87,6 +87,8 @@ def setup_test(
     [
         ["routes", "A", gtfs.EntitySelector(route_id="A"), ALERT_SMALL_JSON],
         ["stops", "1A", gtfs.EntitySelector(stop_id="1A"), None],
+        ["routes/A", None, gtfs.EntitySelector(route_id="A"), ALERT_LARGE_JSON],
+        ["stops/1A", None, gtfs.EntitySelector(stop_id="1A"), ALERT_SMALL_JSON],
     ],
 )
 def test_alerts_list_entities(
@@ -114,42 +116,13 @@ def test_alerts_list_entities(
         url += "?alerts_detail=" + alerts_detail
     else:
         expected_json = default_expected_json
+
     actual_data = requests.get(url).json()
 
-    entity_id_to_response = {response["id"]: response for response in actual_data}
+    if entity_id is not None:
+        actual_data = {response["id"]: response for response in actual_data}[entity_id]
 
     if expected_json is None:
-        assert "alerts" not in entity_id_to_response[entity_id]
+        assert "alerts" not in actual_data
     else:
-        assert expected_json == entity_id_to_response[entity_id]["alerts"]
-
-
-@pytest.mark.parametrize(
-    "path,entity_selector,expected_json",
-    [
-        ["routes/A", gtfs.EntitySelector(route_id="A"), ALERT_LARGE_JSON],
-        ["stops/1A", gtfs.EntitySelector(stop_id="1A"), ALERT_SMALL_JSON],
-    ],
-)
-def test_alerts__get_entity(
-    install_system_1,
-    transiter_host,
-    source_server,
-    path,
-    entity_selector,
-    expected_json,
-):
-    system_id = "test_alerts__get_entity_" + str(hash(path))
-    setup_test(
-        system_id=system_id,
-        informed_entity=entity_selector,
-        install_system_1=install_system_1,
-        transiter_host=transiter_host,
-        source_server=source_server,
-    )
-
-    actual_data = requests.get(
-        "{}/systems/{}/{}".format(transiter_host, system_id, path)
-    ).json()
-
-    assert expected_json == actual_data["alerts"]
+        assert expected_json == actual_data["alerts"]

@@ -101,7 +101,7 @@ def test_permission_denied__admin_read_endpoints(
             routeservice,
             "get_in_system_by_id",
             ["system_id", "route_id"],
-            {},
+            {"alerts_detail": None},
         ),
         pytest.param(
             feedendpoints, feedservice, "list_all_in_system", ["system_id"], {}
@@ -179,6 +179,7 @@ def test_stop_endpoints__get_in_system_by_id(monkeypatch):
         "get_in_system_by_id",
         ["system_id", "stop_id"],
         {
+            "alerts_detail": None,
             "minimum_number_of_trips": None,
             "include_all_trips_within": None,
             "exclude_trips_before": None,
