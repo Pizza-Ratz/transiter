@@ -8,7 +8,7 @@ jobs:
     - stage: "First"
       name: "Unit and database tests"
       services:
-        - postgresql  # TODO: just use a docker image?
+        - postgresql
       before_script:
         - psql -c "create user transiter with CREATEDB password 'transiter';" -U postgres
         - psql -c "create database transiter;" postgres -U transiter
@@ -16,7 +16,7 @@ jobs:
         - pip install --quiet .
         - pip install --quiet -r dev-requirements.txt
       script:
-        - pytest tests/unit tests/db
+        - coverage run -p -m pytest tests/unit tests/db
       after_success:
         - pip install --quiet coveralls
         - coveralls
