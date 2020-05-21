@@ -5,14 +5,15 @@ jobs:
   include:
     - stage: "Native host build and tests"
       name: "Unit and database tests"
-      services:
-        - postgresql
+      # services:
+      #  - postgresql
       install:
         - pip install --quiet .
         - pip install --quiet -r dev-requirements.txt
       before_script:
-        - psql -c "create user transiter with CREATEDB password 'transiter';" -U postgres
-        - psql -c "create database transiter;" postgres -U transiter
+        - docker run -d --env POSTGRES_USER=transiter --env POSTGRES_PASSWORD=transiter --env POSTGRES_DB=transiter -p 5432:5432 postgres:12
+      #  - psql -c "create user transiter with CREATEDB password 'transiter';" -U postgres
+      #  - psql -c "create database transiter;" postgres -U transiter
       script:
         - coverage run --source=transiter --omit="transiter/alembic/*","*pb2/*" -m pytest --color=yes tests/unit tests/db
       after_success:
