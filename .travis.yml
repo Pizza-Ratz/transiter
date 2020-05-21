@@ -11,7 +11,7 @@ jobs:
         - postgresql
       before_script:
         - psql -c "create user transiter with CREATEDB password 'transiter';" -U postgres
-        - psql -c 'create database transiter;' -U transiter
+        - psql -c "create database 'transiter';" -U transiter
       install:
         - pip install --quiet .
         - pip install --quiet -r dev-requirements.txt
