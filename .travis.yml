@@ -5,30 +5,23 @@ python: "3.7"
 
 jobs:
   include:
-    - stage: docker
+    - stage: "Native tests"
       name: "Build Docker image"
       script:
       - pip install --quiet docker
       - python travis.py before
       - make docker-ci
       - docker-compose -p transiter -f docker/docker-compose.yml up -d
-      - make containerized-unit-tests
-    - name: "Database tests"
-      script:
-      - pip install --quiet docker
-      - python travis.py before
-      - make docker-ci
-      - docker-compose -p transiter -f docker/docker-compose.yml up -d
       - make containerized-db-tests
-    - name: "Unit tests"
+    - name: "Unit and database tests"
       script:
         - pip install .
         - pip install -r dev-requirements.txt
         - pytest tests/unit
     - name: "Formatting enforcement"
       script:
-        - pip install black pycodestyle
+        - pip install --queit black==19.10b pycodestyle==2.5.0
         - black transiter tests *py
-        - pycodestyle --exclude="*pb2.py" transiter tests *py
+        - pycodestyle --ignore=E203,E501,W503 --exclude="*pb2.py" transiter tests *py
 
 
