@@ -8,10 +8,9 @@ jobs:
     - stage: "First"
       name: "Unit and database tests"
       addons:
-        postgresql: "12"
+        postgresql: "12.3"
       before_script:
         - psql -c "create user transiter with CREATEDB password 'transiter';" -U postgres
-        - psql -c 'create database travis_ci_test;' -U postgres
         - psql -c "create database transiter;" postgres -U transiter
       install:
         - pip install --quiet .
