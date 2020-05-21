@@ -10,7 +10,7 @@ jobs:
       services:
         - postgresql
       before_script:
-        - psql -c 'create user transiter2 with CREATEDB password 'transiter';' -U postgres
+        - psql -c "create user transiter with CREATEDB password 'transiter';" -U postgres
         - psql -c 'create database transiter;' -U transiter
       install:
         - pip install --quiet .
@@ -19,10 +19,8 @@ jobs:
         - pytest tests/unit tests/db
 
     - name: "Formatting enforcement"
-      script:
+      install:
         - pip install --quiet black==19.10b pycodestyle==2.5.0
+      script:
         - black transiter tests *py
         - pycodestyle --ignore=E203,E501,W503 --exclude="*pb2.py" transiter tests *py
-
-
-
