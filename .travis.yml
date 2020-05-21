@@ -19,6 +19,7 @@ jobs:
         - coverage run -p -m pytest --color=yes tests/unit tests/db
       after_success:
         - pip install --quiet coveralls
+        - coverage report
         - coveralls
 
     - name: "Formatting enforcement"
