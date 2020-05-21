@@ -16,7 +16,7 @@ jobs:
         - pip install --quiet .
         - pip install --quiet -r dev-requirements.txt
       script:
-        - coverage run -p -m pytest tests/unit tests/db
+        - coverage run -p -m pytest --color=yes tests/unit tests/db
       after_success:
         - pip install --quiet coveralls
         - coveralls
