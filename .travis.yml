@@ -30,10 +30,10 @@ jobs:
         - psql -c "create database transiter;" postgres -U transiter
         - docker run -d -p 5672:5672 rabbitmq:3
         - transiterclt db reset --yes
-        - transiterclt launch webservice &
-        - transiterclt launch executor &
-        - transiterclt launch scheduler &
-        - python tests/endtoend/sourceserver.py &
+        - transiterclt launch webservice > webservice.log &
+        - transiterclt launch executor > executor.log &
+        - transiterclt launch scheduler > scheduler.log &
+        - python tests/endtoend/sourceserver.py > sourceserver.log &
       script:
         - pytest --color=yes tests/endtoend
 
