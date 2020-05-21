@@ -43,3 +43,16 @@ jobs:
       script:
         - black transiter tests *py
         - pycodestyle --ignore=E203,E501,W503 --exclude="*pb2.py" transiter tests *py
+
+    - stage: "Docker build"
+      install:
+        - pip install --quiet docker
+        - python travis.py before
+        - make docker-ci
+        - docker-compose -p transiter -f docker/docker-compose.yml up -d
+      script:
+        - make containerized-unit-tests
+        - make containerized-db-tests
+        - make end-to-end-tests
+      after_success:
+        - python travis.py after
