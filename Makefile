@@ -18,10 +18,10 @@ distribute:
 	# For testing add  --repository-url https://test.pypi.org/legacy/ to the previous command
 
 unit-tests:
-	coverage run -p -m pytest tests/unit
+	pytest tests/unit
 
 db-tests:
-	coverage run -p -m pytest tests/db
+	pytest tests/db
 
 nothing:
 	echo "Available Transiter CI Docker image commands: docs, distribute, unit-tests, db-tests"
