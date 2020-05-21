@@ -14,7 +14,7 @@ jobs:
         - psql -c "create user transiter with CREATEDB password 'transiter';" -U postgres
         - psql -c "create database transiter;" postgres -U transiter
       script:
-        - coverage run -m pytest --color=yes tests/unit tests/db
+        - coverage run --source=transiter --omit="transiter/alembic/*","*pb2" -m pytest --color=yes tests/unit tests/db
       after_success:
         - pip install --quiet coveralls
         - coveralls
@@ -44,8 +44,8 @@ jobs:
         - black transiter tests *py
         - pycodestyle --ignore=E203,E501,W503 --exclude="*pb2.py" transiter tests *py
 
-    - stage: "Docker build and tests"
-      name: "Docker build (CPython 3.7)"
+    - stage: "Containerized build and tests"
+      name: "CPython 3.7 Docker build and all tests"
       install:
         - pip install --quiet docker
         - python travis.py before

@@ -1,6 +1,3 @@
-; This config file is used by `coverage combine` command to transform paths from being
-; relative to the Docker container to being relative to the Travis CI build directory.
-
 [run]
 source = transiter
 omit = *transiter/alembic/*
