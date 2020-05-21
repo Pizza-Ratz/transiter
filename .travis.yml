@@ -3,7 +3,7 @@ python: "3.7"
 
 jobs:
   include:
-    - stage: "Native host"
+    - stage: "Native host build and tests"
       name: "Unit and database tests"
       services:
         - postgresql
@@ -44,7 +44,8 @@ jobs:
         - black transiter tests *py
         - pycodestyle --ignore=E203,E501,W503 --exclude="*pb2.py" transiter tests *py
 
-    - stage: "Docker build"
+    - stage: "Docker build and tests"
+      name: "Docker build (CPython 3.7)"
       install:
         - pip install --quiet docker
         - python travis.py before
