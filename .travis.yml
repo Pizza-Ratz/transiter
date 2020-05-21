@@ -1,6 +1,5 @@
 language: python
 python: "3.7"
-dist: trusty
 
 jobs:
   include:
@@ -37,7 +36,7 @@ jobs:
         - transiterclt launch webservice &
         - transiterclt launch executor &
         - transiterclt launch scheduler &
-        - python tests/endtoend/sourceserver.py
+        - python tests/endtoend/sourceserver.py &
       script:
         - pytest --color=yes tests/endtoend
 
