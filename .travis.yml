@@ -1,5 +1,3 @@
-# Python is used here just to install coveralls and docker. It is not necessary to
-# keep the version in sync with Transiter's Python version.
 language: python
 python: "3.7"
 
@@ -16,10 +14,9 @@ jobs:
         - pip install --quiet .
         - pip install --quiet -r dev-requirements.txt
       script:
-        - coverage run -p -m pytest --color=yes tests/unit tests/db
+        - coverage run -m pytest --color=yes tests/unit tests/db
       after_success:
         - pip install --quiet coveralls
-        - coverage report
         - coveralls
 
     - name: "Formatting enforcement"
