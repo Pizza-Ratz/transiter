@@ -1,5 +1,6 @@
 language: python
 python: "3.7"
+dist: trusty
 
 jobs:
   include:
@@ -31,7 +32,7 @@ jobs:
         - psql -c "create database transiter;" postgres -U transiter
         - transiterclt launch webservice &
         - transiterclt launch executor &
-        - transiterclt laucch scheduler &
+        - transiterclt launch scheduler &
         - python tests/endtoend/sourceserver.py
       script:
         - pytest --color=yes tests/endtoend
