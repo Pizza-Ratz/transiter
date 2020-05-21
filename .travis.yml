@@ -6,15 +6,15 @@ python: "3.7"
 jobs:
   include:
     - stage: "First"
-    - name: "Unit and database tests"
+      name: "Unit and database tests"
       services:
         - postgresql
       before_script:
-        - psql -c 'create user transiter with CREATEDB CREATEUSER password transiter;' -U postgres
+        - psql -c 'create user transiter2 with CREATEDB password 'transiter';' -U postgres
         - psql -c 'create database transiter;' -U transiter
       install:
-        - pip install .
-        - pip install -r dev-requirements.txt
+        - pip install --quiet .
+        - pip install --quiet -r dev-requirements.txt
       script:
         - pytest tests/unit tests/db
 
