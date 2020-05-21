@@ -1,3 +1,0 @@
-[run]
-source = transiter
-omit = *transiter/alembic/*
