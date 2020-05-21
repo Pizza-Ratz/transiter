@@ -3,7 +3,7 @@ python: "3.7"
 
 jobs:
   include:
-    - stage: "First"
+    - stage: "Native host"
       name: "Unit and database tests"
       services:
         - postgresql
@@ -22,17 +22,13 @@ jobs:
     - name: "End to end tests"
       services:
         - postgresql
-        - rabbitmq
-      addons:
-        apt:
-          packages:
-            - rabbitmq-server
       install:
         - pip install --quiet .
         - pip install --quiet -r dev-requirements.txt
       before_script:
         - psql -c "create user transiter with CREATEDB password 'transiter';" -U postgres
         - psql -c "create database transiter;" postgres -U transiter
+        - docker run -p 5672:5672 rabbitmq:3
         - transiterclt launch webservice &
         - transiterclt launch executor &
         - transiterclt launch scheduler &
