@@ -5,23 +5,24 @@ python: "3.7"
 
 jobs:
   include:
-    - stage: "Native tests"
-      name: "Build Docker image"
-      script:
-      - pip install --quiet docker
-      - python travis.py before
-      - make docker-ci
-      - docker-compose -p transiter -f docker/docker-compose.yml up -d
-      - make containerized-db-tests
+    - stage: "First"
     - name: "Unit and database tests"
-      script:
+      services:
+        - postgresql
+      before_script:
+        - psql -c 'create user transiter with CREATEDB CREATEUSER password transiter;' -U postgres
+        - psql -c 'create database transiter;' -U transiter
+      install:
         - pip install .
         - pip install -r dev-requirements.txt
-        - pytest tests/unit
+      script:
+        - pytest tests/unit tests/db
+
     - name: "Formatting enforcement"
       script:
-        - pip install --queit black==19.10b pycodestyle==2.5.0
+        - pip install --quiet black==19.10b pycodestyle==2.5.0
         - black transiter tests *py
         - pycodestyle --ignore=E203,E501,W503 --exclude="*pb2.py" transiter tests *py
+
 
 
