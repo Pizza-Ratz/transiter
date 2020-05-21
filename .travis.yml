@@ -24,6 +24,10 @@ jobs:
       services:
         - postgresql
         - rabbitmq
+      addons:
+        apt:
+          packages:
+            - rabbitmq-server
       install:
         - pip install --quiet .
         - pip install --quiet -r dev-requirements.txt
