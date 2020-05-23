@@ -135,5 +135,5 @@ def get_current_database_revision():
 
 def _get_alembic_config() -> Config:
     alembic_config = Config()
-    alembic_config.set_main_option("script_location", "transiter:alembic")
+    alembic_config.set_main_option("script_location", "transiter.db:alembic")
     return alembic_config
