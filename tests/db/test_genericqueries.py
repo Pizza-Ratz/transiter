@@ -1,5 +1,5 @@
 from transiter import models
-from transiter.data import genericqueries, routequeries
+from transiter.db.queries import genericqueries, routequeries
 
 
 def test_get_id_to_pk_map_by_feed_pk(

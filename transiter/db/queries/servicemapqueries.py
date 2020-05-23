@@ -4,7 +4,7 @@ import sqlalchemy.sql.expression as sql
 from sqlalchemy.orm import selectinload
 
 from transiter import models
-from transiter.data import dbconnection
+from transiter.db import dbconnection
 
 
 def list_groups_and_maps_for_stops_in_route(route_pk):

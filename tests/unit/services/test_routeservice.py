@@ -3,8 +3,7 @@ import datetime
 import pytest
 
 from transiter import models, exceptions
-from transiter.data import systemqueries, routequeries
-from transiter.data.queries import alertqueries
+from transiter.db.queries import alertqueries, routequeries, systemqueries
 from transiter.services import routeservice, views
 from transiter.services.servicemap import servicemapmanager
 

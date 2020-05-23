@@ -1,4 +1,4 @@
-from transiter.data import routequeries
+from transiter.db.queries import routequeries
 
 
 def test_list_all_in_system(system_1, route_1_1, route_1_2, route_2_1):

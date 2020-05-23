@@ -4,7 +4,7 @@ import pytest
 import requests
 
 from transiter import models, parse, import_
-from transiter.data import feedqueries
+from transiter.db.queries import feedqueries
 from transiter.services import updatemanager
 
 FEED_ID = "1"

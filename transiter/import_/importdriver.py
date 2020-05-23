@@ -17,16 +17,11 @@ import typing
 from typing import Iterable, List, Tuple
 
 from transiter import models, parse
-from transiter.data import (
+from transiter.db import (
     dbconnection,
-    feedqueries,
-    tripqueries,
-    schedulequeries,
-    genericqueries,
-    routequeries,
-    stopqueries,
 )
-from transiter.data import systemqueries
+from transiter.db.queries import feedqueries, genericqueries, tripqueries, stopqueries, routequeries, schedulequeries, \
+    systemqueries
 from transiter.models import updatableentity
 from transiter.services.servicemap import servicemapmanager
 from transiter.import_ import fastscheduleoperations

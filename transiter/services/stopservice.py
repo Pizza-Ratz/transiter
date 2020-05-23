@@ -11,7 +11,8 @@ import time
 import typing
 
 from transiter import exceptions, models
-from transiter.data import dbconnection, tripqueries, systemqueries, stopqueries
+from transiter.db import dbconnection
+from transiter.db.queries import tripqueries, stopqueries, systemqueries
 from transiter.services import views, helpers
 from transiter.services.servicemap import servicemapmanager
 from transiter.services.servicemap.graphutils import datastructures

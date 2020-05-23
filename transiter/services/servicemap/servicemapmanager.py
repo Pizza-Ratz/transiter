@@ -10,13 +10,10 @@ import collections
 from typing import List, Set, Tuple
 
 from transiter import models
-from transiter.data import (
+from transiter.db import (
     dbconnection,
-    tripqueries,
-    servicemapqueries,
-    schedulequeries,
-    stopqueries,
 )
+from transiter.db.queries import tripqueries, servicemapqueries, stopqueries, schedulequeries
 from transiter.services import views
 from transiter.services.servicemap import graphutils, conditions
 

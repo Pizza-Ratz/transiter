@@ -38,7 +38,8 @@ import requests
 from requests import RequestException
 
 from transiter import models, import_
-from transiter.data import dbconnection, feedqueries
+from transiter.db import dbconnection
+from transiter.db.queries import feedqueries
 from transiter.executor import celeryapp
 from transiter.parse import parser, gtfsstatic, gtfsrealtime
 

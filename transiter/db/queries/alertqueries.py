@@ -6,7 +6,7 @@ from sqlalchemy import sql
 from sqlalchemy.orm import joinedload
 
 from transiter import models
-from transiter.data import dbconnection
+from transiter.db import dbconnection
 
 
 def get_route_pk_to_active_alerts(

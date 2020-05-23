@@ -3,7 +3,7 @@ import datetime
 import pytest
 
 from transiter import models
-from transiter.data import schedulequeries
+from transiter.db.queries import schedulequeries
 
 
 @pytest.fixture

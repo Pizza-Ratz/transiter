@@ -3,7 +3,7 @@ import datetime
 import pytest
 
 from transiter import models
-from transiter.data import stopqueries
+from transiter.db.queries import stopqueries
 
 
 def test_list_all_in_system(system_1, stop_1_1, stop_1_2, stop_2_1):

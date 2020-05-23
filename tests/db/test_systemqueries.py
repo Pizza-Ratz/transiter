@@ -1,7 +1,7 @@
 import pytest
 
 from transiter import models
-from transiter.data import systemqueries
+from transiter.db.queries import systemqueries
 
 
 def test_create(db_session):

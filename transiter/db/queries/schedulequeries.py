@@ -6,7 +6,7 @@ import sqlalchemy.sql.expression as sql
 from sqlalchemy import func
 
 from transiter import models
-from transiter.data import dbconnection
+from transiter.db import dbconnection
 
 logger = logging.getLogger(__name__)
 

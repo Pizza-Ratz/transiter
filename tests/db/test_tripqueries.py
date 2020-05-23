@@ -1,5 +1,5 @@
 from transiter import models
-from transiter.data import tripqueries
+from transiter.db.queries import tripqueries
 
 
 def test_list_all_from_feed(

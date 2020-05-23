@@ -3,7 +3,8 @@ import typing
 import dataclasses
 
 from transiter import models, parse
-from transiter.data import dbconnection, schedulequeries, genericqueries
+from transiter.db import dbconnection
+from transiter.db.queries import genericqueries, schedulequeries
 
 
 def sync_trips(feed_update, parsed_services: typing.List[parse.ScheduledService]):

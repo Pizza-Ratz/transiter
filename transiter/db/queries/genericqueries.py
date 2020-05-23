@@ -8,7 +8,7 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy.sql import func
 
 from transiter import models
-from transiter.data import dbconnection
+from transiter.db import dbconnection
 
 
 def create(DbEntity: models.Base, entity=None):

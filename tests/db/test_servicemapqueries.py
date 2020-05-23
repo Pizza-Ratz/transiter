@@ -1,7 +1,7 @@
 import pytest
 
 from transiter import models
-from transiter.data import servicemapqueries
+from transiter.db.queries import servicemapqueries
 
 
 @pytest.fixture

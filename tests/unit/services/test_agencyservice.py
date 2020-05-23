@@ -1,8 +1,7 @@
 import pytest
 
 from transiter import models, exceptions
-from transiter.data import systemqueries, genericqueries
-from transiter.data.queries import alertqueries
+from transiter.db.queries import alertqueries, genericqueries, systemqueries
 from transiter.services import agencyservice, views
 
 SYSTEM_ID = "1"

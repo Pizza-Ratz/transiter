@@ -1,7 +1,7 @@
 import datetime
 
 from transiter import models
-from transiter.data import feedqueries
+from transiter.db.queries import feedqueries
 
 
 def test_list_all_feed_pks(feed_1_1, feed_1_2, feed_2_1):
@@ -66,8 +66,8 @@ def test_get_last_successful_update(
     feed_1_1, feed_1_1_update_1, feed_1_1_update_2, feed_1_1_update_3
 ):
     assert (
-        feed_1_1_update_2.content_hash
-        == feedqueries.get_last_successful_update_hash(feed_1_1.pk)
+            feed_1_1_update_2.content_hash
+            == feedqueries.get_last_successful_update_hash(feed_1_1.pk)
     )
 
 
