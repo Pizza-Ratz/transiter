@@ -41,7 +41,7 @@ from transiter import models
 from transiter.data import dbconnection, feedqueries
 from transiter.executor import celeryapp
 from transiter.parse import parser, gtfsstatic, gtfsrealtime
-from transiter.import_ import sync
+from transiter.import_ import importdriver
 
 logger = logging.getLogger(__name__)
 
@@ -199,7 +199,7 @@ def _sync_entities(feed_update: models.FeedUpdate, parser_object):
                 feed_update.num_added_entities,
                 feed_update.num_updated_entities,
                 feed_update.num_deleted_entities,
-            ) = sync.sync(feed_update.pk, parser_object)
+            ) = importdriver.perform_import(feed_update.pk, parser_object)
             feed_update.num_parsed_entities = -1
             feed_update.status = models.FeedUpdate.Status.SUCCESS
             feed_update.result = models.FeedUpdate.Result.UPDATED

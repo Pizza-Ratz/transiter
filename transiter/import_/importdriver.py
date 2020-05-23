@@ -34,7 +34,7 @@ from transiter.import_ import fastscheduleoperations
 logger = logging.getLogger(__name__)
 
 
-def sync(feed_update_pk, parser_object: parse.TransiterParser):
+def perform_import(feed_update_pk, parser_object: parse.TransiterParser):
     """
     Sync entities to the database.
 
