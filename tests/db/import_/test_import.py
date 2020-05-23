@@ -7,7 +7,7 @@ import pytz
 from transiter import parse
 from transiter.db import models
 from transiter.import_ import importdriver
-from .data import route_data
+from tests.db.data import route_data
 
 
 class ParserForTesting(parse.parser.CallableBasedParser):
