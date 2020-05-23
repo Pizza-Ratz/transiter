@@ -7,8 +7,8 @@ import datetime
 import logging
 import typing
 
-from transiter import exceptions, models
-from transiter.db import dbconnection
+from transiter import exceptions
+from transiter.db import dbconnection, models
 from transiter.db.queries import feedqueries, systemqueries
 from transiter.services import views, updatemanager
 

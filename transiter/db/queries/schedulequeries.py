@@ -5,8 +5,7 @@ import typing
 import sqlalchemy.sql.expression as sql
 from sqlalchemy import func
 
-from transiter import models
-from transiter.db import dbconnection
+from transiter.db import dbconnection, models
 
 logger = logging.getLogger(__name__)
 

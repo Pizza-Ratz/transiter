@@ -3,7 +3,7 @@ import typing
 
 import pytest
 
-from transiter import models
+from transiter.db import models
 from transiter.db.queries import alertqueries
 
 ALERT_ID_1 = "1"

@@ -4,8 +4,7 @@ import typing
 from sqlalchemy import sql
 from sqlalchemy.orm import joinedload, selectinload
 
-from transiter import models
-from transiter.db import dbconnection
+from transiter.db import dbconnection, models
 from transiter.db.queries import genericqueries
 
 

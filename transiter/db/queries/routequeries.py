@@ -2,8 +2,7 @@ from typing import Optional, Dict, Iterable
 
 import sqlalchemy.sql.expression as sql
 
-from transiter import models
-from transiter.db import dbconnection
+from transiter.db import dbconnection, models
 from transiter.db.queries import genericqueries
 
 

@@ -9,9 +9,8 @@ import typing
 import collections
 from typing import List, Set, Tuple
 
-from transiter import models
 from transiter.db import (
-    dbconnection,
+    dbconnection, models,
 )
 from transiter.db.queries import tripqueries, servicemapqueries, stopqueries, schedulequeries
 from transiter.services import views

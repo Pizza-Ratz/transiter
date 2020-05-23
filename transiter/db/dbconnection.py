@@ -11,7 +11,8 @@ from decorator import decorator
 from sqlalchemy.engine.url import URL
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from transiter import models, config
+from transiter import config
+from transiter.db import models
 
 logger = logging.getLogger(__name__)
 

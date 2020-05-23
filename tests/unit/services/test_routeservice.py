@@ -2,7 +2,8 @@ import datetime
 
 import pytest
 
-from transiter import models, exceptions
+from transiter import exceptions
+from transiter.db import models
 from transiter.db.queries import alertqueries, routequeries, systemqueries
 from transiter.services import routeservice, views
 from transiter.services.servicemap import servicemapmanager

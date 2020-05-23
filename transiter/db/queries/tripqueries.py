@@ -4,8 +4,7 @@ import sqlalchemy
 import sqlalchemy.sql.expression as sql
 from sqlalchemy.orm import selectinload, joinedload
 
-from transiter import models
-from transiter.db import dbconnection
+from transiter.db import dbconnection, models
 
 
 def list_all_from_feed(feed_pk):

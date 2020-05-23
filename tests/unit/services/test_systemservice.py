@@ -4,8 +4,8 @@ import uuid
 
 import pytest
 
-from transiter import models, exceptions
-from transiter.db import dbconnection
+from transiter import exceptions
+from transiter.db import dbconnection, models
 from transiter.db.queries import feedqueries, genericqueries, systemqueries
 from transiter.scheduler import client
 from transiter.services import systemservice, systemconfigreader, views, updatemanager

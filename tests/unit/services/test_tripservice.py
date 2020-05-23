@@ -1,6 +1,7 @@
 import pytest
 
-from transiter import models, exceptions
+from transiter import exceptions
+from transiter.db import models
 from transiter.db.queries import alertqueries, tripqueries, routequeries
 from transiter.services import tripservice, views
 

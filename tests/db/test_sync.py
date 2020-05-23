@@ -4,7 +4,8 @@ import itertools
 import pytest
 import pytz
 
-from transiter import models, parse
+from transiter import parse
+from transiter.db import models
 from transiter.import_ import importdriver
 from .data import route_data
 
@@ -380,7 +381,7 @@ def test_flush(db_session, add_model, system_1, previous_update, current_update)
             type=models.Stop.Type.STATION,
         )
     )
-    add_model(models.Route(system=system_1, source_pk=previous_update.pk,))
+    add_model(models.Route(system=system_1, source_pk=previous_update.pk, ))
 
     importdriver.run_import(current_update.pk, ParserForTesting([]))
 

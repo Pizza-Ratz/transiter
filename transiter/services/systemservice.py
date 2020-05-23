@@ -11,8 +11,8 @@ import uuid
 from dataclasses import dataclass
 from typing import Iterator
 
-from transiter import models, exceptions, __metadata__
-from transiter.db import dbconnection
+from transiter import exceptions, __metadata__
+from transiter.db import dbconnection, models
 from transiter.db.queries import feedqueries, genericqueries, systemqueries
 from transiter.executor import celeryapp
 from transiter.scheduler import client

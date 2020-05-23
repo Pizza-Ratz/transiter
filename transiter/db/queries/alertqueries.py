@@ -5,8 +5,7 @@ import typing
 from sqlalchemy import sql
 from sqlalchemy.orm import joinedload
 
-from transiter import models
-from transiter.db import dbconnection
+from transiter.db import dbconnection, models
 
 
 def get_route_pk_to_active_alerts(

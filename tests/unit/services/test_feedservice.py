@@ -3,7 +3,8 @@ from unittest import mock
 
 import pytest
 
-from transiter import models, exceptions
+from transiter import exceptions
+from transiter.db import models
 from transiter.db.queries import feedqueries, systemqueries
 from transiter.services import feedservice, views, updatemanager
 

@@ -2,8 +2,8 @@ import itertools
 import typing
 import dataclasses
 
-from transiter import models, parse
-from transiter.db import dbconnection
+from transiter import parse
+from transiter.db import dbconnection, models
 from transiter.db.queries import genericqueries, schedulequeries
 
 

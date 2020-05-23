@@ -1,7 +1,7 @@
 import typing
 
-from transiter import exceptions, models
-from transiter.db import dbconnection
+from transiter import exceptions
+from transiter.db import dbconnection, models
 from transiter.db.queries import routequeries, systemqueries
 from transiter.services import views, helpers
 from transiter.services.servicemap import servicemapmanager

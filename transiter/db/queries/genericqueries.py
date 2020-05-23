@@ -7,8 +7,7 @@ from typing import Dict, Iterable
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql import func
 
-from transiter import models
-from transiter.db import dbconnection
+from transiter.db import dbconnection, models
 
 
 def create(DbEntity: models.Base, entity=None):

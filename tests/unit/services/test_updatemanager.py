@@ -3,7 +3,8 @@ from unittest import mock
 import pytest
 import requests
 
-from transiter import models, parse, import_
+from transiter import parse, import_
+from transiter.db import models
 from transiter.db.queries import feedqueries
 from transiter.services import updatemanager
 
