@@ -147,7 +147,7 @@ def test_simple_create_update_delete(
         entity.source = previous_update
         add_model(entity)
 
-    actual_counts = importdriver.perform_import(
+    actual_counts = importdriver.run_import(
         current_update.pk, ParserForTesting(current)
     )
 
@@ -220,7 +220,7 @@ def test_stop__tree_linking(
             continue
         stop_id_to_stop[id_].parent_stop = stop_id_to_stop[parent_id]
 
-    importdriver.perform_import(
+    importdriver.run_import(
         current_update.pk, ParserForTesting(list(stop_id_to_stop.values()))
     )
 
@@ -238,7 +238,7 @@ def test_route__agency_linking(db_session, current_update):
     agency = parse.Agency(id="agency", name="My Agency", timezone="", url="")
     route = parse.Route(id="route", type=parse.Route.Type.RAIL, agency_id="agency")
 
-    importdriver.perform_import(current_update.pk, ParserForTesting([route, agency]))
+    importdriver.run_import(current_update.pk, ParserForTesting([route, agency]))
 
     persisted_route = db_session.query(models.Route).all()[0]
 
@@ -287,7 +287,7 @@ def test_direction_rules(
     for rule in current:
         rule.stop_id = stop_1_1.id
 
-    actual_counts = importdriver.perform_import(
+    actual_counts = importdriver.run_import(
         current_update.pk, ParserForTesting(current)
     )
 
@@ -334,7 +334,7 @@ def test_schedule(db_session, stop_1_1, route_1_1, previous_update, current_upda
         removed_dates=[datetime.date(2016, 9, 11), datetime.date(2016, 9, 12)],
     )
 
-    actual_counts = importdriver.perform_import(
+    actual_counts = importdriver.run_import(
         previous_update.pk, ParserForTesting([schedule])
     )
 
@@ -347,7 +347,7 @@ def test_schedule(db_session, stop_1_1, route_1_1, previous_update, current_upda
     assert (1, 0, 0) == actual_counts
 
     # Just to make sure we can delete it all
-    importdriver.perform_import(current_update.pk, ParserForTesting([]))
+    importdriver.run_import(current_update.pk, ParserForTesting([]))
 
 
 def test_direction_rules__skip_unknown_stop(
@@ -357,7 +357,7 @@ def test_direction_rules__skip_unknown_stop(
         parse.DirectionRule(name="Rule", id="blah", track="new track", stop_id="104401")
     ]
 
-    actual_counts = importdriver.perform_import(
+    actual_counts = importdriver.run_import(
         current_update.pk, ParserForTesting(current)
     )
 
@@ -367,7 +367,7 @@ def test_direction_rules__skip_unknown_stop(
 
 def test_unknown_type(current_update):
     with pytest.raises(TypeError):
-        importdriver.perform_import(current_update.pk, ParserForTesting(["string"]))
+        importdriver.run_import(current_update.pk, ParserForTesting(["string"]))
 
 
 def test_flush(db_session, add_model, system_1, previous_update, current_update):
@@ -382,7 +382,7 @@ def test_flush(db_session, add_model, system_1, previous_update, current_update)
     )
     add_model(models.Route(system=system_1, source_pk=previous_update.pk,))
 
-    importdriver.perform_import(current_update.pk, ParserForTesting([]))
+    importdriver.run_import(current_update.pk, ParserForTesting([]))
 
     assert [] == db_session.query(models.Route).all()
 
@@ -400,7 +400,7 @@ def test_trip__route_from_schedule(
 
     new_trip = parse.Trip(id="trip", route_id=None, direction_id=True)
 
-    importdriver.perform_import(current_update.pk, ParserForTesting([new_trip]))
+    importdriver.run_import(current_update.pk, ParserForTesting([new_trip]))
 
     all_trips = db_session.query(models.Trip).all()
 
@@ -412,7 +412,7 @@ def test_trip__route_from_schedule(
 def test_trip__invalid_route(db_session, system_1, route_1_1, current_update):
     new_trip = parse.Trip(id="trip", route_id="unknown_route", direction_id=True)
 
-    importdriver.perform_import(current_update.pk, ParserForTesting([new_trip]))
+    importdriver.run_import(current_update.pk, ParserForTesting([new_trip]))
 
     all_trips = db_session.query(models.Trip).all()
 
@@ -432,7 +432,7 @@ def test_trip__invalid_stops_in_stop_times(
         ],
     )
 
-    importdriver.perform_import(current_update.pk, ParserForTesting([new_trip]))
+    importdriver.run_import(current_update.pk, ParserForTesting([new_trip]))
 
     all_trips = db_session.query(models.Trip).all()
 
@@ -504,11 +504,11 @@ def test_trip__stop_time_reconciliation(
         stop_times=old_stop_time_data,
     )
 
-    importdriver.perform_import(previous_update.pk, ParserForTesting([trip]))
+    importdriver.run_import(previous_update.pk, ParserForTesting([trip]))
 
     trip.stop_times = new_stop_time_data
 
-    importdriver.perform_import(current_update.pk, ParserForTesting([trip]))
+    importdriver.run_import(current_update.pk, ParserForTesting([trip]))
 
     actual_stop_times = [
         convert_trip_stop_time_model_to_parse(trip_stop_time, stop_pk_to_stop)
@@ -538,9 +538,9 @@ def test_trip__stop_time_reconciliation(
     ],
 )
 def test_move_entity_across_feeds(current_update, other_feed_update, route_1_1, entity):
-    importdriver.perform_import(other_feed_update.pk, ParserForTesting([entity]))
+    importdriver.run_import(other_feed_update.pk, ParserForTesting([entity]))
 
-    importdriver.perform_import(current_update.pk, ParserForTesting([entity]))
+    importdriver.run_import(current_update.pk, ParserForTesting([entity]))
 
 
 def convert_trip_stop_time_model_to_parse(
@@ -562,7 +562,7 @@ def test_entities_skipped(db_session, current_update):
 
     parser = BuggyParser(lambda: [new_route])
 
-    result = importdriver.perform_import(current_update.pk, parser)
+    result = importdriver.run_import(current_update.pk, parser)
 
     assert [] == db_session.query(models.Route).all()
     assert (0, 0, 0) == result
@@ -574,7 +574,7 @@ def test_parse_error(current_update):
             raise ValueError
 
     with pytest.raises(ValueError):
-        importdriver.perform_import(current_update.pk, BuggyParser())
+        importdriver.run_import(current_update.pk, BuggyParser())
 
 
 @pytest.mark.parametrize("entity_type", ["routes", "stops", "trips", "agencies"])
@@ -606,7 +606,7 @@ def test_alert__route_linking(
 
     alert = parse.Alert(id="alert", **alert_kwargs)
 
-    importdriver.perform_import(current_update.pk, ParserForTesting([alert]))
+    importdriver.run_import(current_update.pk, ParserForTesting([alert]))
 
     persisted_alert = db_session.query(models.Alert).all()[0]
 

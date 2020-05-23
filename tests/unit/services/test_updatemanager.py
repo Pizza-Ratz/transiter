@@ -3,9 +3,8 @@ from unittest import mock
 import pytest
 import requests
 
-from transiter import models, parse
+from transiter import models, parse, import_
 from transiter.data import feedqueries
-from transiter.import_ import importdriver
 from transiter.services import updatemanager
 
 FEED_ID = "1"
@@ -169,7 +168,7 @@ def test_execute_feed_update(
     monkeypatch.setattr(
         feedqueries, "get_last_successful_update_hash", get_last_successful_update
     )
-    monkeypatch.setattr(importdriver, "sync", lambda: (0, 0, 0))
+    monkeypatch.setattr(import_, "run_import", lambda: (0, 0, 0))
 
     actual_status, actual_explanation = updatemanager.execute_feed_update(1)
 
@@ -214,7 +213,7 @@ def test_execute_feed_update__success_or_sync_error(
             raise ValueError
         return 1, 2, 3
 
-    monkeypatch.setattr(importdriver, "sync", sync_func)
+    monkeypatch.setattr(import_, "run_import", sync_func)
 
     actual_status, actual_explanation = updatemanager.execute_feed_update(1)
 
