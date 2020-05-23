@@ -5,7 +5,7 @@ import pytest
 import pytz
 
 from transiter import models, parse
-from transiter.services.update import sync
+from transiter.import_ import sync
 from .data import route_data
 
 

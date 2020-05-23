@@ -7,8 +7,7 @@ import pytest
 from transiter import models, exceptions
 from transiter.data import dbconnection, feedqueries, systemqueries, genericqueries
 from transiter.scheduler import client
-from transiter.services import systemservice, systemconfigreader, views
-from transiter.services.update import updatemanager
+from transiter.services import systemservice, systemconfigreader, views, updatemanager
 
 SYSTEM_ONE_ID = "1"
 SYSTEM_ONE_NAME = "1-name"

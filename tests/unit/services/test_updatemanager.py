@@ -5,7 +5,8 @@ import requests
 
 from transiter import models, parse
 from transiter.data import feedqueries
-from transiter.services.update import updatemanager, sync
+from transiter.import_ import sync
+from transiter.services import updatemanager
 
 FEED_ID = "1"
 SYSTEM_ID = "2"

@@ -5,8 +5,7 @@ import pytest
 
 from transiter import models, exceptions
 from transiter.data import feedqueries, systemqueries
-from transiter.services import feedservice, views
-from transiter.services.update import updatemanager
+from transiter.services import feedservice, views, updatemanager
 
 SYSTEM_ID = "1"
 FEED_ONE_ID = "2"

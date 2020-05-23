@@ -41,7 +41,7 @@ from transiter import models
 from transiter.data import dbconnection, feedqueries
 from transiter.executor import celeryapp
 from transiter.parse import parser, gtfsstatic, gtfsrealtime
-from transiter.services.update import sync
+from transiter.import_ import sync
 
 logger = logging.getLogger(__name__)
 

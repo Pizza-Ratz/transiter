@@ -15,8 +15,7 @@ from transiter import models, exceptions, __metadata__
 from transiter.data import dbconnection, feedqueries, systemqueries, genericqueries
 from transiter.executor import celeryapp
 from transiter.scheduler import client
-from transiter.services import systemconfigreader, views
-from transiter.services.update import updatemanager
+from transiter.services import systemconfigreader, views, updatemanager
 
 logger = logging.getLogger(__name__)
 

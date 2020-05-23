@@ -1,4 +1,4 @@
-from transiter.services.update import fastscheduleoperations
+from transiter.import_ import fastscheduleoperations
 
 
 def test_split():

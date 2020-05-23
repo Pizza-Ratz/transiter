@@ -29,7 +29,7 @@ from transiter.data import (
 from transiter.data import systemqueries
 from transiter.models import updatableentity
 from transiter.services.servicemap import servicemapmanager
-from transiter.services.update import fastscheduleoperations
+from transiter.import_ import fastscheduleoperations
 
 logger = logging.getLogger(__name__)
 

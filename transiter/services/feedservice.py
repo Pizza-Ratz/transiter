@@ -9,8 +9,7 @@ import typing
 
 from transiter import exceptions, models
 from transiter.data import dbconnection, feedqueries, systemqueries
-from transiter.services import views
-from transiter.services.update import updatemanager
+from transiter.services import views, updatemanager
 
 logger = logging.getLogger(__name__)
 
