@@ -299,6 +299,7 @@ class _GtfsRealtimeToTransiterTransformer:
                         "departure", {}
                     ).get("uncertainty"),
                     track=stop_time_update_data.get("track", None),
+                    stop_sequence=stop_time_update_data.get("stop_sequence")
                 )
                 stop_time_updates.append(stop_time_update)
             trip.stop_times = stop_time_updates
