@@ -332,7 +332,7 @@ class _Trip(parse.Trip):
             "source_pk": self.source_pk,
             "direction_id": self.direction_id,
             "start_time": self.start_time,
-            "last_update_time": self.updated_at,
+            "updated_at": self.updated_at,
             "vehicle_id": self.train_id,
             "current_status": self.current_status,
             "current_stop_sequence": self.current_stop_sequence,

@@ -129,25 +129,13 @@ class ScheduledTripStopTime:
 
 @dataclass
 class Trip:
-    class Status(enum.Enum):
-        SCHEDULED = 1
-        INCOMING_AT = 2
-        STOPPED_AT = 3
-        IN_TRANSIT_TO = 4
-
     id: str
     route_id: typing.Optional[str]
     direction_id: typing.Optional[bool]
     start_time: datetime.datetime = None
     stop_times: typing.List["TripStopTime"] = field(default_factory=list)
-
-    # The following 5 fields correspond to VehiclePosition in the GTFS Realtime spec
-    # and will be eventually moved to a new Vehicle type.
-    train_id: str = None  # ?
-    current_stop_sequence: int = None
-    current_status: Status = None
-    current_stop_id: str = None
     updated_at: datetime.datetime = None
+    delay: int = None
 
 
 @dataclass
@@ -162,6 +150,36 @@ class TripStopTime:
     track: str = None  # Transiter-only non-GTFS field
     stop_sequence: int = None
     future: bool = True
+
+
+@dataclass
+class Vehicle:
+    class Status(enum.Enum):
+        INCOMING_AT = 0
+        STOPPED_AT = 1
+        IN_TRANSIT_TO = 2
+
+    class CongestionLevel(enum.Enum):
+        UNKNOWN_CONGESTION_LEVEL = 0
+        RUNNING_SMOOTHLY = 1
+        STOP_AND_GO = 2
+        CONGESTION = 3
+        SEVERE_CONGESTION = 4
+
+    id: str
+    trip_id: str = None
+    label: str = None
+    license_plate: str = None
+    current_stop_sequence: int = None
+    current_status: Status = Status.IN_TRANSIT_TO
+    current_stop_id: str = None
+    latitude: float = None
+    longitude: float = None
+    bearing: float = None
+    odometer: float = None
+    speed: float = None
+    updated_at: datetime.datetime = None
+    congestion_level: CongestionLevel = CongestionLevel.UNKNOWN_CONGESTION_LEVEL
 
 
 @dataclass
