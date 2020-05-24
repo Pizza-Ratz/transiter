@@ -261,26 +261,14 @@ class _GtfsRealtimeToTransiterTransformer:
             else:
                 trip_start_time = None
 
-            raw_current_status = vehicle_data.get("current_status", None)
-            if raw_current_status is not None:
-                current_status = parse.Trip.Status[raw_current_status]
-            else:
-                current_status = None
-
             trip = parse.Trip(
                 id=trip_id,
                 route_id=trip_data.get("route_id", None),
                 direction_id=trip_data.get("direction_id", None),
                 start_time=trip_start_time,
-                train_id=entity.get("trip_update", {})
-                .get("vehicle", {})
-                .get("id", None),
                 updated_at=self._timestamp_to_datetime(
                     vehicle_data.get("timestamp", None)
-                ),
-                current_status=current_status,
-                current_stop_sequence=vehicle_data.get("current_stop_sequence", 0),
-                current_stop_id=vehicle_data.get("stop_id", None),
+                ),  # TODO: this is wrong
             )
             self._trip_id_to_trip_model[trip_id] = trip
 
@@ -316,6 +304,7 @@ class _GtfsRealtimeToTransiterTransformer:
             trip.stop_times = stop_time_updates
 
     def _update_stop_event_indices(self):
+        return  # TODO, do this in the importer
         for trip_id, trip in self._trip_id_to_trip_model.items():
             index = trip.current_stop_sequence
             for stop_time_update in trip.stop_times:

@@ -291,10 +291,7 @@ def test_transform_trip_base_data():
         id=TRIP_ID,
         route_id=ROUTE_ID,
         start_time=datetime.datetime(year=1990, month=3, day=26),
-        train_id=TRAIN_ID,
         direction_id=TRIP_DIRECTION_ID,
-        current_status=None,
-        current_stop_sequence=0,
         updated_at=None,
     )
 
@@ -330,10 +327,7 @@ def test_transform_trip_base_data_with_vehicle():
         id=TRIP_ID,
         route_id=ROUTE_ID,
         start_time=datetime.datetime(year=1990, month=3, day=26),
-        train_id=TRAIN_ID,
         direction_id=TRIP_DIRECTION_ID,
-        current_status=parse.Trip.Status.STOPPED_AT,
-        current_stop_sequence=CURRENT_STOP_SEQUENCE,
         updated_at=timestamp_to_datetime(TRIP_UPDATE_TIMESTAMP),
     )
     expected_transformed_base_data = {TRIP_ID: trip}
@@ -353,23 +347,6 @@ def test_transform_trip_stop_events_short_circuit():
     transformer._transform_trip_stop_events()
 
     assert [] == trip.stop_times
-
-
-def test_update_stop_event_indices():
-    """[GTFS Realtime transformer] Update stop event indices"""
-    transformer = gtfsrealtime._GtfsRealtimeToTransiterTransformer(None)
-    trip = parse.Trip(
-        id="trip",
-        route_id="L",
-        direction_id=True,
-        current_stop_sequence=15,
-        stop_times=[parse.TripStopTime(stop_id="1"), parse.TripStopTime(stop_id="2")],
-    )
-    transformer._trip_id_to_trip_model = {TRIP_ID: trip}
-
-    transformer._update_stop_event_indices()
-
-    assert [15, 16] == [stu.stop_sequence for stu in trip.stop_times]
 
 
 def test_start_to_finish_parse():
@@ -421,19 +398,14 @@ def test_start_to_finish_parse():
 
     trip = parse.Trip(
         id="trip_id",
-        train_id=None,
         route_id="4",
         start_time=datetime.datetime(year=2018, month=9, day=15),
-        current_status=parse.Trip.Status.IN_TRANSIT_TO,
-        current_stop_sequence=16,
         direction_id=None,
         updated_at=timestamp_to_datetime(TRIP_UPDATE_TIMESTAMP),
-        current_stop_id="626S",
     )
 
     stu_1 = parse.TripStopTime(
         stop_id=STOP_ONE_ID,
-        stop_sequence=16,
         future=True,
         arrival_time=timestamp_to_datetime(STOP_ONE_ARR_TIMESTAMP),
         departure_time=timestamp_to_datetime(STOP_ONE_DEP_TIMESTAMP),
@@ -442,7 +414,6 @@ def test_start_to_finish_parse():
 
     stu_2 = parse.TripStopTime(
         stop_id=STOP_TWO_ID,
-        stop_sequence=17,
         future=True,
         arrival_time=timestamp_to_datetime(STOP_TWO_ARR_TIMESTAMP),
         departure_time=None,
