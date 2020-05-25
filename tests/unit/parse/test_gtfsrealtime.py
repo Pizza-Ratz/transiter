@@ -416,7 +416,7 @@ def test_start_to_finish_parse():
 
     stu_1 = parse.TripStopTime(
         stop_id=STOP_ONE_ID,
-        stop_sequence=16,
+        stop_sequence=None,
         future=True,
         arrival_time=timestamp_to_datetime(STOP_ONE_ARR_TIMESTAMP),
         departure_time=timestamp_to_datetime(STOP_ONE_DEP_TIMESTAMP),
@@ -425,7 +425,7 @@ def test_start_to_finish_parse():
 
     stu_2 = parse.TripStopTime(
         stop_id=STOP_TWO_ID,
-        stop_sequence=17,
+        stop_sequence=None,
         future=True,
         arrival_time=timestamp_to_datetime(STOP_TWO_ARR_TIMESTAMP),
         departure_time=None,
