@@ -41,10 +41,7 @@ class GtfsRealtimeParser(TransiterParser):
         yield from parse_alerts(self._gtfs_feed_message)
 
     def get_trips(self) -> typing.Iterable[parse.Trip]:
-        (feed_time, trips) = transform_to_transiter_structure(
-            _read_protobuf_message(self._gtfs_feed_message), "America/New_York"
-        )
-        return trips
+        yield from parse_trips(self._gtfs_feed_message)
 
     def print(self):
         print(self._gtfs_feed_message)
@@ -133,6 +130,60 @@ def build_alert_messages(alert):
     for language, message in language_to_message.items():
         message.language = language
         yield message
+
+
+def parse_trips(feed_message):
+    for entity in feed_message.entity:
+        if not entity.HasField("trip_update"):
+            continue
+        trip_update = entity.trip_update
+        trip_desc = trip_update.trip
+
+        # TODO handle start time correctly. What about timezone?
+        # start_date_str = trip_data.get("start_date", None)
+        # if start_date_str is not None:
+        #    start_dt = datetime.datetime(
+        #        year=int(start_date_str[0:4]),
+        #        month=int(start_date_str[4:6]),
+        #        day=int(start_date_str[6:8]),
+        #    )
+        #    trip_start_time = self._localize_datetime(start_dt, naive=True)
+        # else:
+        trip_start_time = None
+
+        yield parse.Trip(
+            id=trip_desc.trip_id,
+            route_id=trip_desc.route_id,
+            direction_id=trip_desc.direction_id,
+            schedule_relationship=parse.Trip.ScheduleRelationship(
+                trip_desc.schedule_relationship
+            ),  # TODO handle unknown case
+            start_time=trip_start_time,
+            updated_at=_timestamp_to_datetime(trip_update.timestamp),
+            delay=trip_update.timestamp,
+            stop_times=[
+                _build_stop_time(stop_time_update)
+                for stop_time_update in trip_update.stop_time_update
+            ],
+        )
+
+
+def _build_stop_time(stop_time_update):
+    return parse.TripStopTime(
+        stop_sequence=stop_time_update.stop_sequence,  # TODO what if null
+        stop_id=stop_time_update.stop_time,
+        schedule_relationship=parse.Trip.ScheduleRelationship(
+            stop_time_update.schedule_relationship
+        ),
+        arrival_time=_timestamp_to_datetime(stop_time_update.arrival.time),
+        arrival_delay=stop_time_update.arrival.delay,
+        arrival_uncertainty=stop_time_update.arrival.uncertainty,
+        departure_time=_timestamp_to_datetime(stop_time_update.departure.time),
+        departure_delay=stop_time_update.departure.delay,
+        departure_uncertainty=stop_time_update.departure.uncertainty,
+        track=None,  # TODO
+        future=True,
+    )
 
 
 def _read_protobuf_message(message):

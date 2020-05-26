@@ -129,18 +129,29 @@ class ScheduledTripStopTime:
 
 @dataclass
 class Trip:
+    class ScheduleRelationship(enum.Enum):
+        SCHEDULED = 0
+        ADDED = 1
+        UNSCHEDULED = 2
+        CANCELED = 3
+        REPLACEMENT = 4
+        UNKNOWN = 10
+
     id: str
     route_id: typing.Optional[str]
     direction_id: typing.Optional[bool]
-    start_time: datetime.datetime = None
-    stop_times: typing.List["TripStopTime"] = field(default_factory=list)
+    schedule_relationship: ScheduleRelationship = ScheduleRelationship.UNKNOWN
+    start_time: typing.Optional[datetime.datetime] = None
     updated_at: datetime.datetime = None
     delay: int = None
+    stop_times: typing.List["TripStopTime"] = field(default_factory=list)
 
 
 @dataclass
 class TripStopTime:
     stop_id: str
+    stop_sequence: int = None
+    schedule_relationship: Trip.ScheduleRelationship = Trip.ScheduleRelationship.SCHEDULED
     arrival_time: datetime.datetime = None
     arrival_delay: int = None
     arrival_uncertainty: int = None
@@ -148,7 +159,6 @@ class TripStopTime:
     departure_delay: int = None
     departure_uncertainty: int = None
     track: str = None  # Transiter-only non-GTFS field
-    stop_sequence: int = None
     future: bool = True
 
 
