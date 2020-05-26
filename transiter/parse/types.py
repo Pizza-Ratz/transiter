@@ -149,9 +149,15 @@ class Trip:
 
 @dataclass
 class TripStopTime:
+    class ScheduleRelationship(enum.Enum):
+        SCHEDULED = 0
+        SKIPPED = 1
+        NO_DATA = 2
+        UNSCHEDULED = 3
+
     stop_id: str
     stop_sequence: int = None
-    schedule_relationship: Trip.ScheduleRelationship = Trip.ScheduleRelationship.SCHEDULED
+    schedule_relationship: ScheduleRelationship = ScheduleRelationship.SCHEDULED
     arrival_time: datetime.datetime = None
     arrival_delay: int = None
     arrival_uncertainty: int = None

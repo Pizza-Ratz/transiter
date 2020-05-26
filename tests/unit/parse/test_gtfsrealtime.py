@@ -208,7 +208,12 @@ def test_parse_alerts__transiter_extension():
 
 
 SCHEDULE_RELATIONSHIP = parse.Trip.ScheduleRelationship.ADDED
+SCHEDULE_RELATIONSHIP_STOP_TIME = parse.TripStopTime.ScheduleRelationship.SKIPPED
 DELAY = 324
+DELAY_2 = 75
+UNCERTAINTY_1 = 213
+UNCERTAINTY_2 = 214
+STOP_SEQUENCE = 4
 
 
 def build_test_parse_trip_params(gtfs):
@@ -258,6 +263,44 @@ def build_test_parse_trip_params(gtfs):
                 stop_times=[parse.TripStopTime(stop_id=STOP_ID, arrival_time=TIME_1)],
             ),
         ],
+        [  # Check all fields in StopTimeUpdate
+            gtfs.TripUpdate(
+                trip=gtfs.TripDescriptor(trip_id=TRIP_ID),
+                stop_time_update=[
+                    gtfs.TripUpdate.StopTimeUpdate(
+                        stop_id=STOP_ID,
+                        stop_sequence=STOP_SEQUENCE,
+                        schedule_relationship=SCHEDULE_RELATIONSHIP_STOP_TIME.value,
+                        arrival=gtfs.TripUpdate.StopTimeEvent(
+                            time=int(TIME_1.timestamp()),
+                            delay=DELAY,
+                            uncertainty=UNCERTAINTY_1,
+                        ),
+                        departure=gtfs.TripUpdate.StopTimeEvent(
+                            time=int(TIME_2.timestamp()),
+                            delay=DELAY_2,
+                            uncertainty=UNCERTAINTY_2,
+                        ),
+                    )
+                ],
+            ),
+            parse.Trip(
+                id=TRIP_ID,
+                stop_times=[
+                    parse.TripStopTime(
+                        stop_id=STOP_ID,
+                        stop_sequence=STOP_SEQUENCE,
+                        schedule_relationship=SCHEDULE_RELATIONSHIP_STOP_TIME,
+                        arrival_time=TIME_1,
+                        arrival_delay=DELAY,
+                        arrival_uncertainty=UNCERTAINTY_1,
+                        departure_time=TIME_2,
+                        departure_delay=DELAY_2,
+                        departure_uncertainty=UNCERTAINTY_2,
+                    )
+                ],
+            ),
+        ],
     ]
 
 
@@ -275,6 +318,43 @@ def test_parse_trips(input_trip, expected_trip, gtfs):
     trip_message = gtfs.FeedMessage(
         header=gtfs.FeedHeader(gtfs_realtime_version="2.0"),
         entity=[gtfs.FeedEntity(id=TRIP_ID, trip_update=input_trip)],
+    )
+
+    parser = gtfsrealtime.GtfsRealtimeParser()
+    parser.load_content(trip_message.SerializeToString())
+    actual_trips = list(parser.get_trips())
+
+    assert [expected_trip] == actual_trips
+
+
+TRACK = "track"
+
+
+def test_parse_trips__transiter_extension():
+    gtfs = transiter_gtfs_rt_pb2
+
+    stop_time_extension_key = gtfs.TripUpdate.StopTimeUpdate._extensions_by_number[
+        gtfsrealtime.TRANSITER_EXTENSION_ID
+    ]
+
+    input_stop_time_update = gtfs.TripUpdate.StopTimeUpdate(stop_id=STOP_ID)
+    additional_data = input_stop_time_update.Extensions[stop_time_extension_key]
+    additional_data.track = TRACK
+    trip_message = gtfs.FeedMessage(
+        header=gtfs.FeedHeader(gtfs_realtime_version="2.0"),
+        entity=[
+            gtfs.FeedEntity(
+                id=TRIP_ID,
+                trip_update=gtfs.TripUpdate(
+                    trip=gtfs.TripDescriptor(trip_id=TRIP_ID),
+                    stop_time_update=[input_stop_time_update],
+                ),
+            )
+        ],
+    )
+
+    expected_trip = parse.Trip(
+        id=TRIP_ID, stop_times=[parse.TripStopTime(stop_id=STOP_ID, track=TRACK)]
     )
 
     parser = gtfsrealtime.GtfsRealtimeParser()

@@ -171,12 +171,20 @@ def parse_trips(feed_message):
 
 
 def _build_stop_time(stop_time_update):
+    # This the only way to actually get the extension...of course, the API can't
+    # be trusted to not change but probably it won't.
+    # noinspection PyProtectedMember
+    extension_key = stop_time_update._extensions_by_number.get(TRANSITER_EXTENSION_ID)
+    if extension_key is None:
+        track = None
+    else:
+        track = _get_nullable_field(stop_time_update.Extensions[extension_key], "track")
     return parse.TripStopTime(
         stop_sequence=_get_nullable_field(stop_time_update, "stop_sequence"),
         stop_id=stop_time_update.stop_id,
-        schedule_relationship=parse.Trip.ScheduleRelationship(
+        schedule_relationship=parse.TripStopTime.ScheduleRelationship(
             stop_time_update.schedule_relationship
-        ),  # TODO this is wrong :/
+        ),
         arrival_time=_timestamp_to_datetime(stop_time_update.arrival.time),
         arrival_delay=_get_nullable_field(stop_time_update.arrival, "delay"),
         arrival_uncertainty=_get_nullable_field(
@@ -187,7 +195,7 @@ def _build_stop_time(stop_time_update):
         departure_uncertainty=_get_nullable_field(
             stop_time_update.departure, "uncertainty"
         ),
-        track=None,  # TODO
+        track=track,
         future=True,
     )
 
