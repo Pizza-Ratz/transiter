@@ -171,6 +171,7 @@ class AgencySyncer(syncer(models.Agency)):
         agencies = list(map(models.Agency.from_parsed_agency, parsed_agencies))
         for agency in agencies:
             agency.system_pk = self.feed_update.feed.system_pk
+            # TODO: set the system timezone to be equal to the agency timezone
         __, num_added, num_updated = self._merge_entities(agencies)
         return num_added, num_updated
 
