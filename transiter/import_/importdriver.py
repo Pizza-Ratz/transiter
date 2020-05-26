@@ -348,6 +348,7 @@ class TripSyncer(syncer(models.Trip)):
 
     def sync(self, parsed_trips):
         trips = map(_Trip.from_parsed_trip, parsed_trips)
+        # TODO: localize the trip start time
         for data_adder in (
             self._add_source,
             self._add_schedule_data,  # Must come before route data

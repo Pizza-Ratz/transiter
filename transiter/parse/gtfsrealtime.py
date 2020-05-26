@@ -139,17 +139,27 @@ def parse_trips(feed_message):
         trip_update = entity.trip_update
         trip_desc = trip_update.trip
 
-        # TODO handle start time correctly. What about timezone?
-        # start_date_str = trip_data.get("start_date", None)
-        # if start_date_str is not None:
-        #    start_dt = datetime.datetime(
-        #        year=int(start_date_str[0:4]),
-        #        month=int(start_date_str[4:6]),
-        #        day=int(start_date_str[6:8]),
-        #    )
-        #    trip_start_time = self._localize_datetime(start_dt, naive=True)
-        # else:
-        trip_start_time = None
+        if trip_desc.HasField("start_time"):
+            if trip_desc.HasField("start_date"):
+                start_date_string = trip_desc.start_date
+                base = datetime.datetime(
+                    year=int(start_date_string[:4]),
+                    month=int(start_date_string[4:6]),
+                    day=int(start_date_string[6:8]),
+                )
+            else:
+                # TODO: this is a buggy: the server's current day may not be equal to
+                #  the day in the region of the transit system
+                base = datetime.datetime.now()
+            start_time_string = trip_desc.start_time
+            trip_start_time = base.replace(
+                hour=int(start_time_string[:2]),
+                minute=int(start_time_string[3:5]),
+                second=int(start_time_string[6:8]),
+                microsecond=0,
+            )
+        else:
+            trip_start_time = None
 
         yield parse.Trip(
             id=trip_desc.trip_id,
@@ -204,198 +214,6 @@ def _get_nullable_field(entity, field_name, default=None):
     if not entity.HasField(field_name):
         return default
     return getattr(entity, field_name)
-
-
-def _read_protobuf_message(message):
-    """
-    Convert a protobuf message into a JSON-like structure.
-
-    This is not an exhaustive converter but mean to be sufficient for GTFS
-    realtime
-
-    :param message: a google.protobuf.message.Message object
-    :return: a dictionary of {key: value} for fields in the Message. The
-    function is recursive so if value is also a protobuf then that will be
-    expanded
-    """
-    d = {}
-    for (descriptor, value) in message.ListFields():
-        # Iterate through the possible protobuf field types to decide how to
-        # parse this value
-        if descriptor.type == descriptor.TYPE_MESSAGE:
-            parsing_function = _read_protobuf_message
-        elif descriptor.type == descriptor.TYPE_ENUM:
-
-            def parsing_function(value):
-                return descriptor.enum_type.values_by_number[value].name
-
-        else:
-
-            def parsing_function(value):
-                return value
-
-        # Then parse it
-        if descriptor.label == descriptor.LABEL_REPEATED:
-            parsed_value = [parsing_function(v) for v in value]
-        else:
-            parsed_value = parsing_function(value)
-
-        d[descriptor.name] = parsed_value
-    return d
-
-
-def transform_to_transiter_structure(data, timezone_str=None):
-    """
-    Transform GTFS Realtime data in JSON like format to Transiter models
-
-    :param data: the data
-    :param timezone_str: a string decribing the timezone
-    :return: feed_time, trips, route_ids in the feed
-    """
-    transformer = _GtfsRealtimeToTransiterTransformer(data, timezone_str)
-    return transformer.transform()
-
-
-ACTIVE_PERIOD = "active_period"
-AGENCY_ID = "agency_id"
-ALERT = "alert"
-CAUSE = "cause"
-DESCRIPTION_TEXT = "description_text"
-EFFECT = "effect"
-END = "end"
-ENTITY = "entity"
-HEADER_TEXT = "header_text"
-ID = "id"
-INFORMED_ENTITY = "informed_entity"
-ROUTE_ID = "route_id"
-START = "start"
-TRANSLATION = "translation"
-TEXT = "text"
-URL = "url"
-
-
-class _GtfsRealtimeToTransiterTransformer:
-    def __init__(self, raw_data, timezone_str=None):
-        self._raw_data = raw_data
-        self._trip_id_to_raw_entities = {}
-        self._trip_id_to_transformed_entity = {}
-        self._trip_id_to_trip_model = {}
-        self._transformed_metadata = {}
-        self._feed_time = None
-        self._timestamp_to_datetime_cache = {}
-        if timezone_str is None:
-            self._timezone = None
-        else:
-            self._timezone = pytz.timezone(timezone_str)
-
-    def transform(self):
-        self._transform_feed_metadata()
-        self._group_trip_entities()
-        self._transform_trip_base_data()
-        self._transform_trip_stop_events()
-        return (self._feed_time, list(self._trip_id_to_trip_model.values()))
-
-    def _transform_feed_metadata(self):
-        self._feed_time = self._timestamp_to_datetime(
-            self._raw_data["header"]["timestamp"]
-        )
-        self._transformed_metadata = {"timestamp": self._feed_time}
-
-    def _group_trip_entities(self):
-        def attach_entity(entity_key, entity):
-            trip_descriptor = entity.get("trip", {})
-            trip_id = trip_descriptor.get("trip_id", None)
-            if trip_id is None:
-                return
-            self._trip_id_to_raw_entities.setdefault(trip_id, {})
-            self._trip_id_to_raw_entities[trip_id]["trip"] = trip_descriptor
-            self._trip_id_to_raw_entities[trip_id][entity_key] = entity
-
-        for main_entity in self._raw_data.get("entity", []):
-            if "trip_update" in main_entity:
-                attach_entity("trip_update", main_entity["trip_update"])
-            if "vehicle" in main_entity:
-                attach_entity("vehicle", main_entity["vehicle"])
-            # if "alert" in main_entity:
-            #    self._alerts_raw_data.append(main_entity["alert"])
-
-    def _transform_trip_base_data(self):
-        for trip_id, entity in self._trip_id_to_raw_entities.items():
-            trip_data = entity.get("trip", {})
-            vehicle_data = entity.get("vehicle", {})
-
-            start_date_str = trip_data.get("start_date", None)
-            if start_date_str is not None:
-                start_dt = datetime.datetime(
-                    year=int(start_date_str[0:4]),
-                    month=int(start_date_str[4:6]),
-                    day=int(start_date_str[6:8]),
-                )
-                trip_start_time = self._localize_datetime(start_dt, naive=True)
-            else:
-                trip_start_time = None
-
-            trip = parse.Trip(
-                id=trip_id,
-                route_id=trip_data.get("route_id", None),
-                direction_id=trip_data.get("direction_id", None),
-                start_time=trip_start_time,
-                updated_at=self._timestamp_to_datetime(
-                    vehicle_data.get("timestamp", None)
-                ),  # TODO: this is wrong
-            )
-            self._trip_id_to_trip_model[trip_id] = trip
-
-    def _transform_trip_stop_events(self):
-        for trip_id, trip in self._trip_id_to_trip_model.items():
-            entity = self._trip_id_to_raw_entities[trip_id]
-
-            trip_update = entity.get("trip_update", {})
-            stop_time_updates = []
-
-            for stop_time_update_data in trip_update.get("stop_time_update", []):
-                stop_time_update = parse.TripStopTime(
-                    stop_id=stop_time_update_data["stop_id"],
-                    arrival_time=self._timestamp_to_datetime(
-                        stop_time_update_data.get("arrival", {}).get("time", None)
-                    ),
-                    arrival_delay=stop_time_update_data.get("arrival", {}).get("delay"),
-                    arrival_uncertainty=stop_time_update_data.get("arrival", {}).get(
-                        "uncertainty"
-                    ),
-                    departure_time=self._timestamp_to_datetime(
-                        stop_time_update_data.get("departure", {}).get("time", None)
-                    ),
-                    departure_delay=stop_time_update_data.get("departure", {}).get(
-                        "delay"
-                    ),
-                    departure_uncertainty=stop_time_update_data.get(
-                        "departure", {}
-                    ).get("uncertainty"),
-                    track=stop_time_update_data.get("track", None),
-                    stop_sequence=stop_time_update_data.get("stop_sequence"),
-                )
-                stop_time_updates.append(stop_time_update)
-            trip.stop_times = stop_time_updates
-
-    def _timestamp_to_datetime(self, timestamp):
-        if timestamp is None or timestamp == 0:
-            return None
-        if timestamp not in self._timestamp_to_datetime_cache:
-            utc_dt_naive = datetime.datetime.utcfromtimestamp(timestamp)
-            utc_dt = pytz.UTC.localize(utc_dt_naive)
-            self._timestamp_to_datetime_cache[timestamp] = self._localize_datetime(
-                utc_dt
-            )
-        return self._timestamp_to_datetime_cache[timestamp]
-
-    def _localize_datetime(self, dt, naive=False):
-        if self._timezone is None:
-            return dt
-        if naive:
-            return self._timezone.localize(dt)
-        else:
-            return dt.astimezone(self._timezone)
 
 
 if __name__ == "__main__":
