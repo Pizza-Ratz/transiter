@@ -138,8 +138,8 @@ class Trip:
         UNKNOWN = 10
 
     id: str
-    route_id: typing.Optional[str]
-    direction_id: typing.Optional[bool]
+    route_id: typing.Optional[str] = None
+    direction_id: typing.Optional[bool] = None
     schedule_relationship: ScheduleRelationship = ScheduleRelationship.UNKNOWN
     start_time: typing.Optional[datetime.datetime] = None
     updated_at: datetime.datetime = None

@@ -207,6 +207,83 @@ def test_parse_alerts__transiter_extension():
     assert [expected_alert] == actual_alerts
 
 
+SCHEDULE_RELATIONSHIP = parse.Trip.ScheduleRelationship.ADDED
+DELAY = 324
+
+
+def build_test_parse_trip_params(gtfs):
+    return [
+        [  # Check nullable fields
+            gtfs.TripUpdate(trip=gtfs.TripDescriptor(trip_id=TRIP_ID)),
+            parse.Trip(id=TRIP_ID),
+        ],
+        [  # Check fields in the trip descriptor
+            gtfs.TripUpdate(
+                trip=gtfs.TripDescriptor(
+                    trip_id=TRIP_ID,
+                    route_id=ROUTE_ID,
+                    direction_id=TRIP_DIRECTION_ID,  # TODO start time
+                    schedule_relationship=SCHEDULE_RELATIONSHIP.value,
+                )
+            ),
+            parse.Trip(
+                id=TRIP_ID,
+                route_id=ROUTE_ID,
+                direction_id=TRIP_DIRECTION_ID,
+                schedule_relationship=SCHEDULE_RELATIONSHIP,
+            ),
+        ],
+        [  # Check fields in the trip update
+            gtfs.TripUpdate(
+                trip=gtfs.TripDescriptor(trip_id=TRIP_ID),
+                timestamp=int(TIME_1.timestamp()),
+                delay=DELAY,
+            ),
+            parse.Trip(id=TRIP_ID, updated_at=TIME_1, delay=DELAY),
+        ],
+        [  # Check nullable fields in StopTimeUpdate
+            gtfs.TripUpdate(
+                trip=gtfs.TripDescriptor(trip_id=TRIP_ID),
+                stop_time_update=[
+                    gtfs.TripUpdate.StopTimeUpdate(
+                        stop_id=STOP_ID,
+                        arrival=gtfs.TripUpdate.StopTimeEvent(
+                            time=int(TIME_1.timestamp())
+                        ),
+                    )
+                ],
+            ),
+            parse.Trip(
+                id=TRIP_ID,
+                stop_times=[parse.TripStopTime(stop_id=STOP_ID, arrival_time=TIME_1)],
+            ),
+        ],
+    ]
+
+
+@pytest.mark.parametrize(
+    "input_trip,expected_trip,gtfs",
+    itertools.chain.from_iterable(
+        [
+            (input_trip, expected_trip, gtfs_rt_pb2)
+            for input_trip, expected_trip in build_test_parse_trip_params(gtfs_rt_pb2)
+        ]
+        for gtfs_rt_pb2 in [transiter_gtfs_rt_pb2, library_gtfs_rt_pb2]
+    ),
+)
+def test_parse_trips(input_trip, expected_trip, gtfs):
+    trip_message = gtfs.FeedMessage(
+        header=gtfs.FeedHeader(gtfs_realtime_version="2.0"),
+        entity=[gtfs.FeedEntity(id=TRIP_ID, trip_update=input_trip)],
+    )
+
+    parser = gtfsrealtime.GtfsRealtimeParser()
+    parser.load_content(trip_message.SerializeToString())
+    actual_trips = list(parser.get_trips())
+
+    assert [expected_trip] == actual_trips
+
+
 GTFS_REALTIME_VERSION = "2.0"
 INCREMENTALITY = "FULL_DATASET"
 INCREMENTALITY_INT = 0

@@ -153,14 +153,16 @@ def parse_trips(feed_message):
 
         yield parse.Trip(
             id=trip_desc.trip_id,
-            route_id=trip_desc.route_id,
-            direction_id=trip_desc.direction_id,
+            route_id=_get_nullable_field(trip_desc, "route_id"),
+            direction_id=_get_nullable_field(trip_desc, "direction_id"),
             schedule_relationship=parse.Trip.ScheduleRelationship(
                 trip_desc.schedule_relationship
-            ),  # TODO handle unknown case
+            )
+            if trip_desc.HasField("schedule_relationship")
+            else parse.Trip.ScheduleRelationship.UNKNOWN,
             start_time=trip_start_time,
             updated_at=_timestamp_to_datetime(trip_update.timestamp),
-            delay=trip_update.timestamp,
+            delay=_get_nullable_field(trip_update, "delay"),
             stop_times=[
                 _build_stop_time(stop_time_update)
                 for stop_time_update in trip_update.stop_time_update
@@ -170,20 +172,30 @@ def parse_trips(feed_message):
 
 def _build_stop_time(stop_time_update):
     return parse.TripStopTime(
-        stop_sequence=stop_time_update.stop_sequence,  # TODO what if null
-        stop_id=stop_time_update.stop_time,
+        stop_sequence=_get_nullable_field(stop_time_update, "stop_sequence"),
+        stop_id=stop_time_update.stop_id,
         schedule_relationship=parse.Trip.ScheduleRelationship(
             stop_time_update.schedule_relationship
-        ),
+        ),  # TODO this is wrong :/
         arrival_time=_timestamp_to_datetime(stop_time_update.arrival.time),
-        arrival_delay=stop_time_update.arrival.delay,
-        arrival_uncertainty=stop_time_update.arrival.uncertainty,
+        arrival_delay=_get_nullable_field(stop_time_update.arrival, "delay"),
+        arrival_uncertainty=_get_nullable_field(
+            stop_time_update.arrival, "uncertainty"
+        ),
         departure_time=_timestamp_to_datetime(stop_time_update.departure.time),
-        departure_delay=stop_time_update.departure.delay,
-        departure_uncertainty=stop_time_update.departure.uncertainty,
+        departure_delay=_get_nullable_field(stop_time_update.departure, "delay"),
+        departure_uncertainty=_get_nullable_field(
+            stop_time_update.departure, "uncertainty"
+        ),
         track=None,  # TODO
         future=True,
     )
+
+
+def _get_nullable_field(entity, field_name, default=None):
+    if not entity.HasField(field_name):
+        return default
+    return getattr(entity, field_name)
 
 
 def _read_protobuf_message(message):
