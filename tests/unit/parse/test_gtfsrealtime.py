@@ -479,8 +479,7 @@ def build_test_parse_vehicle_params(gtfs):
                 stop_id="7",
                 current_status=VEHICLE_STOP_STATUS.value,
                 congestion_level=CONGESTION_LEVEL.value,
-                # occupancy_status=1,
-                # occupancy_percentage=1  # TODO?
+                occupancy_status=OCCUPANCY_STATUS.value,
             ),
             parse.Vehicle(
                 id=VEHICLE_ID,
@@ -493,8 +492,25 @@ def build_test_parse_vehicle_params(gtfs):
                 current_stop_id="7",
                 current_status=VEHICLE_STOP_STATUS,
                 congestion_level=CONGESTION_LEVEL,
-                # occupancy_status=1,
-                # occupancy_percentage=1
+                occupancy_status=OCCUPANCY_STATUS,
+            ),
+        ],
+        [  # Some data not copied
+            None,
+            gtfs.VehiclePosition(
+                vehicle=gtfs.VehicleDescriptor(id=VEHICLE_ID),
+                position=gtfs.Position(latitude=1.0, longitude=2.0,),
+                current_stop_sequence=6,
+                stop_id="7",
+                occupancy_status=OCCUPANCY_STATUS.value,
+            ),
+            parse.Vehicle(
+                id=VEHICLE_ID,
+                latitude=1.0,
+                longitude=2.0,
+                current_stop_sequence=6,
+                current_stop_id="7",
+                occupancy_status=OCCUPANCY_STATUS,
             ),
         ],
         [None, None, None],  # No data at all

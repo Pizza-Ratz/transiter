@@ -190,6 +190,7 @@ class Vehicle:
         CRUSHED_STANDING_ROOM_ONLY = 4
         FULL = 5
         NOT_ACCEPTING_PASSENGERS = 6
+        UNKNOWN = 100
 
     id: str
     trip_id: str = None
@@ -205,6 +206,7 @@ class Vehicle:
     speed: float = None
     updated_at: datetime.datetime = None
     congestion_level: CongestionLevel = CongestionLevel.UNKNOWN_CONGESTION_LEVEL
+    occupancy_status: OccupancyStatus = OccupancyStatus.UNKNOWN
 
 
 @dataclass

@@ -281,6 +281,10 @@ def parse_vehicles(feed_message):
             vehicle.congestion_level = parse.Vehicle.CongestionLevel(
                 vehicle_position.congestion_level
             )
+            if vehicle_position.HasField("occupancy_status"):
+                vehicle.occupancy_status = parse.Vehicle.OccupancyStatus(
+                    vehicle_position.occupancy_status
+                )
         yield vehicle
 
 
