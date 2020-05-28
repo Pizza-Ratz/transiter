@@ -760,3 +760,66 @@ def test_alert__route_linking(
         assert getattr(persisted_alert, entity_type) == [entity]
     else:
         assert getattr(persisted_alert, entity_type) == []
+
+
+@pytest.fixture
+def trip_for_vehicle(add_model, system_1, route_1_1, stop_1_1, stop_1_2, stop_1_3):
+    return add_model(
+        models.Trip(
+            id="trip_id",
+            route=route_1_1,
+            stop_times=[
+                models.TripStopTime(stop_sequence=1, stop=stop_1_1, future=False),
+                models.TripStopTime(stop_sequence=2, stop=stop_1_2, future=True),
+                models.TripStopTime(stop_sequence=3, stop=stop_1_3, future=True),
+            ],
+        )
+    )
+
+
+@pytest.mark.parametrize(
+    "provide_stop_id,provide_stop_sequence",
+    [[True, True], [True, False], [False, True]],
+)
+def test_vehicle__set_stop_simple_case(
+    db_session,
+    current_update,
+    trip_for_vehicle,
+    stop_1_3,
+    provide_stop_id,
+    provide_stop_sequence,
+):
+    vehicle = parse.Vehicle(
+        id="vehicle_id",
+        trip_id="trip_id",
+        current_stop_id=stop_1_3.id if provide_stop_id else None,
+        current_stop_sequence=3 if provide_stop_sequence else None,
+    )
+
+    importdriver.run_import(current_update.pk, ParserForTesting([vehicle]))
+
+    persisted_vehicle = db_session.query(models.Vehicle).all()[0]
+
+    assert persisted_vehicle.current_stop == stop_1_3
+    assert persisted_vehicle.current_stop_sequence == 3
+
+
+def test_vehicle__add_trip_relationship(
+    db_session, current_update, trip_for_vehicle, stop_1_3,
+):
+    vehicle = parse.Vehicle(id="vehicle_id", trip_id="trip_id",)
+
+    importdriver.run_import(current_update.pk, ParserForTesting([vehicle]))
+
+    persisted_vehicle = db_session.query(models.Vehicle).all()[0]
+
+    assert persisted_vehicle.trip == trip_for_vehicle
+
+
+# TODO: vehicle test cases
+"""
+- Ensuring the history of a trip is changed correctly
+- Deleting a trip that has a vehicle in the FK!
+- Move vehicle between trips
+- Delete vehicle assigned to trip
+"""

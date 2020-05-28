@@ -56,8 +56,8 @@ class Vehicle(Base):
 
     source = relationship("FeedUpdate", cascade="none")
     system = relationship("System", back_populates="vehicles", cascade="none")
-    trip = relationship("Trip", back_populates="vehicle", cascade="none")
-    stop = relationship("Stop", cascade="none")
+    trip = relationship("Trip", back_populates="vehicle", cascade="none", uselist=False)
+    current_stop = relationship("Stop", cascade="none")
 
     __table_args__ = (UniqueConstraint(system_pk, id),)
 
@@ -67,6 +67,7 @@ class Vehicle(Base):
             id=vehicle.id,
             label=vehicle.label,
             license_plate=vehicle.license_plate,
+            current_stop_sequence=vehicle.current_stop_sequence,
             current_status=vehicle.current_status,
             latitude=vehicle.latitude,
             longitude=vehicle.longitude,

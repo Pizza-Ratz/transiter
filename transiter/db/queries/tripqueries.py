@@ -5,6 +5,7 @@ import sqlalchemy.sql.expression as sql
 from sqlalchemy.orm import selectinload, joinedload
 
 from transiter.db import dbconnection, models
+import typing
 
 
 def list_all_from_feed(feed_pk):
@@ -69,13 +70,35 @@ def get_trip_pk_to_stop_time_data_list(feed_pk) -> Dict[int, List[StopTimeData]]
         .order_by(models.TripStopTime.trip_pk, models.TripStopTime.stop_sequence)
     )
     trip_pk_to_stop_time_data_list = {}
-    for (trip_pk, stop_time_pk, stop_sequence, stop_pk,) in query.all():
+    for (trip_pk, stop_time_pk, stop_sequence, stop_pk) in query.all():
         if trip_pk not in trip_pk_to_stop_time_data_list:
             trip_pk_to_stop_time_data_list[trip_pk] = []
         trip_pk_to_stop_time_data_list[trip_pk].append(
             StopTimeData(pk=stop_time_pk, stop_sequence=stop_sequence, stop_pk=stop_pk)
         )
     return trip_pk_to_stop_time_data_list
+
+
+# TODO: bulkify
+def get_trip_stop_time_data(
+    trip_pk, stop_pk, stop_sequence
+) -> typing.Optional[StopTimeData]:
+    session = dbconnection.get_session()
+    query = session.query(
+        models.TripStopTime.trip_pk,
+        models.TripStopTime.pk,
+        models.TripStopTime.stop_sequence,
+        models.TripStopTime.stop_pk,
+    ).filter(models.TripStopTime.trip_pk == trip_pk)
+    if stop_pk is not None:
+        query = query.filter(models.TripStopTime.stop_pk == stop_pk)
+    if stop_sequence is not None:
+        query = query.filter(models.TripStopTime.stop_sequence == stop_sequence)
+    for (trip_pk, stop_time_pk, stop_sequence, stop_pk) in query.all():
+        return StopTimeData(
+            pk=stop_time_pk, stop_sequence=stop_sequence, stop_pk=stop_pk
+        )
+    return None
 
 
 def list_all_in_route_by_pk(route_pk):

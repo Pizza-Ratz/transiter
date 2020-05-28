@@ -691,6 +691,14 @@ class VehicleImporter(syncer(models.Vehicle)):
             if trip is None:
                 continue
             vehicle_id_to_trip[parsed_vehicle.id] = trip
+
+            stop_time_data = tripqueries.get_trip_stop_time_data(
+                trip.pk, vehicle.current_stop_pk, vehicle.current_stop_sequence
+            )
+            if stop_time_data is not None:
+                vehicle.current_stop_pk = stop_time_data.stop_pk
+                vehicle.current_stop_sequence = stop_time_data.stop_sequence
+
         persisted_vehicles, num_added, num_updated = self._merge_entities(vehicles)
 
         for persisted_vehicle in persisted_vehicles:
@@ -732,6 +740,7 @@ class VehicleImporter(syncer(models.Vehicle)):
                 ),
             )
         }
+        # TODO: consider using this instead
         return tripqueries.get_id_to_pk_map_in_system(
             system_pk,
             (
