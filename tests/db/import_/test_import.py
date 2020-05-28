@@ -135,7 +135,7 @@ new_vehicle = parse.Vehicle(
         ],
         [models.Vehicle, [], [new_vehicle], (1, 0, 0)],
         [
-            models.Stop,
+            models.Vehicle,
             [
                 models.Vehicle(
                     id="vehicle",

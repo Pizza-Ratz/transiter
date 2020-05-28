@@ -684,6 +684,7 @@ class VehicleImporter(syncer(models.Vehicle)):
         for parsed_vehicle in parsed_vehicles:
             vehicle = models.Vehicle.from_parsed_vehicle(parsed_vehicle)
             vehicle.current_stop_pk = stop_id_to_pk.get(parsed_vehicle.current_stop_id)
+            vehicle.system_pk = self.feed_update.feed.system_pk
             vehicles.append(vehicle)
 
             trip = trip_id_to_trip.get(parsed_vehicle.trip_id)

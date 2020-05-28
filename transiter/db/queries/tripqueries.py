@@ -17,6 +17,7 @@ def list_all_from_feed(feed_pk):
 
 
 def list_by_system_and_trip_ids(system_id, trip_ids):
+    trip_ids = list(trip_ids)
     if len(trip_ids) == 0:
         return []
     return (
