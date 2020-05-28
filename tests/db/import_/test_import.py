@@ -55,6 +55,9 @@ new_route = parse.Route(id="route", type=parse.Route.Type.RAIL, description="new
 new_stop = parse.Stop(
     id="route", name="new stop", latitude=0, longitude=0, type=parse.Stop.Type.STATION
 )
+new_vehicle = parse.Vehicle(
+    id="vehicle", label="new vehicle", current_status=parse.Vehicle.Status.STOPPED_AT
+)
 
 
 @pytest.mark.parametrize(
@@ -130,6 +133,31 @@ new_stop = parse.Stop(
             [],
             (0, 0, 1),
         ],
+        [models.Vehicle, [], [new_vehicle], (1, 0, 0)],
+        [
+            models.Stop,
+            [
+                models.Vehicle(
+                    id="vehicle",
+                    label="old vehicle",
+                    current_status=models.Vehicle.Status.IN_TRANSIT_TO,
+                )
+            ],
+            [new_vehicle],
+            (0, 1, 0),
+        ],
+        [
+            models.Vehicle,
+            [
+                models.Vehicle(
+                    id="vehicle",
+                    label="old vehicle",
+                    current_status=models.Vehicle.Status.IN_TRANSIT_TO,
+                )
+            ],
+            [],
+            (0, 0, 1),
+        ],
     ],
 )
 def test_simple_create_update_delete(
@@ -161,6 +189,8 @@ def test_simple_create_update_delete(
             return entity.id, entity.cause, entity.effect
         if entity_type is models.Agency:
             return entity.id, entity.name
+        if entity_type is models.Vehicle:
+            return entity.id, entity.label, entity.current_status
         raise NotImplementedError
 
     assert set(map(fields_to_compare, current)) == set(

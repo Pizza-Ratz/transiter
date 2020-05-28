@@ -84,6 +84,31 @@ def upgrade():
     op.drop_column("trip", "start_time")
     op.drop_column("trip", "current_status")
 
+    op.add_column("vehicle", sa.Column("current_stop_pk", sa.Integer(), nullable=True))
+    op.add_column(
+        "vehicle", sa.Column("current_stop_sequence", sa.Integer(), nullable=True)
+    )
+    op.add_column(
+        "vehicle",
+        sa.Column(
+            "occupancy_status",
+            sa.Enum(
+                "EMPTY",
+                "MANY_SEATS_AVAILABLE",
+                "FEW_SEATS_AVAILABLE",
+                "STANDING_ROOM_ONLY",
+                "CRUSHED_STANDING_ROOM_ONLY",
+                "FULL",
+                "NOT_ACCEPTING_PASSENGERS",
+                "UNKNOWN",
+                name="occupancystatus",
+                native_enum=False,
+            ),
+            nullable=False,
+        ),
+    )
+    op.create_foreign_key(None, "vehicle", "stop", ["current_stop_pk"], ["pk"])
+
 
 def downgrade():
     pass
