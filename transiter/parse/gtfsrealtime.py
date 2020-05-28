@@ -43,6 +43,10 @@ class GtfsRealtimeParser(TransiterParser):
     def get_trips(self) -> typing.Iterable[parse.Trip]:
         yield from parse_trips(self._gtfs_feed_message)
 
+    def get_vehicles(self) -> typing.Iterable[parse.Vehicle]:
+        yield from parse_vehicles(self._gtfs_feed_message)
+
+    # TODO class method
     def print(self):
         print(self._gtfs_feed_message)
 
@@ -214,6 +218,70 @@ def _get_nullable_field(entity, field_name, default=None):
     if not entity.HasField(field_name):
         return default
     return getattr(entity, field_name)
+
+
+def parse_vehicles(feed_message):
+    trip_id_to_vehicle_ids = collections.defaultdict(list)
+    vehicle_id_to_trip_ids = collections.defaultdict(list)
+    vehicle_id_to_descriptors = collections.defaultdict(list)
+    vehicle_id_to_position = {}
+    for entity in feed_message.entity:
+        for sub_entity_key in ("vehicle", "trip_update"):
+            if not entity.HasField(sub_entity_key):
+                continue
+            sub_entity = getattr(entity, sub_entity_key)
+            if not sub_entity.HasField("vehicle"):
+                continue
+            if not sub_entity.vehicle.HasField("id"):
+                continue
+            vehicle_id = sub_entity.vehicle.id
+            vehicle_id_to_descriptors[vehicle_id].append(sub_entity.vehicle)
+            if sub_entity_key == "vehicle":
+                vehicle_id_to_position[vehicle_id] = sub_entity
+
+            if sub_entity.HasField("trip") and sub_entity.trip.HasField("trip_id"):
+                trip_id = sub_entity.trip.trip_id
+                vehicle_id_to_trip_ids[vehicle_id].append(trip_id)
+                trip_id_to_vehicle_ids[trip_id].append(vehicle_id)
+
+    buggy_vehicle_ids = set()
+    for vehicle_ids in trip_id_to_vehicle_ids.values():
+        if len(vehicle_ids) > 1:
+            buggy_vehicle_ids.update(vehicle_ids)
+    for vehicle_id, descriptors in vehicle_id_to_descriptors.items():
+        if vehicle_id in buggy_vehicle_ids:
+            continue
+        trips_ids = vehicle_id_to_trip_ids[vehicle_id]
+        if len(trips_ids) > 1:
+            continue
+        trip_id = trips_ids[0] if len(trips_ids) == 1 else None
+        vehicle = parse.Vehicle(id=vehicle_id, trip_id=trip_id)
+
+        for vehicle_desc in descriptors:
+            if vehicle_desc.HasField("label"):
+                vehicle.label = vehicle_desc.label
+            if vehicle_desc.HasField("license_plate"):
+                vehicle.license_plate = vehicle_desc.license_plate
+
+        vehicle_position = vehicle_id_to_position.get(vehicle_id)
+        if vehicle_position is not None:
+            for field_name in ["latitude", "longitude", "bearing", "odometer", "speed"]:
+                setattr(
+                    vehicle,
+                    field_name,
+                    _get_nullable_field(vehicle_position.position, field_name),
+                )
+            vehicle.current_stop_sequence = _get_nullable_field(
+                vehicle_position, "current_stop_sequence"
+            )
+            vehicle.current_stop_id = _get_nullable_field(vehicle_position, "stop_id")
+            vehicle.current_status = parse.Vehicle.Status(
+                vehicle_position.current_status
+            )
+            vehicle.congestion_level = parse.Vehicle.CongestionLevel(
+                vehicle_position.congestion_level
+            )
+        yield vehicle
 
 
 if __name__ == "__main__":

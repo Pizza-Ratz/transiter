@@ -372,3 +372,172 @@ def test_parse_trips__transiter_extension():
     actual_trips = list(parser.get_trips())
 
     assert [expected_trip] == actual_trips
+
+
+VEHICLE_ID = "vehicle_id"
+VEHICLE_ID_2 = "vehicle_id_2"
+LABEL = "label"
+LICENCE_PLACE = "licence_plate"
+TRIP_ID_2 = "trip_id_2"
+VEHICLE_STOP_STATUS = parse.Vehicle.Status.STOPPED_AT
+CONGESTION_LEVEL = parse.Vehicle.CongestionLevel.STOP_AND_GO
+OCCUPANCY_STATUS = parse.Vehicle.OccupancyStatus.CRUSHED_STANDING_ROOM_ONLY
+
+
+def build_test_parse_vehicle_params(gtfs):
+    for data in [
+        [  # Valid vehicle descriptor but no vehicle position
+            gtfs.TripUpdate(
+                trip=gtfs.TripDescriptor(trip_id=TRIP_ID),
+                vehicle=gtfs.VehicleDescriptor(id=VEHICLE_ID),
+            ),
+            None,
+            parse.Vehicle(id=VEHICLE_ID, trip_id=TRIP_ID),
+        ],
+        [  # Invalid vehicle descriptor and no vehicle position
+            gtfs.TripUpdate(
+                trip=gtfs.TripDescriptor(trip_id=TRIP_ID),
+                vehicle=gtfs.VehicleDescriptor(label=VEHICLE_ID),
+            ),
+            None,
+            None,
+        ],
+        [  # No vehicle descriptor and no vehicle position
+            gtfs.TripUpdate(trip=gtfs.TripDescriptor(trip_id=TRIP_ID),),
+            None,
+            None,
+        ],
+        [  # No trip update but vehicle position has trip descriptor
+            None,
+            gtfs.VehiclePosition(
+                trip=gtfs.TripDescriptor(trip_id=TRIP_ID),
+                vehicle=gtfs.VehicleDescriptor(id=VEHICLE_ID),
+            ),
+            parse.Vehicle(id=VEHICLE_ID, trip_id=TRIP_ID),
+        ],
+        [  # No trip update and no trip descriptor
+            None,
+            gtfs.VehiclePosition(vehicle=gtfs.VehicleDescriptor(id=VEHICLE_ID)),
+            parse.Vehicle(id=VEHICLE_ID),
+        ],
+        [  # Ensure trip data doesn't overwrite vehicle data
+            gtfs.TripUpdate(
+                trip=gtfs.TripDescriptor(trip_id=TRIP_ID),
+                vehicle=gtfs.VehicleDescriptor(id=VEHICLE_ID),
+            ),
+            gtfs.VehiclePosition(
+                vehicle=gtfs.VehicleDescriptor(
+                    id=VEHICLE_ID, label=LABEL, license_plate=LICENCE_PLACE
+                )
+            ),
+            parse.Vehicle(
+                id=VEHICLE_ID, trip_id=TRIP_ID, label=LABEL, license_plate=LICENCE_PLACE
+            ),
+        ],
+        [  # Ensure vehicle data doesn't overwrite trip data
+            gtfs.TripUpdate(
+                trip=gtfs.TripDescriptor(trip_id=TRIP_ID),
+                vehicle=gtfs.VehicleDescriptor(
+                    id=VEHICLE_ID, label=LABEL, license_plate=LICENCE_PLACE
+                ),
+            ),
+            gtfs.VehiclePosition(vehicle=gtfs.VehicleDescriptor(id=VEHICLE_ID)),
+            parse.Vehicle(
+                id=VEHICLE_ID, trip_id=TRIP_ID, label=LABEL, license_plate=LICENCE_PLACE
+            ),
+        ],
+        [  # Inconsistent trip <-> vehicle pairing
+            gtfs.TripUpdate(
+                trip=gtfs.TripDescriptor(trip_id=TRIP_ID),
+                vehicle=gtfs.VehicleDescriptor(id=VEHICLE_ID),
+            ),
+            gtfs.VehiclePosition(
+                trip=gtfs.TripDescriptor(trip_id=TRIP_ID_2),
+                vehicle=gtfs.VehicleDescriptor(id=VEHICLE_ID),
+            ),
+            None,
+        ],
+        [  # Inconsistent trip <-> vehicle pairing
+            gtfs.TripUpdate(
+                trip=gtfs.TripDescriptor(trip_id=TRIP_ID),
+                vehicle=gtfs.VehicleDescriptor(id=VEHICLE_ID),
+            ),
+            gtfs.VehiclePosition(
+                trip=gtfs.TripDescriptor(trip_id=TRIP_ID),
+                vehicle=gtfs.VehicleDescriptor(id=VEHICLE_ID_2),
+            ),
+            None,
+        ],
+        [  # All data copied
+            None,
+            gtfs.VehiclePosition(
+                vehicle=gtfs.VehicleDescriptor(id=VEHICLE_ID),
+                position=gtfs.Position(
+                    latitude=1.0, longitude=2.0, bearing=3.0, odometer=4.0, speed=5.0,
+                ),
+                current_stop_sequence=6,
+                stop_id="7",
+                current_status=VEHICLE_STOP_STATUS.value,
+                congestion_level=CONGESTION_LEVEL.value,
+                # occupancy_status=1,
+                # occupancy_percentage=1  # TODO?
+            ),
+            parse.Vehicle(
+                id=VEHICLE_ID,
+                latitude=1.0,
+                longitude=2.0,
+                bearing=3.0,
+                odometer=4.0,
+                speed=5.0,
+                current_stop_sequence=6,
+                current_stop_id="7",
+                current_status=VEHICLE_STOP_STATUS,
+                congestion_level=CONGESTION_LEVEL,
+                # occupancy_status=1,
+                # occupancy_percentage=1
+            ),
+        ],
+        [None, None, None],  # No data at all
+    ]:
+        # Note: this is to ensure so duplicate test cases. If the input trip or
+        # vehicle is None, all entity_location cases are the same.
+        yield data + ["same"]
+        if data[0] is not None and data[1] is not None:
+            yield data + ["trip_first"]
+            yield data + ["vehicle_first"]
+
+
+@pytest.mark.parametrize(
+    "input_trip,input_vehicle,expected_vehicle,entity_location,gtfs",
+    itertools.chain.from_iterable(
+        [(*data, gtfs_rt_pb2) for data in build_test_parse_vehicle_params(gtfs_rt_pb2)]
+        for gtfs_rt_pb2 in [transiter_gtfs_rt_pb2, library_gtfs_rt_pb2]
+    ),
+)
+def test_parse_vehicles(
+    input_trip, input_vehicle, expected_vehicle, entity_location, gtfs
+):
+    entities = []
+    if entity_location == "same":
+        entities.append(
+            gtfs.FeedEntity(id="1", trip_update=input_trip, vehicle=input_vehicle)
+        )
+    else:
+        if input_trip is not None:
+            entities.append(gtfs.FeedEntity(id="1", trip_update=input_trip))
+        if input_vehicle is not None:
+            entities.append(gtfs.FeedEntity(id="2", vehicle=input_vehicle))
+        if entity_location == "vehicle_first":
+            entities.reverse()
+    trip_message = gtfs.FeedMessage(
+        header=gtfs.FeedHeader(gtfs_realtime_version="2.0"), entity=entities
+    )
+
+    parser = gtfsrealtime.GtfsRealtimeParser()
+    parser.load_content(trip_message.SerializeToString())
+    actual_vehicles = list(parser.get_vehicles())
+
+    if expected_vehicle is None:
+        assert [] == actual_vehicles
+    else:
+        assert [expected_vehicle] == actual_vehicles
