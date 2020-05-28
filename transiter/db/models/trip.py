@@ -22,7 +22,9 @@ class Trip(Base):
     pk = Column(Integer, primary_key=True)
     id = Column(String)
     route_pk = Column(Integer, ForeignKey("route.pk"), nullable=False)
-    vehicle_pk = Column(Integer, ForeignKey("vehicle.pk"), index=True)
+    vehicle_pk = Column(
+        Integer, ForeignKey("vehicle.pk"), index=True
+    )  # TODO: add a unique constraint
     source_pk = Column(Integer, ForeignKey("feed_update.pk"), index=True)
 
     direction_id = Column(Boolean)

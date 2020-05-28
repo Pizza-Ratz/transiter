@@ -26,7 +26,12 @@ class Vehicle(Base):
 
     Status = parse.Vehicle.Status
     CongestionLevel = parse.Vehicle.CongestionLevel
+    OccupancyStatus = parse.Vehicle.OccupancyStatus
 
+    current_stop_sequence = Column(Integer)
+    current_stop_pk = Column(
+        Integer, ForeignKey("stop.pk")
+    )  # TODO: how can delete stops now?
     label = Column(String)
     license_plate = Column(String)
     current_status = Column(
@@ -42,10 +47,33 @@ class Vehicle(Base):
         nullable=False,
         default=CongestionLevel.UNKNOWN_CONGESTION_LEVEL,
     )
+    occupancy_status = Column(
+        Enum(OccupancyStatus, native_enum=False),
+        nullable=False,
+        default=OccupancyStatus.UNKNOWN,
+    )
     updated_at = Column(TIMESTAMP(timezone=True))
 
     source = relationship("FeedUpdate", cascade="none")
     system = relationship("System", back_populates="vehicles", cascade="none")
     trip = relationship("Trip", back_populates="vehicle", cascade="none")
+    stop = relationship("Stop", cascade="none")
 
     __table_args__ = (UniqueConstraint(system_pk, id),)
+
+    @staticmethod
+    def from_parsed_vehicle(vehicle: parse.Vehicle) -> "Vehicle":
+        return Vehicle(
+            id=vehicle.id,
+            label=vehicle.label,
+            license_plate=vehicle.license_plate,
+            current_status=vehicle.current_status,
+            latitude=vehicle.latitude,
+            longitude=vehicle.longitude,
+            bearing=vehicle.bearing,
+            odometer=vehicle.odometer,
+            speed=vehicle.speed,
+            congestion_level=vehicle.congestion_level,
+            occupancy_status=vehicle.occupancy_status,
+            updated_at=vehicle.updated_at,
+        )

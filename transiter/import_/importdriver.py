@@ -54,6 +54,7 @@ def run_import(feed_update_pk, parser_object: parse.TransiterParser):
         ScheduleSyncer,
         DirectionRuleSyncer,
         TripSyncer,
+        VehicleImporter,
         AlertSyncer,
     ]
     if feed_update.update_type == feed_update.Type.FLUSH:
@@ -666,6 +667,78 @@ class TripSyncer(syncer(models.Trip)):
             servicemapmanager.calculate_realtime_service_map_for_route(
                 route_pk_to_route[route_pk]
             )
+
+
+class VehicleImporter(syncer(models.Vehicle)):
+    def sync(self, parsed_vehicles: typing.Iterable[parse.Vehicle]):
+        parsed_vehicles = list(parsed_vehicles)
+        stop_id_to_pk = self._get_stop_id_to_pk_map(
+            self.feed_update.feed.system, parsed_vehicles
+        )
+        trip_id_to_trip = self._get_trip_id_to_pk_map(
+            self.feed_update.feed.system, parsed_vehicles
+        )
+
+        vehicle_id_to_trip = {}
+        vehicles = []
+        for parsed_vehicle in parsed_vehicles:
+            vehicle = models.Vehicle.from_parsed_vehicle(parsed_vehicle)
+            vehicle.current_stop_pk = stop_id_to_pk.get(parsed_vehicle.current_stop_id)
+            vehicles.append(vehicle)
+
+            trip = trip_id_to_trip.get(parsed_vehicle.trip_id)
+            if trip is None:
+                continue
+            vehicle_id_to_trip[parsed_vehicle.id] = trip
+        persisted_vehicles, num_added, num_updated = self._merge_entities(vehicles)
+
+        for persisted_vehicle in persisted_vehicles:
+            trip = vehicle_id_to_trip.get(persisted_vehicle.id)
+            if trip is not None:
+                trip.vehicle = persisted_vehicle
+
+        return num_added, num_updated
+        # Add the trip FK
+        # Get the current trip_stop_time and map the fields
+
+        # If stop sequence is null and current stop ID isn't, map it
+        # If current stop ID is null and stop sequence isn't, map it
+        # Change the history of the trip based on current sto sequence
+        # Merge
+        pass
+
+    @staticmethod
+    def _get_stop_id_to_pk_map(system, parsed_vehicles):
+        return stopqueries.get_id_to_pk_map_in_system(
+            system.pk,
+            (
+                vehicle.current_stop_id
+                for vehicle in parsed_vehicles
+                if vehicle.current_stop_id is not None
+            ),
+        )
+
+    @staticmethod
+    def _get_trip_id_to_pk_map(system, parsed_vehicles):
+        return {
+            trip.id: trip
+            for trip in tripqueries.list_by_system_and_trip_ids(
+                system.id,
+                (
+                    vehicle.trip_id
+                    for vehicle in parsed_vehicles
+                    if vehicle.trip_id is not None
+                ),
+            )
+        }
+        return tripqueries.get_id_to_pk_map_in_system(
+            system_pk,
+            (
+                vehicle.trip_id
+                for vehicle in parsed_vehicles
+                if vehicle.trip_id is not None
+            ),
+        )
 
 
 @dataclasses.dataclass

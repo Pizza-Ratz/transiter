@@ -30,6 +30,23 @@ def list_by_system_and_trip_ids(system_id, trip_ids):
     )
 
 
+def get_id_to_pk_map_in_system(system_pk, trip_ids):
+    trip_ids = list(trip_ids)
+    if len(trip_ids) == 0:
+        return {}
+    id_to_pk = {id_: None for id_ in trip_ids}
+    for id_, pk in (
+        dbconnection.get_session()
+        .query(models.Trip.id, models.Trip.pk)
+        .join(models.Route)
+        .filter(models.Trip.id.in_(trip_ids))
+        .filter(models.Route.system_pk == system_pk)
+        .all()
+    ):
+        id_to_pk[id_] = pk
+    return id_to_pk
+
+
 class StopTimeData(NamedTuple):
     pk: int
     stop_sequence: int
