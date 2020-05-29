@@ -675,7 +675,7 @@ class VehicleImporter(syncer(models.Vehicle)):
         stop_id_to_pk = self._get_stop_id_to_pk_map(
             self.feed_update.feed.system, parsed_vehicles
         )
-        trip_id_to_trip = self._get_trip_id_to_pk_map(
+        trip_id_to_trip = self._get_trip_id_trip_map(
             self.feed_update.feed.system, parsed_vehicles
         )
 
@@ -705,21 +705,9 @@ class VehicleImporter(syncer(models.Vehicle)):
             trip = vehicle_id_to_trip.get(persisted_vehicle.id)
             if trip is None:
                 continue
-
             trip.vehicle = persisted_vehicle
-            tripqueries.set_future_point(
-                trip.pk, persisted_vehicle.current_stop_sequence
-            )
 
         return num_added, num_updated
-        # Add the trip FK
-        # Get the current trip_stop_time and map the fields
-
-        # If stop sequence is null and current stop ID isn't, map it
-        # If current stop ID is null and stop sequence isn't, map it
-        # Change the history of the trip based on current sto sequence
-        # Merge
-        pass
 
     @staticmethod
     def _get_stop_id_to_pk_map(system, parsed_vehicles):
@@ -733,7 +721,7 @@ class VehicleImporter(syncer(models.Vehicle)):
         )
 
     @staticmethod
-    def _get_trip_id_to_pk_map(system, parsed_vehicles):
+    def _get_trip_id_trip_map(system, parsed_vehicles):
         return {
             trip.id: trip
             for trip in tripqueries.list_by_system_and_trip_ids(
@@ -745,15 +733,6 @@ class VehicleImporter(syncer(models.Vehicle)):
                 ),
             )
         }
-        # TODO: consider using this instead
-        return tripqueries.get_id_to_pk_map_in_system(
-            system_pk,
-            (
-                vehicle.trip_id
-                for vehicle in parsed_vehicles
-                if vehicle.trip_id is not None
-            ),
-        )
 
 
 @dataclasses.dataclass

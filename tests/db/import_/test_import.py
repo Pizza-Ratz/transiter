@@ -813,42 +813,70 @@ def test_vehicle__add_trip_relationship(
 
     persisted_vehicle = db_session.query(models.Vehicle).all()[0]
 
+    assert trip_for_vehicle.vehicle == persisted_vehicle
     assert persisted_vehicle.trip == trip_for_vehicle
 
 
-@pytest.mark.parametrize(
-    "provide_stop_id,provide_stop_sequence",
-    [[True, True], [True, False], [False, True]],
-)
-def test_vehicle__updated_trip_history(
+def test_vehicle__delete_with_trip_attached(
     db_session,
+    add_model,
+    system_1,
+    previous_update,
     current_update,
     trip_for_vehicle,
     stop_1_3,
-    provide_stop_id,
-    provide_stop_sequence,
 ):
-    vehicle = parse.Vehicle(
-        id="vehicle_id",
-        trip_id="trip_id",
-        current_stop_id=stop_1_3.id if provide_stop_id else None,
-        current_stop_sequence=3 if provide_stop_sequence else None,
+    add_model(
+        models.Vehicle(
+            id="vehicle_id",
+            system=system_1,
+            source=previous_update,
+            trip=trip_for_vehicle,
+        )
     )
 
-    importdriver.run_import(current_update.pk, ParserForTesting([vehicle]))
+    importdriver.run_import(current_update.pk, ParserForTesting([]))
 
     db_session.refresh(trip_for_vehicle)
 
-    future_list = [stop_time.future for stop_time in trip_for_vehicle.stop_times]
-
-    assert [False, False, True] == future_list
+    assert trip_for_vehicle.vehicle is None
 
 
-# TODO: vehicle test cases
-"""
-- Ensure history *not* altered if not current stop sequence provided
-- Ensuring the history of a trip is changed correctly
-- Deleting a trip that has a vehicle in the FK!
-- Move vehicle between trips
-- Delete vehicle assigned to trip
-"""
+def test_vehicle__move_between_trips_attached(
+    db_session,
+    add_model,
+    system_1,
+    route_1_1,
+    previous_update,
+    current_update,
+    trip_for_vehicle,
+    stop_1_3,
+):
+    vehicle = add_model(
+        models.Vehicle(
+            id="vehicle_id",
+            system=system_1,
+            source=previous_update,
+            trip=trip_for_vehicle,
+        )
+    )
+
+    importdriver.run_import(
+        current_update.pk,
+        ParserForTesting(
+            [
+                parse.Trip(id="trip_id_2", route_id=route_1_1.id),
+                parse.Vehicle(id="vehicle_id", trip_id="trip_id_2"),
+            ]
+        ),
+    )
+
+    db_session.refresh(trip_for_vehicle)
+    new_trip = (
+        db_session.query(models.Trip)
+        .filter(models.Trip.id == "trip_id_2")
+        .one_or_none()
+    )
+
+    assert trip_for_vehicle.vehicle is None
+    assert new_trip.vehicle == vehicle

@@ -76,7 +76,7 @@ def upgrade():
         "trip", sa.Column("updated_at", sa.TIMESTAMP(timezone=True), nullable=True)
     )
     op.add_column("trip", sa.Column("vehicle_pk", sa.Integer(), nullable=True))
-    op.create_index(op.f("ix_trip_vehicle_pk"), "trip", ["vehicle_pk"], unique=False)
+    op.create_index(op.f("ix_trip_vehicle_pk"), "trip", ["vehicle_pk"], unique=True)
     op.create_foreign_key(None, "trip", "vehicle", ["vehicle_pk"], ["pk"])
     op.drop_column("trip", "current_stop_sequence")
     op.drop_column("trip", "vehicle_id")
