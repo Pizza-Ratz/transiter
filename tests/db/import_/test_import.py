@@ -777,10 +777,8 @@ def trip_for_vehicle(add_model, system_1, route_1_1, stop_1_1, stop_1_2, stop_1_
     )
 
 
-@pytest.mark.parametrize(
-    "provide_stop_id,provide_stop_sequence",
-    [[True, True], [True, False], [False, True]],
-)
+@pytest.mark.parametrize("provide_stop_id", [True, False])
+@pytest.mark.parametrize("provide_stop_sequence", [True, False])
 def test_vehicle__set_stop_simple_case(
     db_session,
     current_update,
@@ -800,8 +798,12 @@ def test_vehicle__set_stop_simple_case(
 
     persisted_vehicle = db_session.query(models.Vehicle).all()[0]
 
-    assert persisted_vehicle.current_stop == stop_1_3
-    assert persisted_vehicle.current_stop_sequence == 3
+    if not provide_stop_id and not provide_stop_sequence:
+        assert persisted_vehicle.current_stop is None
+        assert persisted_vehicle.current_stop_sequence is None
+    else:
+        assert persisted_vehicle.current_stop == stop_1_3
+        assert persisted_vehicle.current_stop_sequence == 3
 
 
 def test_vehicle__add_trip_relationship(

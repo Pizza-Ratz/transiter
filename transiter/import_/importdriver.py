@@ -681,6 +681,7 @@ class VehicleImporter(syncer(models.Vehicle)):
 
         vehicle_id_to_trip = {}
         vehicles = []
+        trip_pk_stop_pk_stop_sequence_tuples = []
         for parsed_vehicle in parsed_vehicles:
             vehicle = models.Vehicle.from_parsed_vehicle(parsed_vehicle)
             vehicle.current_stop_pk = stop_id_to_pk.get(parsed_vehicle.current_stop_id)
@@ -691,13 +692,13 @@ class VehicleImporter(syncer(models.Vehicle)):
             if trip is None:
                 continue
             vehicle_id_to_trip[parsed_vehicle.id] = trip
-
-            stop_time_data = tripqueries.get_trip_stop_time_data(
-                trip.pk, vehicle.current_stop_pk, vehicle.current_stop_sequence
+            trip_pk_stop_pk_stop_sequence_tuples.append(
+                (trip.pk, vehicle.current_stop_pk, vehicle.current_stop_sequence)
             )
-            if stop_time_data is not None:
-                vehicle.current_stop_pk = stop_time_data.stop_pk
-                vehicle.current_stop_sequence = stop_time_data.stop_sequence
+
+        trip_pk_to_stop_time_data = tripqueries.get_trip_pk_to_stop_time_data(
+            trip_pk_stop_pk_stop_sequence_tuples
+        )
 
         persisted_vehicles, num_added, num_updated = self._merge_entities(vehicles)
 
@@ -706,6 +707,10 @@ class VehicleImporter(syncer(models.Vehicle)):
             if trip is None:
                 continue
             trip.vehicle = persisted_vehicle
+            stop_time_data = trip_pk_to_stop_time_data.get(trip.pk)
+            if stop_time_data is not None:
+                persisted_vehicle.current_stop_pk = stop_time_data.stop_pk
+                persisted_vehicle.current_stop_sequence = stop_time_data.stop_sequence
 
         return num_added, num_updated
 

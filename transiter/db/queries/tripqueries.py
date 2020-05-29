@@ -79,26 +79,38 @@ def get_trip_pk_to_stop_time_data_list(feed_pk) -> Dict[int, List[StopTimeData]]
     return trip_pk_to_stop_time_data_list
 
 
-# TODO: bulkify
-def get_trip_stop_time_data(
-    trip_pk, stop_pk, stop_sequence
-) -> typing.Optional[StopTimeData]:
+def get_trip_pk_to_stop_time_data(
+    trip_pk_stop_pk_stop_sequence_tuples,
+) -> typing.Dict[int, StopTimeData]:
     session = dbconnection.get_session()
+
+    conditions = []
+    for trip_pk, stop_pk, stop_sequence in trip_pk_stop_pk_stop_sequence_tuples:
+        if stop_sequence is None and stop_pk is None:
+            continue
+        sub_conditions = [models.TripStopTime.trip_pk == trip_pk]
+        if stop_pk is not None:
+            sub_conditions.append(models.TripStopTime.stop_pk == stop_pk)
+        if stop_sequence is not None:
+            sub_conditions.append(models.TripStopTime.stop_sequence == stop_sequence)
+        conditions.append(sql.and_(*sub_conditions))
+
+    if len(conditions) == 0:
+        return {}
+
     query = session.query(
         models.TripStopTime.trip_pk,
         models.TripStopTime.pk,
         models.TripStopTime.stop_sequence,
         models.TripStopTime.stop_pk,
-    ).filter(models.TripStopTime.trip_pk == trip_pk)
-    if stop_pk is not None:
-        query = query.filter(models.TripStopTime.stop_pk == stop_pk)
-    if stop_sequence is not None:
-        query = query.filter(models.TripStopTime.stop_sequence == stop_sequence)
+    ).filter(sql.or_(*conditions))
+
+    result = {}
     for (trip_pk, stop_time_pk, stop_sequence, stop_pk) in query.all():
-        return StopTimeData(
+        result[trip_pk] = StopTimeData(
             pk=stop_time_pk, stop_sequence=stop_sequence, stop_pk=stop_pk
         )
-    return None
+    return result
 
 
 def list_all_in_route_by_pk(route_pk):
