@@ -703,8 +703,13 @@ class VehicleImporter(syncer(models.Vehicle)):
 
         for persisted_vehicle in persisted_vehicles:
             trip = vehicle_id_to_trip.get(persisted_vehicle.id)
-            if trip is not None:
-                trip.vehicle = persisted_vehicle
+            if trip is None:
+                continue
+
+            trip.vehicle = persisted_vehicle
+            tripqueries.set_future_point(
+                trip.pk, persisted_vehicle.current_stop_sequence
+            )
 
         return num_added, num_updated
         # Add the trip FK

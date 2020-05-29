@@ -80,6 +80,16 @@ def get_trip_pk_to_stop_time_data_list(feed_pk) -> Dict[int, List[StopTimeData]]
 
 
 # TODO: bulkify
+def set_future_point(trip_pk, stop_sequence):
+    statement = (
+        sql.update(models.TripStopTime)
+        .where(models.TripStopTime.trip_pk == trip_pk)
+        .values(future=(models.TripStopTime.stop_sequence >= stop_sequence))
+    )
+    dbconnection.get_session().execute(statement)
+
+
+# TODO: bulkify
 def get_trip_stop_time_data(
     trip_pk, stop_pk, stop_sequence
 ) -> typing.Optional[StopTimeData]:

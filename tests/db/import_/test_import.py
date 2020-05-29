@@ -816,8 +816,37 @@ def test_vehicle__add_trip_relationship(
     assert persisted_vehicle.trip == trip_for_vehicle
 
 
+@pytest.mark.parametrize(
+    "provide_stop_id,provide_stop_sequence",
+    [[True, True], [True, False], [False, True]],
+)
+def test_vehicle__updated_trip_history(
+    db_session,
+    current_update,
+    trip_for_vehicle,
+    stop_1_3,
+    provide_stop_id,
+    provide_stop_sequence,
+):
+    vehicle = parse.Vehicle(
+        id="vehicle_id",
+        trip_id="trip_id",
+        current_stop_id=stop_1_3.id if provide_stop_id else None,
+        current_stop_sequence=3 if provide_stop_sequence else None,
+    )
+
+    importdriver.run_import(current_update.pk, ParserForTesting([vehicle]))
+
+    db_session.refresh(trip_for_vehicle)
+
+    future_list = [stop_time.future for stop_time in trip_for_vehicle.stop_times]
+
+    assert [False, False, True] == future_list
+
+
 # TODO: vehicle test cases
 """
+- Ensure history *not* altered if not current stop sequence provided
 - Ensuring the history of a trip is changed correctly
 - Deleting a trip that has a vehicle in the FK!
 - Move vehicle between trips
