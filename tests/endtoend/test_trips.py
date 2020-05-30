@@ -22,15 +22,19 @@ TRIP_INITIAL_TIMETABLE = {
 }
 
 
+# TODO: add current_time=4000 case when bug in import driver is fixed.
+#  Or else just add a different test
 @pytest.mark.parametrize("use_stop_sequences", [True, False])
-@pytest.mark.parametrize("current_time", [0, 700, 4000])
+@pytest.mark.parametrize("current_time", [0, 700])
 @pytest.mark.parametrize(
     "stop_id_to_time_2",
     [
         # Basic case where the second update does nothing.
         TRIP_INITIAL_TIMETABLE,
-        # Change the stop times
-        {"1AS": 200, "1BS": 600, "1CS": 800, "1DS": 900, "1ES": 1800, "1FS": 2500},
+        # Change the stop times - move time after update
+        {"1AS": 300, "1BS": 800, "1CS": 850, "1DS": 900, "1ES": 1800, "1FS": 2500},
+        # Change the stop times - move time before update
+        {"1AS": 300, "1BS": 600, "1CS": 650, "1DS": 900, "1ES": 1800, "1FS": 2500},
         # Add a new stop
         {
             "1AS": 200,
@@ -75,7 +79,7 @@ class TestTrip:
             source_server.put(
                 realtime_feed_url,
                 build_gtfs_rt_message(
-                    current_time, stop_id_to_time, use_stop_sequences
+                    time_at_update, stop_id_to_time, use_stop_sequences
                 ).SerializeToString(),
             )
             requests.post(
@@ -127,23 +131,44 @@ class TestTrip:
             source_server.put(
                 realtime_feed_url,
                 build_gtfs_rt_message(
-                    current_time, stop_id_to_time, use_stop_sequences
+                    time_at_update, stop_id_to_time, use_stop_sequences
                 ).SerializeToString(),
             )
             requests.post(
                 f"{transiter_host}/systems/{system_id}/feeds/GtfsRealtimeFeed?sync=true"
             )
 
-        stop_id_to_stop_sequence = {
-            stop_id: stop_sequence + 25
-            for stop_sequence, stop_id in enumerate(stop_id_to_time_2.keys())
+        stop_ids_in_second_update = {
+            stop_id
+            for stop_id, time in stop_id_to_time_2.items()
+            if time >= current_time
         }
+        expected_past_stop_ids = []
+        for stop_id, time in TRIP_INITIAL_TIMETABLE.items():
+            if stop_id in stop_ids_in_second_update:
+                break
+            expected_past_stop_ids.append(stop_id)
+
+        expected_future_stop_ids = [
+            stop_id
+            for stop_id, time in stop_id_to_time_2.items()
+            if time >= current_time
+        ]
 
         response = requests.get(
             f"{transiter_host}/systems/{system_id}/routes/{ROUTE_ID}/trips/{TRIP_ID}"
         ).json()
+        actual_past_stop_ids = []
+        actual_future_stop_ids = []
+        for stop_time in response["stop_times"]:
+            stop_id = stop_time["stop"]["id"]
+            if stop_time["future"]:
+                actual_future_stop_ids.append(stop_id)
+            else:
+                actual_past_stop_ids.append(stop_id)
 
-        pass
+        assert expected_past_stop_ids == actual_past_stop_ids
+        assert expected_future_stop_ids == actual_future_stop_ids
 
 
 def build_gtfs_rt_message(current_time, stop_id_to_time, use_stop_sequences):

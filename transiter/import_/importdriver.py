@@ -503,6 +503,7 @@ class TripSyncer(syncer(models.Trip)):
         """
         if db_trip is None:
             return
+        # TODO: remove this condition.
         if len(trip.stop_times) == 0:
             return
         first_future_stop_sequence = trip.stop_times[0].stop_sequence
