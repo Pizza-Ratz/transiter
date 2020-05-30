@@ -55,56 +55,95 @@ TRIP_INITIAL_TIMETABLE = {
         },
     ],
 )
-def test_trip__stop_view(
-    install_system_1,
-    system_id,
-    transiter_host,
-    source_server,
-    stop_id_to_time_2,
-    current_time,
-    use_stop_sequences,
-):
+class TestTrip:
+    def test_stop_view(
+        self,
+        install_system_1,
+        system_id,
+        transiter_host,
+        source_server,
+        stop_id_to_time_2,
+        current_time,
+        use_stop_sequences,
+    ):
+        __, realtime_feed_url = install_system_1(system_id)
 
-    __, realtime_feed_url = install_system_1(system_id)
+        for stop_id_to_time, time_at_update in [
+            (TRIP_INITIAL_TIMETABLE, 0),
+            (stop_id_to_time_2, current_time),
+        ]:
+            source_server.put(
+                realtime_feed_url,
+                build_gtfs_rt_message(
+                    current_time, stop_id_to_time, use_stop_sequences
+                ).SerializeToString(),
+            )
+            requests.post(
+                f"{transiter_host}/systems/{system_id}/feeds/GtfsRealtimeFeed?sync=true"
+            )
 
-    stop_id_to_time_1 = TRIP_INITIAL_TIMETABLE
-
-    for stop_id_to_time in [stop_id_to_time_1, stop_id_to_time_2]:
-        source_server.put(
-            realtime_feed_url,
-            build_gtfs_rt_message(
-                0, stop_id_to_time, use_stop_sequences
-            ).SerializeToString(),
+        stop_id_to_stop_sequence = {
+            stop_id: stop_sequence + 25
+            for stop_sequence, stop_id in enumerate(stop_id_to_time_2.keys())
+        }
+        all_stop_ids = set(TRIP_INITIAL_TIMETABLE.keys()).union(
+            stop_id_to_time_2.keys()
         )
-        requests.post(
-            f"{transiter_host}/systems/{system_id}/feeds/GtfsRealtimeFeed?sync=true"
-        )
+        for stop_id in all_stop_ids:
+            response = requests.get(
+                f"{transiter_host}/systems/{system_id}/stops/{stop_id}"
+            ).json()
 
-    stop_id_to_stop_sequence = {
-        stop_id: stop_sequence + 25
-        for stop_sequence, stop_id in enumerate(stop_id_to_time_2.keys())
-    }
-    all_stop_ids = set(stop_id_to_time_1.keys()).union(stop_id_to_time_2.keys())
-    for stop_id in all_stop_ids:
+            time = stop_id_to_time_2.get(stop_id)
+            if time is None or time < current_time:
+                assert [] == response["stop_times"]
+                continue
 
-        # for stop_id, time in stop_id_to_time_2.items():
+            stop_time = response["stop_times"][0]
+
+            assert stop_time["trip"]["id"] == TRIP_ID
+            assert stop_time["trip"]["route"]["id"] == ROUTE_ID
+            assert stop_time["arrival"]["time"] == time
+            assert stop_time["departure"]["time"] == time + 15
+            if use_stop_sequences:
+                assert stop_time["stop_sequence"] == stop_id_to_stop_sequence[stop_id]
+
+    def test_trip_view(
+        self,
+        install_system_1,
+        system_id,
+        transiter_host,
+        source_server,
+        stop_id_to_time_2,
+        current_time,
+        use_stop_sequences,
+    ):
+        __, realtime_feed_url = install_system_1(system_id)
+
+        for stop_id_to_time, time_at_update in [
+            (TRIP_INITIAL_TIMETABLE, 0),
+            (stop_id_to_time_2, current_time),
+        ]:
+            source_server.put(
+                realtime_feed_url,
+                build_gtfs_rt_message(
+                    current_time, stop_id_to_time, use_stop_sequences
+                ).SerializeToString(),
+            )
+            requests.post(
+                f"{transiter_host}/systems/{system_id}/feeds/GtfsRealtimeFeed?sync=true"
+            )
+
+        stop_id_to_stop_sequence = {
+            stop_id: stop_sequence + 25
+            for stop_sequence, stop_id in enumerate(stop_id_to_time_2.keys())
+        }
+
         response = requests.get(
-            f"{transiter_host}/systems/{system_id}/stops/{stop_id}"
+            f"{transiter_host}/systems/{system_id}/routes/{ROUTE_ID}/trips/{TRIP_ID}"
         ).json()
 
-        time = stop_id_to_time_2.get(stop_id)
-        if time is None:
-            assert [] == response["stop_times"]
-            continue
-
-        stop_time = response["stop_times"][0]
-
-        assert stop_time["trip"]["id"] == TRIP_ID
-        assert stop_time["trip"]["route"]["id"] == ROUTE_ID
-        assert stop_time["arrival"]["time"] == time
-        assert stop_time["departure"]["time"] == time + 15
-        if use_stop_sequences:
-            assert stop_time["stop_sequence"] == stop_id_to_stop_sequence[stop_id]
+        pass
 
 
 def build_gtfs_rt_message(current_time, stop_id_to_time, use_stop_sequences):
