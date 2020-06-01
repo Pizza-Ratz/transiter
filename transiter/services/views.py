@@ -323,7 +323,7 @@ class FeedUpdate(View):
     type: models.FeedUpdate.Type
     status: models.FeedUpdate.Status
     result: models.FeedUpdate.Result
-    stack_trace: typing.List[str]
+    stack_trace: typing.Optional[typing.List[str]]
     content_hash: str
     content_length: int
     completed_at: datetime.datetime
@@ -335,7 +335,9 @@ class FeedUpdate(View):
             type=feed_update.update_type,
             status=feed_update.status,
             result=feed_update.result,
-            stack_trace=feed_update.result_message.splitlines(),
+            stack_trace=feed_update.result_message.splitlines()
+            if feed_update.result_message is not None
+            else None,
             content_hash=feed_update.content_hash,
             content_length=feed_update.content_length,
             completed_at=feed_update.completed_at,
