@@ -79,7 +79,7 @@ def execute_feed_update_async(feed_update_pk, content=None):
 
 def execute_feed_update(
     feed_update_pk, content=None
-) -> typing.Tuple[models.FeedUpdate.Status, models.FeedUpdate.Result]:
+) -> typing.Tuple[models.FeedUpdate, typing.Optional[Exception]]:
     """
     Execute a feed update with logging and timing.
 
@@ -93,6 +93,7 @@ def execute_feed_update(
     else:
         actions = _REGULAR_UPDATE_ACTIONS
 
+    exception = None
     for action in actions:
         try:
             action(context)
@@ -105,10 +106,13 @@ def execute_feed_update(
                     context.feed_update.status = status
                     context.feed_update.result = result
                     context.feed_update.result_message = str(traceback.format_exc())
+                    exception = e
+                    break
             if context.feed_update.result_message is None:
                 context.feed_update.status = models.FeedUpdate.Status.FAILURE
                 context.feed_update.result = models.FeedUpdate.Result.UNEXPECTED_ERROR
                 context.feed_update.result_message = str(traceback.format_exc())
+                exception = e
 
         # If the action or one of its error handlers marked a status on the update, we
         # need to finish right now.
@@ -127,7 +131,7 @@ def execute_feed_update(
             context.feed_update.feed_pk,
         )
     )
-    return context.feed_update.status, context.feed_update.result
+    return context.feed_update, exception
 
 
 class _InvalidParser(ValueError):

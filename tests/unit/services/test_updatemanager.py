@@ -174,10 +174,10 @@ def test_execute_feed_update(
     )
     monkeypatch.setattr(import_, "run_import", lambda: (0, 0, 0))
 
-    actual_status, actual_explanation = updatemanager.execute_feed_update(1)
+    feed_update, _ = updatemanager.execute_feed_update(1)
 
-    assert actual_status == expected_status
-    assert actual_explanation == expected_explanation
+    assert feed_update.status == expected_status
+    assert feed_update.result == expected_explanation
 
 
 @pytest.mark.parametrize(
@@ -219,10 +219,10 @@ def test_execute_feed_update__success_or_sync_error(
 
     monkeypatch.setattr(import_, "run_import", sync_func)
 
-    actual_status, actual_explanation = updatemanager.execute_feed_update(1)
+    feed_update, _ = updatemanager.execute_feed_update(1)
 
-    assert actual_status == expected_status
-    assert actual_explanation == expected_explanation
+    assert feed_update.status == expected_status
+    assert feed_update.result == expected_explanation
 
 
 def test_get_parser__built_in_parser__gtfs_static():

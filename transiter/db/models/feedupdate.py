@@ -50,7 +50,7 @@ class FeedUpdate(Base):
     )
     status = Column(Enum(Status, native_enum=False))
     result = Column(Enum(Result, native_enum=False))
-    result_message = Column(String)
+    result_message = Column(String)  # TODO: rename stack trace?
     content_hash = Column(String)
     content_length = Column(Integer)
     content_created_at = Column(TIMESTAMP(timezone=True))

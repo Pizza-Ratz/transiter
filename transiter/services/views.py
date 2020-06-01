@@ -68,7 +68,7 @@ class SystemLarge(System):
 class SystemUpdate(View):
     id: str
     status: models.SystemUpdate.Status
-    status_message: str
+    stack_trace: typing.List[str]
     scheduled_at: datetime.datetime
     completed_at: datetime.datetime
     system: System = NULL
@@ -78,7 +78,7 @@ class SystemUpdate(View):
         return cls(
             id=str(update.pk),
             status=update.status,
-            status_message=update.status_message,
+            stack_trace=update.status_message.splitlines(),
             scheduled_at=update.scheduled_at,
             completed_at=update.completed_at,
         )
@@ -323,7 +323,7 @@ class FeedUpdate(View):
     type: models.FeedUpdate.Type
     status: models.FeedUpdate.Status
     result: models.FeedUpdate.Result
-    result_message: str
+    stack_trace: typing.List[str]
     content_hash: str
     content_length: int
     completed_at: datetime.datetime
@@ -335,7 +335,7 @@ class FeedUpdate(View):
             type=feed_update.update_type,
             status=feed_update.status,
             result=feed_update.result,
-            result_message=feed_update.result_message,
+            stack_trace=feed_update.result_message.splitlines(),
             content_hash=feed_update.content_hash,
             content_length=feed_update.content_length,
             completed_at=feed_update.completed_at,
