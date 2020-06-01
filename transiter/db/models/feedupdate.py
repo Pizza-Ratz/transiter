@@ -41,6 +41,7 @@ class FeedUpdate(Base):
         EMPTY_FEED = 6
         SYNC_ERROR = 7
         UNEXPECTED_ERROR = 8
+        IMPORT_ERROR = 9
 
     update_type = Column(
         Enum(Type, name="update_type", native_enum=False),

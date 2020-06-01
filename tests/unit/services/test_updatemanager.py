@@ -1,3 +1,4 @@
+import hashlib
 from unittest import mock
 
 import pytest
@@ -163,7 +164,9 @@ def test_execute_feed_update(
     def get_last_successful_update(*args, **kwargs):
         if previous_content is None:
             return None
-        return updatemanager._calculate_content_hash(previous_content)
+        m = hashlib.md5()
+        m.update(previous_content)
+        return m.hexdigest()
 
     monkeypatch.setattr(feedqueries, "get_update_by_pk", get_update_by_pk)
     monkeypatch.setattr(
@@ -180,7 +183,7 @@ def test_execute_feed_update(
 @pytest.mark.parametrize(
     "sync_error,expected_status,expected_explanation",
     [
-        [True, models.FeedUpdate.Status.FAILURE, models.FeedUpdate.Result.SYNC_ERROR],
+        [True, models.FeedUpdate.Status.FAILURE, models.FeedUpdate.Result.IMPORT_ERROR],
         [False, models.FeedUpdate.Status.SUCCESS, models.FeedUpdate.Result.UPDATED],
     ],
 )
