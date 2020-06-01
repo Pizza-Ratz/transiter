@@ -68,7 +68,7 @@ class SystemLarge(System):
 class SystemUpdate(View):
     id: str
     status: models.SystemUpdate.Status
-    stack_trace: typing.List[str]
+    stack_trace: typing.Optional[typing.List[str]]
     scheduled_at: datetime.datetime
     completed_at: datetime.datetime
     system: System = NULL
@@ -78,7 +78,9 @@ class SystemUpdate(View):
         return cls(
             id=str(update.pk),
             status=update.status,
-            stack_trace=update.status_message.splitlines(),
+            stack_trace=update.status_message.splitlines()
+            if update.status_message is not None
+            else None,
             scheduled_at=update.scheduled_at,
             completed_at=update.completed_at,
         )
