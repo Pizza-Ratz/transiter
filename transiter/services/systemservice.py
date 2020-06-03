@@ -342,9 +342,16 @@ def _build_feeds_from_config(feeds_config) -> Iterator[models.Feed]:
         feed.custom_parser = config[systemconfigreader.PARSER].get(
             systemconfigreader.CUSTOM
         )
+        feed.parser_options = json.dumps(
+            config[systemconfigreader.PARSER].get(systemconfigreader.OPTIONS, {}),
+            indent=2,
+        )
         feed.url = config[systemconfigreader.HTTP][systemconfigreader.URL]
         feed.headers = json.dumps(
-            dict(config[systemconfigreader.HTTP][systemconfigreader.HEADERS])
+            dict(config[systemconfigreader.HTTP][systemconfigreader.HEADERS]), indent=2
+        )
+        feed.http_timeout = config[systemconfigreader.HTTP].get(
+            systemconfigreader.TIMEOUT
         )
         feed.auto_update_enabled = config[systemconfigreader.AUTO_UPDATE][
             systemconfigreader.ENABLED
