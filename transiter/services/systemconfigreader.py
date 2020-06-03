@@ -198,8 +198,7 @@ _schema = Map(
                         {
                             Optional(BUILT_IN, None): PyEnum(models.Feed.BuiltInParser),
                             Optional(CUSTOM, None): Str(),
-                            Optional(OPTIONS, {}): MapPattern(Str(), Any())
-                            | EmptyDict(),
+                            Optional(OPTIONS): MapPattern(Str(), Any()) | EmptyDict(),
                         }
                     ),
                     Optional(AUTO_UPDATE, {ENABLED: False, PERIOD: -1}): Map(

@@ -106,10 +106,7 @@ def test_base_case():
         "feeds": {
             FEED_ID: {
                 "http": {"url": URL, "headers": {}},
-                "parser": {
-                    "built_in": models.Feed.BuiltInParser.GTFS_STATIC,
-                    "options": {},
-                },
+                "parser": {"built_in": models.Feed.BuiltInParser.GTFS_STATIC},
                 "auto_update": {"enabled": False, "period": -1},
                 "required_for_install": False,
             }

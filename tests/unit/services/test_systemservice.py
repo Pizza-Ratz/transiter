@@ -420,6 +420,7 @@ def _test_install__already_exists(mock_systemdam, monkeypatch, db_session):
     assert False is actual
 
 
+# TODO: test more edge cases here as a parameterized test
 def test_save_feed_configuration(monkeypatch, session_factory):
     session = session_factory()
     monkeypatch.setattr(dbconnection, "get_session", lambda: session)
@@ -454,7 +455,7 @@ def test_save_feed_configuration(monkeypatch, session_factory):
         url="https://demo.transiter.io",
         headers="{}",
         http_timeout=40,
-        parser_options="{}",
+        parser_options=None,
         auto_update_enabled=False,
         auto_update_period=None,
         required_for_install=True,
@@ -465,7 +466,7 @@ def test_save_feed_configuration(monkeypatch, session_factory):
         custom_parser="a:b",
         url="https://nytimes.com",
         headers=json.dumps({"key": "value"}, indent=2),
-        parser_options="{}",
+        parser_options=None,
         auto_update_period=5,
         auto_update_enabled=True,
         required_for_install=False,

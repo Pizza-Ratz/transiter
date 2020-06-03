@@ -344,9 +344,11 @@ def _build_feeds_from_config(feeds_config) -> Iterator[models.Feed]:
         feed.custom_parser = config[systemconfigreader.PARSER].get(
             systemconfigreader.CUSTOM
         )
-        feed.parser_options = json.dumps(
-            config[systemconfigreader.PARSER].get(systemconfigreader.OPTIONS, {}),
-            indent=2,
+        parser_options = config[systemconfigreader.PARSER].get(
+            systemconfigreader.OPTIONS
+        )
+        feed.parser_options = (
+            json.dumps(parser_options, indent=2) if parser_options is not None else None
         )
         feed.url = config[systemconfigreader.HTTP][systemconfigreader.URL]
         feed.headers = json.dumps(
