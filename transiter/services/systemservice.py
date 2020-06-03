@@ -117,7 +117,9 @@ def _create_system_update(system_id, config_str, extra_settings, config_source_u
             system.status = models.System.SystemStatus.SCHEDULED
     else:
         system = models.System(
-            id=system_id, status=models.System.SystemStatus.SCHEDULED,
+            id=system_id,
+            name="(Awaiting install for full name)",
+            status=models.System.SystemStatus.SCHEDULED,
         )
         systemqueries.create(system)
 

@@ -434,7 +434,7 @@ def test_save_feed_configuration(monkeypatch, session_factory):
     feeds_config = {
         FEED_ID_2: {
             "parser": {"built_in": "GTFS_STATIC"},
-            "http": {"url": "https://demo.transiter.io", "headers": {}, "timeout": 40,},
+            "http": {"url": "https://demo.transiter.io", "headers": {}, "timeout": 40},
             "auto_update": {"period": None, "enabled": False},
             "required_for_install": True,
         },
