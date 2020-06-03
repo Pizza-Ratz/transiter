@@ -420,7 +420,6 @@ def _test_install__already_exists(mock_systemdam, monkeypatch, db_session):
     assert False is actual
 
 
-# TODO: test more edge cases here as a parameterized test
 def test_save_feed_configuration(monkeypatch, session_factory):
     session = session_factory()
     monkeypatch.setattr(dbconnection, "get_session", lambda: session)
