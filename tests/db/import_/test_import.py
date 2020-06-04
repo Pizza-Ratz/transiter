@@ -913,7 +913,7 @@ def test_vehicle__move_between_trips_attached(
 @pytest.mark.parametrize("previous_transfer,expected_deleted", [[True, 1], [False, 0]])
 @pytest.mark.parametrize(
     "from_stop_valid,to_stop_valid,expected_added",
-    [[True, True, 1], [False, True, 0], [True, False, 0], [False, False, 0],],
+    [[True, True, 1], [False, True, 0], [True, False, 0], [False, False, 0]],
 )
 def test_transfers(
     previous_update,
