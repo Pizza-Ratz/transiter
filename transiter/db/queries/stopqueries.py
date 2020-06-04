@@ -168,3 +168,8 @@ def get_stop_pk_to_station_pk_map_in_system(system_id):
         else:
             stop_pk_to_station_pk[stop_pk] = parent_stop_pk
     return stop_pk_to_station_pk
+
+
+def delete_transfers_in_system(system_pk):
+
+    session = dbconnection.get_session()
