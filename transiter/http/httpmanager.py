@@ -178,6 +178,7 @@ def is_sync_request():
     )
 
 
+# TODO: tests
 def get_list_url_parameter(key):
     raw = flask.request.args.getlist(key)
     if len(raw) == 0:

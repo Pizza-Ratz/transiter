@@ -252,6 +252,7 @@ class TransferSyncer(syncer(models.Transfer)):
             if from_stop_pk is None or to_stop_pk is None:
                 continue
             db_transfer = models.Transfer.from_parsed_transfer(transfer)
+            db_transfer.system_pk = self.feed_update.feed.system.pk
             db_transfer.source_pk = self.feed_update.pk
             db_transfer.from_stop_pk = from_stop_pk
             db_transfer.to_stop_pk = to_stop_pk

@@ -16,6 +16,7 @@ class Transfer(Base):
     __tablename__ = "transfer"
 
     pk = Column(Integer, primary_key=True)
+    system_pk = Column(Integer, ForeignKey("system.pk"), index=True)
     source_pk = Column(Integer, ForeignKey("feed_update.pk"), index=True)
     from_stop_pk = Column(Integer, ForeignKey("stop.pk"), index=True)
     to_stop_pk = Column(Integer, ForeignKey("stop.pk"), index=True)
@@ -27,9 +28,10 @@ class Transfer(Base):
     )
     min_transfer_time = Column(Integer)
 
+    system = relationship("System", cascade="none")
     source = relationship("FeedUpdate", cascade="none")
-    from_stop = relationship("Stop", foreign_keys=[from_stop_pk], cascade="none")
-    to_stop = relationship("Stop", foreign_keys=[to_stop_pk], cascade="none")
+    from_stop = relationship("Stop", foreign_keys=from_stop_pk, cascade="none")
+    to_stop = relationship("Stop", foreign_keys=to_stop_pk, cascade="none")
 
     @staticmethod
     def from_parsed_transfer(transfer: parse.Transfer) -> "Transfer":

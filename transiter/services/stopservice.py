@@ -32,10 +32,12 @@ def list_all_in_system(system_id, alerts_detail=None) -> typing.List[views.Stop]
     return response
 
 
+# TODO: tests
 @dbconnection.unit_of_work
 def list_all_transfers_in_system(
     system_id, from_stop_ids=None, to_stop_ids=None
 ) -> typing.List[views.Transfer]:
+    # TODO: 404 if system does not exist!
     return [
         views.Transfer.from_model(transfer)
         for transfer in stopqueries.list_all_transfers_in_system(

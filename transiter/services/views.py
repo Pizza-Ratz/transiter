@@ -56,12 +56,17 @@ class FeedsInSystem(_EntitiesInSystem):
     pass
 
 
+class TransfersInSystem(_EntitiesInSystem):
+    pass
+
+
 @dataclasses.dataclass
 class SystemLarge(System):
     agencies: AgenciesInSystem = NULL
     feeds: FeedsInSystem = NULL
     routes: RoutesInSystem = NULL
     stops: StopsInSystem = NULL
+    transfers: TransfersInSystem = NULL
 
 
 @dataclasses.dataclass
