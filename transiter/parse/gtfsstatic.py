@@ -53,6 +53,9 @@ class GtfsStaticParser(TransiterParser):
     def get_stops(self) -> typing.Iterable[parse.Stop]:
         yield from _parse_stops(self.gtfs_static_file, self._transfers_config)
 
+    def get_transfers(self) -> typing.Iterable[parse.Transfer]:
+        yield from _parse_transfers(self.gtfs_static_file, self._transfers_config)
+
     def get_scheduled_services(self) -> typing.Iterable[parse.ScheduledService]:
         yield from _parse_schedule(self.gtfs_static_file)
 
@@ -230,6 +233,45 @@ def _parse_stops(gtfs_static_file: _GtfsStaticFile, transfers_config: _Transfers
             child_stop.parent_stop = parent_stop
         yield parent_stop
         station_set.clear()
+
+
+def _parse_transfers(
+    gtfs_static_file: _GtfsStaticFile, transfers_config: _TransfersConfig
+):
+    station_sets_by_stop_id = _build_station_sets(gtfs_static_file, transfers_config)
+
+    for row in gtfs_static_file.transfers():
+        stop_id_1 = row["from_stop_id"]
+        stop_id_2 = row["to_stop_id"]
+        if stop_id_1 == stop_id_2:
+            continue
+        # Don't create transfers for stops that share a grouped station parent
+        if stop_id_1 in station_sets_by_stop_id.get(stop_id_2, set()):
+            continue
+        yield parse.Transfer(
+            from_stop_id=stop_id_1,
+            to_stop_id=stop_id_2,
+            type=_get_enum_by_key(
+                parse.Transfer.Type,
+                row.get("transfer_type"),
+                parse.Transfer.Type.RECOMMENDED,
+            ),
+            min_transfer_time=_cast_to_int(row.get("min_transfer_time")),
+        )
+
+
+def _get_enum_by_key(enum_class, key, default):
+    try:
+        return enum_class(_cast_to_int(key))
+    except ValueError:
+        return default
+
+
+def _cast_to_int(string) -> typing.Optional[int]:
+    try:
+        return int(string)
+    except (ValueError, TypeError):
+        return None
 
 
 def _build_station_sets(
