@@ -219,31 +219,11 @@ def _parse_stops(gtfs_static_file: _GtfsStaticFile):
     for stop_id, parent_stop_id in stop_id_to_parent_stop_id.items():
         stop_id_to_stop[stop_id].parent_stop = stop_id_to_stop[parent_stop_id]
 
-    # Step 2: replace the parent stop IDs with the actual parent stop. If a stop does
-    # not have a parent, make it a station.
-    stop_id_to_station_id = {}
-    station_sets_by_stop_id = {}
     for stop in stop_id_to_stop.values():
-        if stop.parent_stop is None or stop.type == parse.Stop.Type.STATION:
-            station_sets_by_stop_id[stop.id] = {stop.id}
-        else:
-            stop_id_to_station_id[stop.id] = stop.parent_stop.id
         yield stop
 
-    # Step 3: using the GTFS transfers data, link together stops which have a free
-    # transfer.
-    for row in gtfs_static_file.transfers():
-        stop_id_1 = row["from_stop_id"]
-        stop_id_2 = row["to_stop_id"]
-        if stop_id_1 == stop_id_2:
-            continue
-        updated_station_set = station_sets_by_stop_id[stop_id_1].union(
-            station_sets_by_stop_id[stop_id_2]
-        )
-        for stop_id in updated_station_set:
-            station_sets_by_stop_id[stop_id] = updated_station_set
-
     # Step 4: create parent stations for stop linked together in Step 3.
+    station_sets_by_stop_id = _build_station_sets(gtfs_static_file)
     for station_set in station_sets_by_stop_id.values():
         if len(station_set) <= 1:
             continue
@@ -253,6 +233,26 @@ def _parse_stops(gtfs_static_file: _GtfsStaticFile):
             child_stop.parent_stop = parent_stop
         yield parent_stop
         station_set.clear()
+
+
+def _build_station_sets(
+    gtfs_static_file: _GtfsStaticFile,
+) -> typing.Dict[str, typing.Set[str]]:
+    station_sets_by_stop_id = {}
+    for row in gtfs_static_file.transfers():
+        stop_id_1 = row["from_stop_id"]
+        stop_id_2 = row["to_stop_id"]
+        if stop_id_1 == stop_id_2:
+            continue
+        for stop_id in [stop_id_1, stop_id_2]:
+            if stop_id not in station_sets_by_stop_id:
+                station_sets_by_stop_id[stop_id] = {stop_id}
+        updated_station_set = station_sets_by_stop_id[stop_id_1].union(
+            station_sets_by_stop_id[stop_id_2]
+        )
+        for stop_id in updated_station_set:
+            station_sets_by_stop_id[stop_id] = updated_station_set
+    return station_sets_by_stop_id
 
 
 def _create_station_from_child_stops(child_stops):
