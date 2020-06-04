@@ -132,7 +132,7 @@ def test_json_serialization__unknown_object():
 )
 def test_list_url_parameter(flask_request, key, expected_list):
     flask_request.args = datastructures.ImmutableMultiDict(
-        [("a", "a"), ("a", "b"), ("c", "c"),]
+        [("a", "a"), ("a", "b"), ("c", "c")]
     )
 
     assert expected_list == httpmanager.get_list_url_parameter(key)

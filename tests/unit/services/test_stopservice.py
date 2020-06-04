@@ -36,6 +36,31 @@ def time_dot_time(monkeypatch):
     return mocked_time_dot_time
 
 
+# TODO
+def _test_list_all_transfers_in_system(monkeypatch):
+    system = models.System(id=SYSTEM_ID)
+    transfer = models.Stop(
+        pk=STOP_ONE_PK, id=STOP_ONE_ID, name=STOP_ONE_NAME, system=system
+    )
+    monkeypatch.setattr(systemqueries, "get_by_id", lambda *args, **kwargs: system)
+    monkeypatch.setattr(
+        stopqueries, "list_all_transfers_in_system", lambda *args, **kwargs: [stop_one]
+    )
+
+    expected = [views.Stop(id=STOP_ONE_ID, name=STOP_ONE_NAME, _system_id=SYSTEM_ID)]
+
+    actual = stopservice.list_all_in_system(SYSTEM_ID)
+
+    assert expected == actual
+
+
+def test_list_all_transfers_in_system__system_not_found(monkeypatch):
+    monkeypatch.setattr(systemqueries, "get_by_id", lambda *args, **kwargs: None)
+
+    with pytest.raises(exceptions.IdNotFoundError):
+        stopservice.list_all_transfers_in_system(SYSTEM_ID)
+
+
 def test_old_trips__exclude(time_dot_time):
 
     stop_time = models.TripStopTime(arrival_time=TIME_1)

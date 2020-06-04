@@ -37,7 +37,9 @@ def list_all_in_system(system_id, alerts_detail=None) -> typing.List[views.Stop]
 def list_all_transfers_in_system(
     system_id, from_stop_ids=None, to_stop_ids=None
 ) -> typing.List[views.Transfer]:
-    # TODO: 404 if system does not exist!
+    system = systemqueries.get_by_id(system_id, only_return_active=True)
+    if system is None:
+        raise exceptions.IdNotFoundError(models.System, system_id=system_id)
     return [
         views.Transfer.from_model(transfer)
         for transfer in stopqueries.list_all_transfers_in_system(

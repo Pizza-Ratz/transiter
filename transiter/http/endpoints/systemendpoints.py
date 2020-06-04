@@ -29,10 +29,9 @@ def get_by_id(system_id):
     return systemservice.get_by_id(system_id)
 
 
-# TODO tests
 @http_endpoint(system_endpoints, "/<system_id>/transfers")
 @link_target(views.TransfersInSystem, ["_system_id"])
-def list_all_transfers(system_id):
+def list_all_transfers_in_system(system_id):
     from_stop_ids = httpmanager.get_list_url_parameter("from_stop_id")
     to_stop_ids = httpmanager.get_list_url_parameter("to_stop_id")
     return stopservice.list_all_transfers_in_system(
