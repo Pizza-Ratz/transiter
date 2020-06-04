@@ -38,6 +38,9 @@ STOP_ID_TO_USUAL_ROUTES = {
 ROUTE_ID_TO_USUAL_ROUTE = {"A": ["1A", "1D", "1E", "1G"], "B": []}
 
 
+# TODO: need to add transfers here!!
+
+
 @pytest.mark.parametrize("sync", [True, False])
 def test_install_system__success(install_system_1, transiter_host, sync):
 

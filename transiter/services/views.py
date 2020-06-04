@@ -211,6 +211,23 @@ class StopLarge(View):
 
 
 @dataclasses.dataclass
+class Transfer(View):
+    from_stop: Stop
+    to_stop: Stop
+    type: models.Transfer.Type
+    min_transfer_time: int = None
+
+    @classmethod
+    def from_model(cls, transfer: models.Transfer):
+        return cls(
+            from_stop=Stop.from_model(transfer.from_stop),
+            to_stop=Stop.from_model(transfer.to_stop),
+            type=transfer.type,
+            min_transfer_time=transfer.min_transfer_time,
+        )
+
+
+@dataclasses.dataclass
 class ServiceMapWithRoutes(View):
     group_id: str
     routes: typing.List[Route]

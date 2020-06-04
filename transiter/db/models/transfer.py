@@ -28,7 +28,8 @@ class Transfer(Base):
     min_transfer_time = Column(Integer)
 
     source = relationship("FeedUpdate", cascade="none")
-    # TODO: relationships with delete cascades on the stop side
+    from_stop = relationship("Stop", foreign_keys=[from_stop_pk], cascade="none")
+    to_stop = relationship("Stop", foreign_keys=[to_stop_pk], cascade="none")
 
     @staticmethod
     def from_parsed_transfer(transfer: parse.Transfer) -> "Transfer":
