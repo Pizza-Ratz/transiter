@@ -193,6 +193,7 @@ def test_get_in_system_by_id(monkeypatch):
     parent_stop = mock.MagicMock()
 
     monkeypatch.setattr(stopqueries, "get_in_system_by_id", lambda *args: stop_one)
+    monkeypatch.setattr(stopqueries, "list_all_transfers_at_stops", lambda *args: [])
     monkeypatch.setattr(
         stopqueries, "list_all_stops_in_stop_tree", lambda *args: [stop_one]
     )
@@ -248,6 +249,7 @@ def test_get_in_system_by_id(monkeypatch):
         directions=[DIRECTION_NAME],
         stop_times=[fake_trip_stop_time_response],
         alerts=[],
+        transfers=[],
     )
 
     actual = stopservice.get_in_system_by_id(

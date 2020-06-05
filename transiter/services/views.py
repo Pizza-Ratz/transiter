@@ -201,6 +201,7 @@ class StopLarge(View):
     child_stops: list = NULL
     directions: list = NULL
     alerts: typing.List["AlertSmall"] = NULL
+    transfers: typing.List["Transfer"] = NULL
     stop_times: list = dataclasses.field(default_factory=list)
 
     @classmethod
@@ -223,10 +224,10 @@ class Transfer(View):
     min_transfer_time: int = None
 
     @classmethod
-    def from_model(cls, transfer: models.Transfer):
+    def from_model(cls, transfer: models.Transfer, from_stop_view, to_stop_view):
         return cls(
-            from_stop=Stop.from_model(transfer.from_stop),
-            to_stop=Stop.from_model(transfer.to_stop),
+            from_stop=from_stop_view,
+            to_stop=to_stop_view,
             type=transfer.type,
             min_transfer_time=transfer.min_transfer_time,
         )

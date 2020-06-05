@@ -37,6 +37,16 @@ def list_all_transfers_in_system(
     return list(query.all())
 
 
+def list_all_transfers_at_stops(from_stop_pks) -> typing.List[models.Transfer]:
+    query = (
+        dbconnection.get_session()
+        .query(models.Transfer)
+        .filter(models.Transfer.from_stop_pk.in_(from_stop_pks))
+        .options(joinedload(models.Transfer.to_stop))
+    )
+    return list(query.all())
+
+
 def get_in_system_by_id(system_id, stop_id):
     return genericqueries.get_in_system_by_id(models.Stop, system_id, stop_id)
 
