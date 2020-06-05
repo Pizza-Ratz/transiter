@@ -36,20 +36,35 @@ def time_dot_time(monkeypatch):
     return mocked_time_dot_time
 
 
-# TODO
-def _test_list_all_transfers_in_system(monkeypatch):
-    system = models.System(id=SYSTEM_ID)
-    transfer = models.Stop(
-        pk=STOP_ONE_PK, id=STOP_ONE_ID, name=STOP_ONE_NAME, system=system
+def test_list_all_transfers_in_system(
+    monkeypatch,
+    system_1_model,
+    stop_1_model,
+    stop_1_small_view,
+    stop_2_model,
+    stop_2_small_view,
+):
+    transfer = models.Transfer(
+        from_stop=stop_1_model,
+        to_stop=stop_2_model,
+        type=models.Transfer.Type.COORDINATED,
     )
-    monkeypatch.setattr(systemqueries, "get_by_id", lambda *args, **kwargs: system)
     monkeypatch.setattr(
-        stopqueries, "list_all_transfers_in_system", lambda *args, **kwargs: [stop_one]
+        systemqueries, "get_by_id", lambda *args, **kwargs: system_1_model
+    )
+    monkeypatch.setattr(
+        stopqueries, "list_all_transfers_in_system", lambda *args, **kwargs: [transfer]
     )
 
-    expected = [views.Stop(id=STOP_ONE_ID, name=STOP_ONE_NAME, _system_id=SYSTEM_ID)]
+    expected = [
+        views.Transfer(
+            from_stop=stop_1_small_view,
+            to_stop=stop_2_small_view,
+            type=models.Transfer.Type.COORDINATED,
+        )
+    ]
 
-    actual = stopservice.list_all_in_system(SYSTEM_ID)
+    actual = stopservice.list_all_transfers_in_system(system_1_model.id)
 
     assert expected == actual
 
