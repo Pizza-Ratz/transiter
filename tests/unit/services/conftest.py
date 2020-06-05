@@ -13,7 +13,10 @@ ALERT_HEADER = "Header"
 ALERT_DESCRIPTION = "Description"
 SERVICE_MAP_ONE_GROUP_ID = "1000"
 SERVICE_MAP_TWO_GROUP_ID = "1001"
-STOP_ID = "1002"
+STOP_ONE_ID = "7"
+STOP_ONE_NAME = "7-Name"
+STOP_TWO_ID = "8"
+STOP_TWO_NAME = "8-Name"
 TIME_1 = datetime.datetime.utcfromtimestamp(1000)
 TIME_2 = datetime.datetime.utcfromtimestamp(2000)
 
@@ -103,3 +106,23 @@ def route_2_model(system_1_model):
 @pytest.fixture
 def route_2_small_view():
     return views.Route(id=ROUTE_TWO_ID, color="route_2_color", _system_id=SYSTEM_ID)
+
+
+@pytest.fixture
+def stop_1_model(system):
+    return models.Stop(id=STOP_ONE_ID, name=STOP_ONE_NAME, system=system)
+
+
+@pytest.fixture
+def stop_1_small_view(system):
+    return views.Stop(id=STOP_ONE_ID, name=STOP_ONE_NAME, _system_id=SYSTEM_ID)
+
+
+@pytest.fixture
+def stop_2_model(system):
+    return models.Stop(id=STOP_TWO_ID, name=STOP_TWO_NAME, system=system)
+
+
+@pytest.fixture
+def stop_2_small_view(system):
+    return views.Stop(id=STOP_TWO_ID, name=STOP_TWO_NAME, _system_id=SYSTEM_ID)

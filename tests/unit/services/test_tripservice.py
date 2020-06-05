@@ -37,16 +37,6 @@ def trip_2(route):
     return models.Trip(pk=TRIP_TWO_PK, id=TRIP_TWO_ID, route=route)
 
 
-@pytest.fixture
-def stop_1(system):
-    return models.Stop(id=STOP_ONE_ID, system=system)
-
-
-@pytest.fixture
-def stop_2(system):
-    return models.Stop(id=STOP_TWO_ID, system=system)
-
-
 def test_list_all_in_route__route_not_found(monkeypatch):
     """[Trip service] List all in route - route not found"""
     monkeypatch.setattr(
@@ -57,7 +47,16 @@ def test_list_all_in_route__route_not_found(monkeypatch):
         tripservice.list_all_in_route(SYSTEM_ID, ROUTE_ID),
 
 
-def test_list_all_in_route(monkeypatch, route, trip_1, trip_2, stop_1, stop_2):
+def test_list_all_in_route(
+    monkeypatch,
+    route,
+    trip_1,
+    trip_2,
+    stop_1_model,
+    stop_1_small_view,
+    stop_2_model,
+    stop_2_small_view,
+):
     monkeypatch.setattr(
         routequeries, "get_in_system_by_id", lambda *args, **kwargs: route
     )
@@ -67,7 +66,7 @@ def test_list_all_in_route(monkeypatch, route, trip_1, trip_2, stop_1, stop_2):
     monkeypatch.setattr(
         tripqueries,
         "get_trip_pk_to_last_stop_map",
-        lambda *args, **kwargs: {trip_1.pk: stop_1, trip_2.pk: stop_2},
+        lambda *args, **kwargs: {trip_1.pk: stop_1_model, trip_2.pk: stop_2_model},
     )
     monkeypatch.setattr(
         alertqueries, "get_trip_pk_to_active_alerts", lambda *args, **kwargs: {}
@@ -79,7 +78,7 @@ def test_list_all_in_route(monkeypatch, route, trip_1, trip_2, stop_1, stop_2):
             direction_id=None,
             started_at=None,
             updated_at=None,
-            last_stop=views.Stop.from_model(stop_1),
+            last_stop=stop_1_small_view,
             alerts=[],
             _route_id=ROUTE_ID,
             _system_id=SYSTEM_ID,
@@ -89,7 +88,7 @@ def test_list_all_in_route(monkeypatch, route, trip_1, trip_2, stop_1, stop_2):
             direction_id=None,
             started_at=None,
             updated_at=None,
-            last_stop=views.Stop.from_model(stop_2),
+            last_stop=stop_2_small_view,
             alerts=[],
             _route_id=ROUTE_ID,
             _system_id=SYSTEM_ID,
@@ -109,7 +108,9 @@ def test_get_in_route_by_id__trip_not_found(monkeypatch):
         tripservice.get_in_route_by_id(SYSTEM_ID, ROUTE_ID, TRIP_ONE_ID),
 
 
-def test_get_in_route_by_id(monkeypatch, route, trip_1, stop_1):
+def test_get_in_route_by_id(
+    monkeypatch, route, trip_1, stop_1_model, stop_1_small_view
+):
     """[Trip service] Get in in route"""
 
     monkeypatch.setattr(
@@ -120,7 +121,7 @@ def test_get_in_route_by_id(monkeypatch, route, trip_1, stop_1):
     )
 
     stop_time = models.TripStopTime()
-    stop_time.stop = stop_1
+    stop_time.stop = stop_1_model
     trip_1.stop_times = [stop_time]
 
     expected = views.Trip(
@@ -134,7 +135,7 @@ def test_get_in_route_by_id(monkeypatch, route, trip_1, stop_1):
         alerts=[],
         route=views.Route.from_model(route),
     )
-    expected.stop_times[0].stop = views.Stop.from_model(stop_1)
+    expected.stop_times[0].stop = stop_1_small_view
 
     actual = tripservice.get_in_route_by_id(SYSTEM_ID, ROUTE_ID, TRIP_ONE_ID)
 
