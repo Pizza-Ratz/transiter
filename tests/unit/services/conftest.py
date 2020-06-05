@@ -23,6 +23,11 @@ STOP_TWO_ID = "8"
 STOP_TWO_NAME = "8-Name"
 TIME_1 = datetime.datetime.utcfromtimestamp(1000)
 TIME_2 = datetime.datetime.utcfromtimestamp(2000)
+FEED_ONE_ID = "2"
+FEED_ONE_PK = 3
+FEED_ONE_AUTO_UPDATE_PERIOD = 500
+FEED_TWO_AUTO_UPDATE_PERIOD = -1
+FEED_TWO_ID = "4"
 
 
 @pytest.fixture
@@ -62,7 +67,12 @@ def alert_1_large_view():
 
 @pytest.fixture
 def system_1_model():
-    return models.System(id=SYSTEM_ID)
+    return models.System(id=SYSTEM_ID, name="System Name")
+
+
+@pytest.fixture
+def system_1_view():
+    return views.System(id=SYSTEM_ID, name="System Name", status=None)
 
 
 @pytest.fixture
@@ -164,3 +174,49 @@ def stop_2_model(system_1_model):
 @pytest.fixture
 def stop_2_small_view():
     return views.Stop(id=STOP_TWO_ID, name=STOP_TWO_NAME, _system_id=SYSTEM_ID)
+
+
+@pytest.fixture
+def feed_1_model(system_1_model):
+    return models.Feed(
+        id=FEED_ONE_ID,
+        auto_update_period=FEED_ONE_AUTO_UPDATE_PERIOD,
+        system=system_1_model,
+    )
+
+
+@pytest.fixture
+def feed_1_small_view():
+    return views.Feed(
+        id=FEED_ONE_ID,
+        auto_update_period=FEED_ONE_AUTO_UPDATE_PERIOD,
+        _system_id=SYSTEM_ID,
+    )
+
+
+@pytest.fixture
+def feed_1_large_view():
+    return views.FeedLarge(
+        id=FEED_ONE_ID,
+        auto_update_period=FEED_ONE_AUTO_UPDATE_PERIOD,
+        _system_id=SYSTEM_ID,
+        updates=views.UpdatesInFeedLink(_feed_id=FEED_ONE_ID, _system_id=SYSTEM_ID),
+    )
+
+
+@pytest.fixture
+def feed_2_model(system_1_model):
+    return models.Feed(
+        id=FEED_TWO_ID,
+        auto_update_period=FEED_TWO_AUTO_UPDATE_PERIOD,
+        system=system_1_model,
+    )
+
+
+@pytest.fixture
+def feed_2_small_view():
+    return views.Feed(
+        id=FEED_TWO_ID,
+        auto_update_period=FEED_TWO_AUTO_UPDATE_PERIOD,
+        _system_id=SYSTEM_ID,
+    )
