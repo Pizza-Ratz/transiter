@@ -11,6 +11,10 @@ ROUTE_TWO_ID = "5"
 ALERT_ID = "6"
 ALERT_HEADER = "Header"
 ALERT_DESCRIPTION = "Description"
+TRIP_ONE_ID = "3"
+TRIP_ONE_PK = 4
+TRIP_TWO_ID = "5"
+TRIP_TWO_PK = 6
 SERVICE_MAP_ONE_GROUP_ID = "1000"
 SERVICE_MAP_TWO_GROUP_ID = "1001"
 STOP_ONE_ID = "7"
@@ -109,20 +113,54 @@ def route_2_small_view():
 
 
 @pytest.fixture
-def stop_1_model(system):
-    return models.Stop(id=STOP_ONE_ID, name=STOP_ONE_NAME, system=system)
+def trip_1_model(route_1_model):
+    return models.Trip(pk=TRIP_ONE_PK, id=TRIP_ONE_ID, route=route_1_model)
 
 
 @pytest.fixture
-def stop_1_small_view(system):
+def trip_1_view():
+    return views.Trip(
+        id=TRIP_ONE_ID,
+        direction_id=None,
+        started_at=None,
+        updated_at=None,
+        _route_id=ROUTE_ONE_ID,
+        _system_id=SYSTEM_ID,
+    )
+
+
+@pytest.fixture
+def trip_2_model(route_1_model):
+    return models.Trip(pk=TRIP_TWO_PK, id=TRIP_TWO_ID, route=route_1_model)
+
+
+@pytest.fixture
+def trip_2_view():
+    return views.Trip(
+        id=TRIP_TWO_ID,
+        direction_id=None,
+        started_at=None,
+        updated_at=None,
+        _route_id=ROUTE_ONE_ID,
+        _system_id=SYSTEM_ID,
+    )
+
+
+@pytest.fixture
+def stop_1_model(system_1_model):
+    return models.Stop(id=STOP_ONE_ID, name=STOP_ONE_NAME, system=system_1_model)
+
+
+@pytest.fixture
+def stop_1_small_view():
     return views.Stop(id=STOP_ONE_ID, name=STOP_ONE_NAME, _system_id=SYSTEM_ID)
 
 
 @pytest.fixture
-def stop_2_model(system):
-    return models.Stop(id=STOP_TWO_ID, name=STOP_TWO_NAME, system=system)
+def stop_2_model(system_1_model):
+    return models.Stop(id=STOP_TWO_ID, name=STOP_TWO_NAME, system=system_1_model)
 
 
 @pytest.fixture
-def stop_2_small_view(system):
+def stop_2_small_view():
     return views.Stop(id=STOP_TWO_ID, name=STOP_TWO_NAME, _system_id=SYSTEM_ID)
