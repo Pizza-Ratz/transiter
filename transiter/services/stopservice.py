@@ -69,7 +69,6 @@ def search_in_system(system_id):
     ]
 
 
-# TODO: tests
 @dbconnection.unit_of_work
 def geographical_search(
     system_id, latitude, longitude, distance, return_service_maps=True,

@@ -8,8 +8,6 @@ from transiter.db import dbconnection, models
 from transiter.db.queries import genericqueries
 
 
-# TODO: test
-# TODO: indexes
 def list_all_in_geographical_bounds(
     lower_lat, upper_lat, lower_lon, upper_lon, system_id,
 ):

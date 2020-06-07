@@ -178,7 +178,6 @@ def is_sync_request():
     )
 
 
-# TODO: tests
 def get_float_url_parameter(key, default=None, required=False):
     raw_value = flask.request.args.get(key)
     if raw_value is None:

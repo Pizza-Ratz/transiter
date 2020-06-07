@@ -32,7 +32,7 @@ def geographical_search(system_id=None):
         latitude=get_float_url_parameter("latitude", required=True),
         longitude=get_float_url_parameter("longitude", required=True),
         distance=get_float_url_parameter("distance", default=1000),
-        return_service_maps=False,
+        return_service_maps=True,
     )
 
 
