@@ -18,7 +18,7 @@ class Transfer(Base):
     pk = Column(Integer, primary_key=True)
     system_pk = Column(Integer, ForeignKey("system.pk"), index=True)
     source_pk = Column(Integer, ForeignKey("feed_update.pk"), index=True)
-    # TODO config_source_pk = Column(Integer, ForeignKey("feed_update.pk"), index=True)
+    config_source_pk = Column(Integer, ForeignKey("transfers_config.pk"), index=True)
     # TODO nullable constraint
     from_stop_pk = Column(Integer, ForeignKey("stop.pk"), index=True)
     to_stop_pk = Column(Integer, ForeignKey("stop.pk"), index=True)
@@ -33,6 +33,9 @@ class Transfer(Base):
 
     system = relationship("System", cascade="none")
     source = relationship("FeedUpdate", cascade="none")
+    config_source = relationship(
+        "TransfersConfig", cascade="none", back_populates="transfers"
+    )
     from_stop = relationship("Stop", foreign_keys=from_stop_pk, cascade="none")
     to_stop = relationship("Stop", foreign_keys=to_stop_pk, cascade="none")
 
