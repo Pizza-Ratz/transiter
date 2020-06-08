@@ -26,10 +26,11 @@ def preview():
 
 @http_endpoint(transfers_config_endpoints, "", method=HttpMethod.POST)
 def create():
-    return transfersconfigservice.create(
+    config_id = transfersconfigservice.create(
         system_ids=get_list_url_parameter("system_id", required=True),
         distance=get_float_url_parameter("distance", required=True),
     )
+    return transfersconfigservice.get_by_id(config_id=config_id)
 
 
 @http_endpoint(transfers_config_endpoints, "/<int:config_id>")
@@ -39,11 +40,12 @@ def get_by_id(config_id):
 
 @http_endpoint(transfers_config_endpoints, "/<int:config_id>", method=HttpMethod.PUT)
 def update(config_id):
-    return transfersconfigservice.update(
+    transfersconfigservice.update(
         config_id=config_id,
         system_ids=get_list_url_parameter("system_id", required=True),
         distance=get_float_url_parameter("distance", required=True),
     )
+    return transfersconfigservice.get_by_id(config_id=config_id)
 
 
 @http_endpoint(transfers_config_endpoints, "/<int:config_id>", method=HttpMethod.DELETE)

@@ -3,6 +3,7 @@ from sqlalchemy import (
     Integer,
     ForeignKey,
     Enum,
+    Numeric,
 )
 from sqlalchemy.orm import relationship
 
@@ -29,7 +30,7 @@ class Transfer(Base):
         Enum(Type, native_enum=False), nullable=False, default=Type.RECOMMENDED
     )
     min_transfer_time = Column(Integer)
-    distance = Column(Integer)
+    distance = Column(Numeric)
 
     system = relationship("System", cascade="none")
     source = relationship("FeedUpdate", cascade="none")

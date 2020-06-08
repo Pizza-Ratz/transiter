@@ -17,6 +17,7 @@ depends_on = None
 
 
 def upgrade():
+    op.drop_constraint("type", "transfer")
     op.create_table(
         "transfers_config",
         sa.Column("pk", sa.Integer(), nullable=False),
@@ -28,7 +29,7 @@ def upgrade():
         sa.Column("transfers_config_pk", sa.Integer(), nullable=True),
         sa.Column("system_pk", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(["system_pk"], ["transfers_config.pk"],),
-        sa.ForeignKeyConstraint(["transfers_config_pk"], ["transfers_config.pk"],),
+        sa.ForeignKeyConstraint(["transfers_config_pk"], ["system.pk"],),
     )
     op.create_index(
         op.f("ix_transfers_config_system_system_pk"),

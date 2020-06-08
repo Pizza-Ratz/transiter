@@ -27,6 +27,10 @@ class TransfersConfig(Base):
         order_by="Transfer.distance",
     )
 
+    @property
+    def id(self):
+        return str(self.pk) if self.pk is not None else None
+
 
 transfers_config_system = Table(
     "transfers_config_system",
@@ -34,5 +38,5 @@ transfers_config_system = Table(
     Column(
         "transfers_config_pk", Integer, ForeignKey("transfers_config.pk"), index=True
     ),
-    Column("system_pk", Integer, ForeignKey("transfers_config.pk"), index=True),
+    Column("system_pk", Integer, ForeignKey("system.pk"), index=True),
 )

@@ -186,8 +186,11 @@ class Stop(View):
     system: System = NULL
 
     @classmethod
-    def from_model(cls, stop: models.Stop):
-        return cls(id=stop.id, name=stop.name, _system_id=stop.system.id)
+    def from_model(cls, stop: models.Stop, show_system=False):
+        result = cls(id=stop.id, name=stop.name, _system_id=stop.system.id)
+        if show_system:
+            result.system = System.from_model(stop.system)
+        return result
 
 
 @dataclasses.dataclass
@@ -233,6 +236,23 @@ class Transfer(View):
             to_stop=to_stop_view,
             type=transfer.type,
             min_transfer_time=transfer.min_transfer_time,
+            distance=transfer.distance,
+        )
+
+
+@dataclasses.dataclass
+class TransfersConfig(View):
+    id: str
+    distance: float
+    systems: typing.List[System] = NULL
+    transfers: typing.List[Transfer] = NULL
+
+    @classmethod
+    def from_model(cls, transfers_config: models.TransfersConfig):
+        return cls(
+            id=transfers_config.id,
+            distance=transfers_config.distance,
+            systems=list(map(System.from_model, transfers_config.systems)),
         )
 
 
