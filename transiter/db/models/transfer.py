@@ -18,6 +18,8 @@ class Transfer(Base):
     pk = Column(Integer, primary_key=True)
     system_pk = Column(Integer, ForeignKey("system.pk"), index=True)
     source_pk = Column(Integer, ForeignKey("feed_update.pk"), index=True)
+    # TODO config_source_pk = Column(Integer, ForeignKey("feed_update.pk"), index=True)
+    # TODO nullable constraint
     from_stop_pk = Column(Integer, ForeignKey("stop.pk"), index=True)
     to_stop_pk = Column(Integer, ForeignKey("stop.pk"), index=True)
 
@@ -27,6 +29,7 @@ class Transfer(Base):
         Enum(Type, native_enum=False), nullable=False, default=Type.RECOMMENDED
     )
     min_transfer_time = Column(Integer)
+    distance = Column(Integer)
 
     system = relationship("System", cascade="none")
     source = relationship("FeedUpdate", cascade="none")

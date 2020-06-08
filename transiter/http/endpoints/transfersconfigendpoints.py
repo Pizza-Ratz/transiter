@@ -16,7 +16,7 @@ def list_all():
     return transfersconfigservice.list_all()
 
 
-@http_endpoint(transfers_config_endpoints, "/preview")
+@http_endpoint(transfers_config_endpoints, "/preview", method=HttpMethod.POST)
 def preview():
     return transfersconfigservice.preview(
         system_ids=get_list_url_parameter("system_id", required=True),

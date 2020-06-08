@@ -183,6 +183,7 @@ class Stop(View):
     parent_stop: typing.Optional["Stop"] = NULL
     child_stops: list = NULL
     alerts: typing.List["AlertSmall"] = NULL
+    system: System = NULL
 
     @classmethod
     def from_model(cls, stop: models.Stop):
@@ -223,6 +224,7 @@ class Transfer(View):
     to_stop: Stop
     type: models.Transfer.Type
     min_transfer_time: int = None
+    distance: int = None
 
     @classmethod
     def from_model(cls, transfer: models.Transfer, from_stop_view, to_stop_view):
