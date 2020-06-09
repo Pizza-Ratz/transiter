@@ -69,6 +69,9 @@ class SystemLarge(System):
     transfers: TransfersInSystem = NULL
 
 
+SystemUpdateStatus = models.SystemUpdate.Status
+
+
 @dataclasses.dataclass
 class SystemUpdate(View):
     id: str
@@ -179,11 +182,11 @@ class Stop(View):
     name: str
     _system_id: str
     distance: float = NULL
+    system: System = NULL
     service_maps: list = NULL
     parent_stop: typing.Optional["Stop"] = NULL
     child_stops: list = NULL
     alerts: typing.List["AlertSmall"] = NULL
-    system: System = NULL
 
     @classmethod
     def from_model(cls, stop: models.Stop, show_system=False):

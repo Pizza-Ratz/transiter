@@ -203,10 +203,15 @@ class _TripStopTimeFilter:
         return True
 
 
+# TODO: unit test
 def _build_transfers_response(transfers, stop_pk_to_service_maps_response):
     result = []
     for transfer in transfers:
-        to_stop = views.Stop.from_model(transfer.to_stop)
+        to_stop = views.Stop.from_model(
+            transfer.to_stop,
+            show_system=(transfer.from_stop.system.id != transfer.to_stop.system.id),
+        )
+
         to_stop.service_maps = stop_pk_to_service_maps_response.get(
             transfer.to_stop.pk, []
         )

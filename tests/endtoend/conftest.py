@@ -3,7 +3,7 @@ import os
 import time
 import uuid
 import zipfile
-
+import json
 import pytest
 import requests
 
@@ -105,6 +105,8 @@ def install_system(
             },
         )
         if expected_status == "ACTIVE":
+            # Uncomment this line to debug system install failures
+            # print(json.dumps(response.json(), indent=2))
             response.raise_for_status()
         if not sync:
             for _ in range(20):
@@ -181,4 +183,4 @@ def updated_gtfs_zip():
 
 @pytest.fixture
 def system_id(request):
-    return request.node.originalname + "__" + str(uuid.uuid4())
+    return request.node.name + "__" + str(uuid.uuid4())

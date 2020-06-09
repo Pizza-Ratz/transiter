@@ -5,6 +5,7 @@ from transiter.db import dbconnection, models
 import typing
 
 
+# TODO: for cross system transfers, show the system in the stop
 @dbconnection.unit_of_work
 def list_all() -> typing.List[views.TransfersConfig]:
     # TODO: href
@@ -73,6 +74,7 @@ def _get_transfer_config(config_id):
 
 
 def _list_systems(system_ids):
+    system_ids = set(system_ids)  # TODO: test the case this is designed to handle?
     if len(system_ids) == 1:
         raise exceptions.InvalidInput(
             "At least two systems must be provided for a transfers config."
@@ -108,16 +110,18 @@ def _build_transfers(systems, distance) -> typing.Iterable[models.Transfer]:
             for stop_2 in all_stops:
                 if stop_2.system.id == system_id:
                     continue
-                if (
-                    geography.distance(
-                        stop_1.latitude,
-                        stop_1.longitude,
-                        stop_2.latitude,
-                        stop_2.longitude,
-                    )
-                    > distance
-                ):
+                stops_distance = geography.distance(
+                    stop_1.latitude,
+                    stop_1.longitude,
+                    stop_2.latitude,
+                    stop_2.longitude,
+                )
+                if stops_distance > distance:
+                    print(stop_1)
+                    print(stop_2)
+                    print(stop_1.id, stop_2.id, "skipping", stops_distance, distance)
                     continue
+                print(stop_1, stop_2)
                 pairs.append((stop_1, stop_2))
     pairs.sort(
         key=lambda pair: geography.distance(
