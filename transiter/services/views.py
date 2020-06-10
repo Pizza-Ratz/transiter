@@ -248,7 +248,6 @@ class TransfersConfig(View):
     id: str
     distance: float
     systems: typing.List[System] = NULL
-    transfers: typing.List[Transfer] = NULL
 
     @classmethod
     def from_model(cls, transfers_config: models.TransfersConfig):
@@ -257,6 +256,11 @@ class TransfersConfig(View):
             distance=transfers_config.distance,
             systems=list(map(System.from_model, transfers_config.systems)),
         )
+
+
+@dataclasses.dataclass
+class TransfersConfigBig(TransfersConfig):
+    transfers: typing.List[Transfer] = NULL
 
 
 @dataclasses.dataclass

@@ -3,10 +3,11 @@ import flask
 from transiter.http.httpmanager import (
     http_endpoint,
     HttpMethod,
+    link_target,
     get_float_url_parameter,
     get_list_url_parameter,
 )
-from transiter.services import transfersconfigservice
+from transiter.services import transfersconfigservice, views
 
 transfers_config_endpoints = flask.Blueprint(__name__, __name__)
 
@@ -34,6 +35,7 @@ def create():
 
 
 @http_endpoint(transfers_config_endpoints, "/<int:config_id>")
+@link_target(views.TransfersConfig, ["id"])
 def get_by_id(config_id):
     return transfersconfigservice.get_by_id(config_id=config_id)
 

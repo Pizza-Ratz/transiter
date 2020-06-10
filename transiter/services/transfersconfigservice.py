@@ -24,6 +24,7 @@ def preview(system_ids, distance) -> typing.List[views.Transfer]:
 
 @dbconnection.unit_of_work
 def create(system_ids, distance) -> str:
+    # TODO: check if it's easy to perf improce
     systems = _list_systems(system_ids)
     transfers_config = models.TransfersConfig(distance=distance, systems=systems)
     _build_and_add_transfers(transfers_config)
@@ -36,7 +37,7 @@ def create(system_ids, distance) -> str:
 @dbconnection.unit_of_work
 def get_by_id(config_id) -> views.TransfersConfig:
     config = _get_transfer_config(config_id)
-    view = views.TransfersConfig.from_model(config)
+    view = views.TransfersConfigBig.from_model(config)
     view.transfers = _convert_db_transfers_to_view_transfers(config.transfers)
     return view
 
@@ -100,7 +101,6 @@ def _build_transfers(systems, distance) -> typing.Iterable[models.Transfer]:
     for system_id, stops in system_id_to_stops.items():
         for stop_1 in stops:
             for stop_2 in itertools.chain(*system_id_to_stops.values()):
-                print(stop_2.system, system_id)
                 if stop_2.system.id == system_id:
                     continue
                 stops_distance = geography.distance(

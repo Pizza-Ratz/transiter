@@ -162,7 +162,7 @@ def test_get_by_id(
     stop_1_small_view.system = system_1_view
     stop_2_small_view.system = system_1_view
 
-    expected = views.TransfersConfig(
+    expected = views.TransfersConfigBig(
         id=CONFIG_ID,
         distance=DISTANCE,
         systems=[system_1_view],

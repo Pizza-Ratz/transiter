@@ -13,7 +13,6 @@ def list_all():
 
 
 def get(config_id):
-    # TODO: joined load systems + transfers + stops at transfers
     return (
         dbconnection.get_session()
         .query(models.TransfersConfig)
