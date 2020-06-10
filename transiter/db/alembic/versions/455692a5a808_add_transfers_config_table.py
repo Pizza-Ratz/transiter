@@ -28,8 +28,8 @@ def upgrade():
         "transfers_config_system",
         sa.Column("transfers_config_pk", sa.Integer(), nullable=True),
         sa.Column("system_pk", sa.Integer(), nullable=True),
-        sa.ForeignKeyConstraint(["system_pk"], ["transfers_config.pk"],),
-        sa.ForeignKeyConstraint(["transfers_config_pk"], ["system.pk"],),
+        sa.ForeignKeyConstraint(["system_pk"], ["system.pk"],),
+        sa.ForeignKeyConstraint(["transfers_config_pk"], ["transfers_config.pk"],),
     )
     op.create_index(
         op.f("ix_transfers_config_system_system_pk"),
