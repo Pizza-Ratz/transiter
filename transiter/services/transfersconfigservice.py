@@ -7,7 +7,6 @@ from transiter.db.queries import stopqueries, systemqueries, transfersconfigquer
 from transiter.services import geography, views
 
 
-# TODO: for cross system transfers, show the system in the stop
 @dbconnection.unit_of_work
 def list_all() -> typing.List[views.TransfersConfig]:
     # TODO: href

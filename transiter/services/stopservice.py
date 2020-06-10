@@ -203,7 +203,6 @@ class _TripStopTimeFilter:
         return True
 
 
-# TODO: unit test
 def _build_transfers_response(transfers, stop_pk_to_service_maps_response):
     result = []
     for transfer in transfers:
