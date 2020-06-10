@@ -68,9 +68,7 @@ def list_all_in_system_factory(stops):
 )
 def test_build_transfers(monkeypatch, stops, distance, expected_tuples):
     monkeypatch.setattr(
-        stopqueries,
-        "list_all_in_system_with_no_parent",
-        list_all_in_system_factory(stops),
+        stopqueries, "list_all_in_system", list_all_in_system_factory(stops),
     )
 
     actual_pairs = {

@@ -31,18 +31,6 @@ def list_all_in_system(system_id, stop_ids=None):
     )
 
 
-def list_all_in_system_with_no_parent(system_id):
-    # TODO: index
-    return (
-        dbconnection.get_session()
-        .query(models.Stop)
-        .join(models.System)
-        .filter(models.System.id == system_id)
-        .filter(models.Stop.parent_stop_pk.is_(None))
-        .all()
-    )
-
-
 def list_all_transfers_in_system(
     system_id, from_stop_ids=None, to_stop_ids=None
 ) -> typing.List[models.Transfer]:

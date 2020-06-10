@@ -91,8 +91,7 @@ def _build_and_add_transfers(transfers_config):
 
 def _build_transfers(systems, distance) -> typing.Iterable[models.Transfer]:
     system_id_to_stops = {
-        system.id: stopqueries.list_all_in_system_with_no_parent(system.id)
-        for system in systems
+        system.id: stopqueries.list_all_in_system(system.id) for system in systems
     }
     pairs = _WorkingSet()
     for system_1_id, stops_1 in system_id_to_stops.items():
