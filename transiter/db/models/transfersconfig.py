@@ -18,7 +18,10 @@ class TransfersConfig(Base):
     distance = Column(Numeric, nullable=False)
 
     systems = relationship(
-        "System", secondary="transfers_config_system", cascade="none"
+        "System",
+        back_populates="transfers_configs",
+        secondary="transfers_config_system",
+        cascade="none",
     )
     transfers = relationship(
         "Transfer",

@@ -1,16 +1,19 @@
-from transiter.db.queries import stopqueries, systemqueries
-from transiter import exceptions
-from transiter.services import geography, views
-from transiter.db import dbconnection, models
 import itertools
 import typing
+
+from transiter import exceptions
+from transiter.db import dbconnection, models
+from transiter.db.queries import stopqueries, systemqueries, transfersconfigqueries
+from transiter.services import geography, views
 
 
 # TODO: for cross system transfers, show the system in the stop
 @dbconnection.unit_of_work
 def list_all() -> typing.List[views.TransfersConfig]:
     # TODO: href
-    return list(map(views.TransfersConfig.from_model, _list_transfer_configs()))
+    return list(
+        map(views.TransfersConfig.from_model, transfersconfigqueries.list_all())
+    )
 
 
 @dbconnection.unit_of_work
@@ -54,19 +57,8 @@ def delete(config_id) -> None:
     dbconnection.get_session().delete(config)
 
 
-# TODO: extract to a transfersconfigqueries module
-def _list_transfer_configs():
-    return dbconnection.get_session().query(models.TransfersConfig).all()
-
-
 def _get_transfer_config(config_id):
-    # TODO: joined load systems + transfers + stops at transfers
-    config = (
-        dbconnection.get_session()
-        .query(models.TransfersConfig)
-        .filter(models.TransfersConfig.pk == config_id)
-        .one_or_none()
-    )
+    config = transfersconfigqueries.get(config_id)
     if config is None:
         raise exceptions.IdNotFoundError(
             entity_type=models.TransfersConfig, id=config_id
@@ -75,8 +67,8 @@ def _get_transfer_config(config_id):
 
 
 def _list_systems(system_ids):
-    system_ids = set(system_ids)  # TODO: test the case this is designed to handle?
-    if len(system_ids) == 1:
+    system_ids = set(system_ids)
+    if len(system_ids) <= 1:
         raise exceptions.InvalidInput(
             "At least two systems must be provided for a transfers config."
         )
