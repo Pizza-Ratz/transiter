@@ -48,6 +48,22 @@ def list_all_in_system_factory(stops):
             50000,
             set(),
         ],
+        [
+            # Child matches case
+            [
+                models.Stop(
+                    id=STOP_1_ID,
+                    latitude=1,
+                    longitude=1,
+                    system=SYSTEM_1,
+                    parent_stop=models.Stop(id=STOP_2_ID),
+                ),
+                models.Stop(id=STOP_2_ID, latitude=2, longitude=2, system=SYSTEM_1),
+                models.Stop(id=STOP_3_ID, latitude=1.4, longitude=1, system=SYSTEM_2),
+            ],
+            50000,
+            {(STOP_2_ID, STOP_3_ID), (STOP_3_ID, STOP_2_ID)},
+        ],
     ],
 )
 def test_build_transfers(monkeypatch, stops, distance, expected_tuples):

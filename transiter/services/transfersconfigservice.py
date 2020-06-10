@@ -24,7 +24,6 @@ def preview(system_ids, distance) -> typing.List[views.Transfer]:
 
 @dbconnection.unit_of_work
 def create(system_ids, distance) -> str:
-    # TODO: check if it's easy to perf improce
     systems = _list_systems(system_ids)
     transfers_config = models.TransfersConfig(distance=distance, systems=systems)
     _build_and_add_transfers(transfers_config)
@@ -91,20 +90,19 @@ def _build_and_add_transfers(transfers_config):
 
 
 def _build_transfers(systems, distance) -> typing.Iterable[models.Transfer]:
-    # TODO: instead of just looking at the root node, we should inspect all nodes.
-    #  If two nodes match, link their root nodes
-
     system_id_to_stops = {
         system.id: stopqueries.list_all_in_system_with_no_parent(system.id)
         for system in systems
     }
-    pairs = []
+    pairs = _WorkingSet()
     for system_1_id, stops_1 in system_id_to_stops.items():
         for stop_1 in stops_1:
             for system_2_id, stops_2 in system_id_to_stops.items():
                 if system_1_id == system_2_id:
                     continue
                 for stop_2 in stops_2:
+                    # This could be optimized by having a lower bound on distance
+                    # function that is fast to calculate.
                     stops_distance = geography.distance(
                         stop_1.latitude,
                         stop_1.longitude,
@@ -113,24 +111,43 @@ def _build_transfers(systems, distance) -> typing.Iterable[models.Transfer]:
                     )
                     if stops_distance > distance:
                         continue
-                    pairs.append((stop_1, stop_2))
-    pairs.sort(
-        key=lambda pair: geography.distance(
-            float(pair[0].latitude),
-            float(pair[0].longitude),
-            float(pair[1].latitude),
-            float(pair[1].longitude),
-        )
-    )
-    for stop_1, stop_2 in pairs:
+                    pairs.add(stop_1, stop_2, stops_distance)
+
+    for stop_1, stop_2, distance in pairs.elements():
         yield models.Transfer(
             from_stop=stop_1,
             to_stop=stop_2,
             type=models.Transfer.Type.GEOGRAPHIC,
-            distance=geography.distance(
-                stop_1.latitude, stop_1.longitude, stop_2.latitude, stop_2.longitude
-            ),
+            distance=distance,
         )
+
+
+class _WorkingSet:
+    def __init__(self):
+        self._stop_id_to_stop = {}
+        self._data = set()
+
+    def add(self, stop_1, stop_2, distance):
+        stop_1_root = self._root(stop_1)
+        stop_2_root = self._root(stop_2)
+        self._data.add((stop_1_root.id, stop_2_root.id, distance))
+        self._stop_id_to_stop[stop_1_root.id] = stop_1_root
+        self._stop_id_to_stop[stop_2_root.id] = stop_2_root
+
+    def elements(self):
+        sorted_data = sorted(self._data, key=lambda t: t[-1])
+        for stop_1_id, stop_2_id, distance in sorted_data:
+            yield (
+                self._stop_id_to_stop[stop_1_id],
+                self._stop_id_to_stop[stop_2_id],
+                distance,
+            )
+
+    @staticmethod
+    def _root(stop):
+        while stop.parent_stop is not None:
+            stop = stop.parent_stop
+        return stop
 
 
 def _convert_db_transfers_to_view_transfers(db_transfers):
