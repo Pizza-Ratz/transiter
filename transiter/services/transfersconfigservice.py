@@ -93,25 +93,27 @@ def _build_and_add_transfers(transfers_config):
 def _build_transfers(systems, distance) -> typing.Iterable[models.Transfer]:
     # TODO: instead of just looking at the root node, we should inspect all nodes.
     #  If two nodes match, link their root nodes
+
     system_id_to_stops = {
         system.id: stopqueries.list_all_in_system_with_no_parent(system.id)
         for system in systems
     }
     pairs = []
-    for system_id, stops in system_id_to_stops.items():
-        for stop_1 in stops:
-            for stop_2 in itertools.chain(*system_id_to_stops.values()):
-                if stop_2.system.id == system_id:
+    for system_1_id, stops_1 in system_id_to_stops.items():
+        for stop_1 in stops_1:
+            for system_2_id, stops_2 in system_id_to_stops.items():
+                if system_1_id == system_2_id:
                     continue
-                stops_distance = geography.distance(
-                    stop_1.latitude,
-                    stop_1.longitude,
-                    stop_2.latitude,
-                    stop_2.longitude,
-                )
-                if stops_distance > distance:
-                    continue
-                pairs.append((stop_1, stop_2))
+                for stop_2 in stops_2:
+                    stops_distance = geography.distance(
+                        stop_1.latitude,
+                        stop_1.longitude,
+                        stop_2.latitude,
+                        stop_2.longitude,
+                    )
+                    if stops_distance > distance:
+                        continue
+                    pairs.append((stop_1, stop_2))
     pairs.sort(
         key=lambda pair: geography.distance(
             float(pair[0].latitude),
