@@ -2,6 +2,7 @@ from transiter.db.queries import stopqueries, systemqueries
 from transiter import exceptions
 from transiter.services import geography, views
 from transiter.db import dbconnection, models
+import itertools
 import typing
 
 
@@ -103,11 +104,11 @@ def _build_transfers(systems, distance) -> typing.Iterable[models.Transfer]:
         system.id: stopqueries.list_all_in_system_with_no_parent(system.id)
         for system in systems
     }
-    all_stops = sum(system_id_to_stops.values(), start=[])
     pairs = []
     for system_id, stops in system_id_to_stops.items():
         for stop_1 in stops:
-            for stop_2 in all_stops:
+            for stop_2 in itertools.chain(*system_id_to_stops.values()):
+                print(stop_2.system, system_id)
                 if stop_2.system.id == system_id:
                     continue
                 stops_distance = geography.distance(
@@ -117,11 +118,7 @@ def _build_transfers(systems, distance) -> typing.Iterable[models.Transfer]:
                     stop_2.longitude,
                 )
                 if stops_distance > distance:
-                    print(stop_1)
-                    print(stop_2)
-                    print(stop_1.id, stop_2.id, "skipping", stops_distance, distance)
                     continue
-                print(stop_1, stop_2)
                 pairs.append((stop_1, stop_2))
     pairs.sort(
         key=lambda pair: geography.distance(
