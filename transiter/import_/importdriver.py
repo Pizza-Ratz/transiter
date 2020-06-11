@@ -502,15 +502,9 @@ class TripSyncer(syncer(models.Trip)):
         )  # TODO: is there a bug here if the trip is feed hopping?
         for trip in trips:
             db_trip = trip_id_to_db_trip.get(trip.id, None)
-            if db_trip is None:
-                self._add_future_stop_time_data_to_trip(trip, [])
-                if len(trip.stop_times) > 0:
-                    trip.current_stop_sequence = trip.stop_times[0].stop_sequence
-                else:
-                    trip.current_stop_sequence = -1
-                continue
-            trip.pk = db_trip.pk
-            db_stop_time_data = trip_pk_to_db_stop_time_data_list.get(db_trip.pk, [])
+            if db_trip is not None:
+                trip.pk = db_trip.pk
+            db_stop_time_data = trip_pk_to_db_stop_time_data_list.get(trip.pk, [])
             self._add_future_stop_time_data_to_trip(trip, db_stop_time_data)
             past_stop_times = list(
                 self._build_past_stop_times(trip, db_trip, db_stop_time_data)
