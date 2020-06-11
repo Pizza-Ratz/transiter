@@ -274,6 +274,7 @@ class ScheduleSyncer(syncer(models.ScheduledService)):
             self.recalculate_service_maps = True
 
     def sync(self, parsed_services):
+        # TODO: need to timestamp the dates using the system timezone
         persisted_services, num_added, num_updated = self._merge_entities(
             list(map(models.ScheduledService.from_parsed_service, parsed_services))
         )
@@ -347,6 +348,7 @@ class _Trip(parse.Trip):
     pk: int = None
     route_pk: int = None
     source_pk: int = None
+    current_stop_sequence: int = None
     stop_times: typing.List[_TripStopTime] = dataclasses.field(default_factory=list)
 
     @classmethod
@@ -374,6 +376,7 @@ class _Trip(parse.Trip):
             "started_at": self.start_time,
             "updated_at": self.updated_at,
             "delay": self.delay,
+            "current_stop_sequence": self.current_stop_sequence,
         }
         if self.is_new():
             del result["pk"]
@@ -507,15 +510,27 @@ class TripSyncer(syncer(models.Trip)):
                     ):
                         stop_time.stop_sequence = index
                     index = stop_time.stop_sequence + 1
+                if len(trip.stop_times) > 0:
+                    trip.current_stop_sequence = trip.stop_times[0].stop_sequence
+                else:
+                    trip.current_stop_sequence = -1
                 continue
             trip.pk = db_trip.pk
             db_stop_time_data = trip_pk_to_db_stop_time_data_list.get(db_trip.pk, [])
-            past_stop_times_iter = self._build_past_stop_times(
-                trip, db_trip, db_stop_time_data
-            )
             self._add_future_stop_time_data_to_trip(trip, db_stop_time_data)
-            trip.stop_times = list(past_stop_times_iter) + trip.stop_times
-
+            past_stop_times = list(
+                self._build_past_stop_times(trip, db_trip, db_stop_time_data)
+            )
+            if len(trip.stop_times) > 0:
+                trip.current_stop_sequence = trip.stop_times[0].stop_sequence
+            elif len(past_stop_times) > 0:
+                trip.current_stop_sequence = (
+                    max(stop_time.stop_sequence for stop_time in past_stop_times) + 1
+                )  # TODO: clean this all up
+            else:
+                trip.current_stop_sequence = -1
+            trip.stop_times = past_stop_times + trip.stop_times
+            print("SEET", trip.current_stop_sequence)
         self._calculate_stop_time_pks_to_delete(
             trips, trip_pk_to_db_stop_time_data_list
         )
@@ -567,7 +582,6 @@ class TripSyncer(syncer(models.Trip)):
                 pk=stop_time_data.pk,
                 stop_pk=stop_time_data.stop_pk,
                 stop_sequence=stop_time_data.stop_sequence,
-                future=False,
                 stop_id="",
                 is_from_parsing=False,
             )
