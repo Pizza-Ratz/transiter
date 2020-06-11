@@ -469,6 +469,7 @@ class TripSyncer(syncer(models.Trip)):
         Convert stop_ids on the trip stop times into stop_pks. Trip stop times that have
         invalid stop IDs and are missing stop PKs are filtered out.
         """
+        # TODO: stop getting the full id to pk map
         stop_id_to_pk = stopqueries.get_id_to_pk_map_in_system(
             self.feed_update.feed.system.pk
         )
@@ -486,6 +487,8 @@ class TripSyncer(syncer(models.Trip)):
             yield trip
 
     def _add_existing_trip_data(self, trips: Iterable[_Trip]) -> Iterable[_Trip]:
+        # TODO: rewrite?
+        #  this method needs to (1) set stop sequences and set stop_time.pks.
         """
         Add data to the feed trips from data already in the database; i.e., from
         previous feed updates.
@@ -496,7 +499,7 @@ class TripSyncer(syncer(models.Trip)):
         )
         trip_pk_to_db_stop_time_data_list = tripqueries.get_trip_pk_to_stop_time_data_list(
             self.feed_update.feed.pk
-        )
+        )  # TODO: is there a bug here if the trip is feed hopping?
         for trip in trips:
             db_trip = trip_id_to_db_trip.get(trip.id, None)
             if db_trip is None:
@@ -530,7 +533,6 @@ class TripSyncer(syncer(models.Trip)):
             else:
                 trip.current_stop_sequence = -1
             trip.stop_times = past_stop_times + trip.stop_times
-            print("SEET", trip.current_stop_sequence)
         self._calculate_stop_time_pks_to_delete(
             trips, trip_pk_to_db_stop_time_data_list
         )
@@ -540,6 +542,14 @@ class TripSyncer(syncer(models.Trip)):
         return trips
 
     def _build_trip_id_to_db_trip_map(self, feed_trip_ids):
+        """
+        We need to retrieve both (1) trips whose source is the current feed and (2)
+        trips whose IDs match a parsed trip.
+
+        We need (1) for correctly calculating service map diffs. We need (2) to ensure
+        the trip is updated with existing data irrespective of the feed it was last
+        updated from.
+        """
         trip_id_to_db_trip = {
             trip.id: trip
             for trip in tripqueries.list_all_from_feed(self.feed_update.feed.pk)
@@ -628,12 +638,15 @@ class TripSyncer(syncer(models.Trip)):
             for stop_time in trip.stop_times
             if stop_time.pk is not None
         )
-        self.stop_time_pks_to_delete = set(
-            stop_time_data.pk
-            for db_stop_time_data_list in trip_pk_to_db_stop_time_data.values()
-            for stop_time_data in db_stop_time_data_list
-            if stop_time_data.pk not in updated_stop_time_pks
-        )
+        trip_pk_to_trip = {trip.pk: trip for trip in trips}
+        self.stop_time_pks_to_delete = set()
+        for trip_pk, db_stop_time_data_list in trip_pk_to_db_stop_time_data.items():
+            for stop_time_data in db_stop_time_data_list:
+                if stop_time_data.pk in updated_stop_time_pks:
+                    continue
+                # if stop_time_data.stop_sequence < trip_pk_to_trip[trip_pk].current_stop_sequence:
+                #    continue
+                self.stop_time_pks_to_delete.add(stop_time_data.pk)
 
     def _calculate_route_pk_to_previous_service_map_hash(
         self, db_trips, trip_pk_to_db_stop_time_data_list
@@ -687,16 +700,24 @@ class TripSyncer(syncer(models.Trip)):
         trip_id_to_db_trip_pk = genericqueries.get_id_to_pk_map_by_feed_pk(
             models.Trip, self.feed_update.feed.pk
         )
-        dbconnection.get_session().query(models.TripStopTime).filter(
-            models.TripStopTime.pk.in_(self.stop_time_pks_to_delete)
-        ).delete(synchronize_session=False)
+        delete_query_selector = (
+            dbconnection.get_session()
+            .query(models.TripStopTime)
+            .filter(models.TripStopTime.pk.in_(self.stop_time_pks_to_delete))
+        )
+        delete_query_selector.delete(synchronize_session=False)
         for trip in trips:
             trip_pk = trip_id_to_db_trip_pk[trip.id]
             for stop_time in trip.stop_times:
                 stop_time.trip_pk = trip_pk
         self._fast_mappings_merge(
             models.TripStopTime,
-            (stop_time for trip in trips for stop_time in trip.stop_times),
+            (
+                stop_time
+                for trip in trips
+                for stop_time in trip.stop_times
+                if stop_time.is_from_parsing
+            ),
         )
         return num_added, num_updated
 
