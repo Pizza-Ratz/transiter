@@ -401,7 +401,6 @@ class TripSyncer(syncer(models.Trip)):
             self._add_existing_trip_data,
         ):
             trips = data_adder(trips)
-        self._calculate_route_pk_to_new_service_map_hash(trips)
         return self._fast_merge(trips)
 
     @staticmethod
@@ -487,8 +486,6 @@ class TripSyncer(syncer(models.Trip)):
             yield trip
 
     def _add_existing_trip_data(self, trips: Iterable[_Trip]) -> Iterable[_Trip]:
-        # TODO: rewrite?
-        #  this method needs to (1) set stop sequences and set stop_time.pks.
         """
         Add data to the feed trips from data already in the database; i.e., from
         previous feed updates.
@@ -498,14 +495,14 @@ class TripSyncer(syncer(models.Trip)):
             trip.id for trip in trips
         )
         trip_pk_to_db_stop_time_data_list = tripqueries.get_trip_pk_to_stop_time_data_list(
-            self.feed_update.feed.pk
-        )  # TODO: is there a bug here if the trip is feed hopping?
+            db_trip.pk for db_trip in trip_id_to_db_trip.values()
+        )
         for trip in trips:
             db_trip = trip_id_to_db_trip.get(trip.id, None)
             if db_trip is not None:
                 trip.pk = db_trip.pk
             db_stop_time_data = trip_pk_to_db_stop_time_data_list.get(trip.pk, [])
-            self._add_future_stop_time_data_to_trip(trip, db_stop_time_data)
+            self._add_pk_and_stop_sequence_to_stop_times(trip, db_stop_time_data)
             past_stop_times = list(
                 self._build_past_stop_times(trip, db_trip, db_stop_time_data)
             )
@@ -514,9 +511,10 @@ class TripSyncer(syncer(models.Trip)):
             elif len(past_stop_times) > 0:
                 trip.current_stop_sequence = (
                     max(stop_time.stop_sequence for stop_time in past_stop_times) + 1
-                )  # TODO: clean this all up
+                )
             else:
-                trip.current_stop_sequence = -1
+                # This is a trip with no stop times at all...
+                trip.current_stop_sequence = 1
             trip.stop_times = past_stop_times + trip.stop_times
         self._calculate_stop_time_pks_to_delete(
             trips, trip_pk_to_db_stop_time_data_list
@@ -524,6 +522,7 @@ class TripSyncer(syncer(models.Trip)):
         self._calculate_route_pk_to_previous_service_map_hash(
             trip_id_to_db_trip.values(), trip_pk_to_db_stop_time_data_list
         )
+        self._calculate_route_pk_to_new_service_map_hash(trips)
         return trips
 
     def _build_trip_id_to_db_trip_map(self, feed_trip_ids):
@@ -583,7 +582,7 @@ class TripSyncer(syncer(models.Trip)):
             yield past_stop_time
 
     @staticmethod
-    def _add_future_stop_time_data_to_trip(trip, db_stop_time_data):
+    def _add_pk_and_stop_sequence_to_stop_times(trip, db_stop_time_data):
         """
         Add stop time data from the database trip.
         """
