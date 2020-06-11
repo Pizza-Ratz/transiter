@@ -508,10 +508,8 @@ class TripSyncer(syncer(models.Trip)):
             )
             if len(trip.stop_times) > 0:
                 trip.current_stop_sequence = trip.stop_times[0].stop_sequence
-            elif len(past_stop_times) > 0:
-                trip.current_stop_sequence = (
-                    max(stop_time.stop_sequence for stop_time in past_stop_times) + 1
-                )
+            elif len(db_stop_time_data) > 0:
+                trip.current_stop_sequence = db_stop_time_data[-1].stop_sequence + 1
             else:
                 # This is a trip with no stop times at all...
                 trip.current_stop_sequence = 1
