@@ -503,16 +503,7 @@ class TripSyncer(syncer(models.Trip)):
         for trip in trips:
             db_trip = trip_id_to_db_trip.get(trip.id, None)
             if db_trip is None:
-                index = 1
-                for stop_time in trip.stop_times:
-                    # If the stop sequence is not set, or is less than a previously
-                    # assigned stop sequence and hence malformed, then we update it.
-                    if (
-                        stop_time.stop_sequence is None
-                        or stop_time.stop_sequence < index
-                    ):
-                        stop_time.stop_sequence = index
-                    index = stop_time.stop_sequence + 1
+                self._add_future_stop_time_data_to_trip(trip, [])
                 if len(trip.stop_times) > 0:
                     trip.current_stop_sequence = trip.stop_times[0].stop_sequence
                 else:
