@@ -388,7 +388,6 @@ class TripSyncer(syncer(models.Trip)):
 
     route_pk_to_previous_service_map_hash = {}
     route_pk_to_new_service_map_hash = {}
-    stop_time_pks_to_delete = set()
 
     def sync(self, parsed_trips):
         trips = map(_Trip.from_parsed_trip, parsed_trips)
@@ -515,9 +514,7 @@ class TripSyncer(syncer(models.Trip)):
             else:
                 # This is a trip with no stop times at all...
                 trip.current_stop_sequence = 1
-        self._calculate_stop_time_pks_to_delete(
-            trips, trip_pk_to_db_stop_time_data_list
-        )
+        self._delete_relevant_stop_times(trips, trip_pk_to_db_stop_time_data_list)
         self._calculate_route_pk_to_previous_service_map_hash(
             trip_id_to_db_trip.values(), trip_pk_to_db_stop_time_data_list
         )
@@ -593,7 +590,7 @@ class TripSyncer(syncer(models.Trip)):
             if stop_time_pk is not None:
                 feed_stop_time.pk = stop_time_pk
 
-    def _calculate_stop_time_pks_to_delete(self, trips, trip_pk_to_db_stop_time_data):
+    def _delete_relevant_stop_times(self, trips, trip_pk_to_db_stop_time_data):
         """
         Calculate the stop time pks to delete and store them in the object variable.
         """
@@ -607,12 +604,18 @@ class TripSyncer(syncer(models.Trip)):
                 trip, trip_pk_to_db_stop_time_data.get(trip.pk, [])
             ):
                 stop_time_pks_to_retain.add(historical_stop_time.pk)
-        self.stop_time_pks_to_delete = set()
+        stop_time_pks_to_delete = set()
         for trip_pk, db_stop_time_data_list in trip_pk_to_db_stop_time_data.items():
             for stop_time_data in db_stop_time_data_list:
                 if stop_time_data.pk in stop_time_pks_to_retain:
                     continue
-                self.stop_time_pks_to_delete.add(stop_time_data.pk)
+                stop_time_pks_to_delete.add(stop_time_data.pk)
+        delete_query_selector = (
+            dbconnection.get_session()
+            .query(models.TripStopTime)
+            .filter(models.TripStopTime.pk.in_(stop_time_pks_to_delete))
+        )
+        delete_query_selector.delete(synchronize_session=False)
 
     def _calculate_route_pk_to_previous_service_map_hash(
         self, db_trips, trip_pk_to_db_stop_time_data_list
@@ -674,12 +677,6 @@ class TripSyncer(syncer(models.Trip)):
         trip_id_to_db_trip_pk = genericqueries.get_id_to_pk_map_by_feed_pk(
             models.Trip, self.feed_update.feed.pk
         )
-        delete_query_selector = (
-            dbconnection.get_session()
-            .query(models.TripStopTime)
-            .filter(models.TripStopTime.pk.in_(self.stop_time_pks_to_delete))
-        )  # TODO: move this to the calculate stop pks method?
-        delete_query_selector.delete(synchronize_session=False)
         for trip in trips:
             trip_pk = trip_id_to_db_trip_pk[trip.id]
             for stop_time in trip.stop_times:
