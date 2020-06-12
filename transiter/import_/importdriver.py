@@ -14,7 +14,8 @@ import collections
 import dataclasses
 import logging
 import typing
-from typing import Iterable, List, Tuple
+import itertools
+
 
 from transiter import parse
 from transiter.db import (
@@ -124,7 +125,7 @@ class SyncerBase:
     def feed_entity(cls):
         return cls.__feed_entity__
 
-    def _merge_entities(self, entities) -> Tuple[list, int, int]:
+    def _merge_entities(self, entities) -> typing.Tuple[list, int, int]:
         """
         Merge entities of a given type into the session.
 
@@ -404,7 +405,7 @@ class TripSyncer(syncer(models.Trip)):
         return self._fast_merge(trips)
 
     @staticmethod
-    def _filter_duplicate_ids(trips: Iterable[_Trip]) -> Iterable[_Trip]:
+    def _filter_duplicate_ids(trips: typing.Iterable[_Trip]) -> typing.Iterable[_Trip]:
         processed_ids = set()
         for trip in trips:
             if trip.id in processed_ids:
@@ -412,12 +413,14 @@ class TripSyncer(syncer(models.Trip)):
             processed_ids.add(trip.id)
             yield trip
 
-    def _add_source(self, trips: Iterable[_Trip]) -> Iterable[_Trip]:
+    def _add_source(self, trips: typing.Iterable[_Trip]) -> typing.Iterable[_Trip]:
         for trip in trips:
             trip.source_pk = self.feed_update.pk
             yield trip
 
-    def _add_schedule_data(self, trips: Iterable[_Trip]) -> Iterable[_Trip]:
+    def _add_schedule_data(
+        self, trips: typing.Iterable[_Trip]
+    ) -> typing.Iterable[_Trip]:
         """
         Add data to the trip, such as the route, from the schedule.
         """
@@ -446,7 +449,7 @@ class TripSyncer(syncer(models.Trip)):
                 trip.direction_id = scheduled_trip.direction_id
         return trips
 
-    def _add_route_data(self, trips: Iterable[_Trip]) -> Iterable[_Trip]:
+    def _add_route_data(self, trips: typing.Iterable[_Trip]) -> typing.Iterable[_Trip]:
         """
         Convert route_ids on the trip into route_pks. Trips that are have invalid
         route IDs and are missing route PKs are filtered out.
@@ -463,7 +466,7 @@ class TripSyncer(syncer(models.Trip)):
                     continue
             yield trip
 
-    def _add_stop_data(self, trips: Iterable[_Trip]) -> Iterable[_Trip]:
+    def _add_stop_data(self, trips: typing.Iterable[_Trip]) -> typing.Iterable[_Trip]:
         """
         Convert stop_ids on the trip stop times into stop_pks. Trip stop times that have
         invalid stop IDs and are missing stop PKs are filtered out.
@@ -485,7 +488,9 @@ class TripSyncer(syncer(models.Trip)):
             trip.stop_times = list(process_stop_times(trip.stop_times))
             yield trip
 
-    def _add_existing_trip_data(self, trips: Iterable[_Trip]) -> Iterable[_Trip]:
+    def _add_existing_trip_data(
+        self, trips: typing.Iterable[_Trip]
+    ) -> typing.Iterable[_Trip]:
         """
         Add data to the feed trips from data already in the database; i.e., from
         previous feed updates.
@@ -516,7 +521,9 @@ class TripSyncer(syncer(models.Trip)):
         self._calculate_route_pk_to_previous_service_map_hash(
             trip_id_to_db_trip.values(), trip_pk_to_db_stop_time_data_list
         )
-        self._calculate_route_pk_to_new_service_map_hash(trips)
+        self._calculate_route_pk_to_new_service_map_hash(
+            trips, trip_pk_to_db_stop_time_data_list
+        )
         return trips
 
     def _build_trip_id_to_db_trip_map(self, feed_trip_ids):
@@ -633,23 +640,30 @@ class TripSyncer(syncer(models.Trip)):
             for route_pk, paths in route_pk_to_trip_paths.items()
         }
 
-    def _calculate_route_pk_to_new_service_map_hash(self, trips):
+    def _calculate_route_pk_to_new_service_map_hash(
+        self, trips, trip_pk_to_db_stop_time_data_list
+    ):
         """
         Calculate the new service map information and store it in the object
         variable.
         """
-        # TODO: fix this!
         route_pk_to_trip_paths = collections.defaultdict(set)
         for trip in trips:
-            if len(trip.stop_times) == 0:
-                continue
-            if trip.direction_id:
-                stop_times = trip.stop_times
-            else:
-                stop_times = reversed(trip.stop_times)
-            route_pk_to_trip_paths[trip.route_pk].add(
-                tuple(stop_time.stop_pk for stop_time in stop_times)
+            all_stop_pks = tuple(
+                stop_time.stop_pk
+                for stop_time in itertools.chain(
+                    self._list_historical_stop_time_data(
+                        trip, trip_pk_to_db_stop_time_data_list.get(trip.pk, [])
+                    ),
+                    trip.stop_times,
+                )
             )
+            all_stop_pks = tuple(all_stop_pks)
+            if not trip.direction_id:
+                all_stop_pks = tuple(reversed(all_stop_pks))
+            if len(all_stop_pks) == 0:
+                continue
+            route_pk_to_trip_paths[trip.route_pk].add(tuple(all_stop_pks))
         self.route_pk_to_new_service_map_hash = {
             route_pk: servicemapmanager.calculate_paths_hash(paths)
             for route_pk, paths in route_pk_to_trip_paths.items()
@@ -664,7 +678,7 @@ class TripSyncer(syncer(models.Trip)):
             dbconnection.get_session()
             .query(models.TripStopTime)
             .filter(models.TripStopTime.pk.in_(self.stop_time_pks_to_delete))
-        )
+        )  # TODO: move this to the calculate stop pks method?
         delete_query_selector.delete(synchronize_session=False)
         for trip in trips:
             trip_pk = trip_id_to_db_trip_pk[trip.id]
