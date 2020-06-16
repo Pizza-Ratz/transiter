@@ -220,71 +220,106 @@ def _get_nullable_field(entity, field_name, default=None):
 
 
 def parse_vehicles(feed_message):
-    trip_id_to_vehicle_ids = collections.defaultdict(list)
-    vehicle_id_to_trip_ids = collections.defaultdict(list)
-    vehicle_id_to_descriptors = collections.defaultdict(list)
-    vehicle_id_to_position = {}
+    identifier_to_descriptors = collections.defaultdict(list)
+    identifier_to_position = {}
+    identifier_to_trip_ids = collections.defaultdict(list)
+    all_identifiers = set()
+    trip_id_to_identifiers = collections.defaultdict(set)
+
     for entity in feed_message.entity:
         for sub_entity_key in ("vehicle", "trip_update"):
             if not entity.HasField(sub_entity_key):
                 continue
             sub_entity = getattr(entity, sub_entity_key)
-            if not sub_entity.HasField("vehicle"):
-                continue
-            if not sub_entity.vehicle.HasField("id"):
-                continue
-            vehicle_id = sub_entity.vehicle.id
-            vehicle_id_to_descriptors[vehicle_id].append(sub_entity.vehicle)
-            if sub_entity_key == "vehicle":
-                vehicle_id_to_position[vehicle_id] = sub_entity
 
+            identifier = _VehicleIdentifier()
+            if sub_entity.HasField("vehicle") and sub_entity.vehicle.HasField("id"):
+                identifier.vehicle_id = sub_entity.vehicle.id
             if sub_entity.HasField("trip") and sub_entity.trip.HasField("trip_id"):
-                trip_id = sub_entity.trip.trip_id
-                vehicle_id_to_trip_ids[vehicle_id].append(trip_id)
-                trip_id_to_vehicle_ids[trip_id].append(vehicle_id)
+                identifier.trip_id = sub_entity.trip.trip_id
+                identifier_to_trip_ids[identifier].append(identifier.trip_id)
+                trip_id_to_identifiers[identifier.trip_id].add(identifier)
 
-    buggy_vehicle_ids = set()
-    for vehicle_ids in trip_id_to_vehicle_ids.values():
-        if len(vehicle_ids) > 1:
-            buggy_vehicle_ids.update(vehicle_ids)
-    for vehicle_id, descriptors in vehicle_id_to_descriptors.items():
-        if vehicle_id in buggy_vehicle_ids:
+            if not identifier.is_valid():
+                continue
+
+            all_identifiers.add(identifier)
+            if sub_entity.HasField("vehicle"):
+                identifier_to_descriptors[identifier].append(sub_entity.vehicle)
+            if sub_entity_key == "vehicle":
+                identifier_to_position[identifier] = sub_entity
+
+    for identifier in all_identifiers:
+        trip_ids = identifier_to_trip_ids[identifier]
+        if len(trip_ids) > 1:
             continue
-        trips_ids = vehicle_id_to_trip_ids[vehicle_id]
-        if len(trips_ids) > 1:
+        elif len(trip_ids) == 1:
+            trip_id = trip_ids[0]
+        else:
+            trip_id = None
+        if (
+            identifier.trip_id is not None
+            and len(trip_id_to_identifiers[identifier.trip_id]) > 1
+        ):
             continue
-        trip_id = trips_ids[0] if len(trips_ids) == 1 else None
-        vehicle = parse.Vehicle(id=vehicle_id, trip_id=trip_id)
 
-        for vehicle_desc in descriptors:
-            if vehicle_desc.HasField("label"):
-                vehicle.label = vehicle_desc.label
-            if vehicle_desc.HasField("license_plate"):
-                vehicle.license_plate = vehicle_desc.license_plate
+        descriptors = identifier_to_descriptors[identifier]
+        vehicle_position = identifier_to_position.get(identifier)
+        if len(descriptors) == 0 and vehicle_position is None:
+            continue
 
-        vehicle_position = vehicle_id_to_position.get(vehicle_id)
-        if vehicle_position is not None:
-            for field_name in ["latitude", "longitude", "bearing", "odometer", "speed"]:
-                setattr(
-                    vehicle,
-                    field_name,
-                    _get_nullable_field(vehicle_position.position, field_name),
-                )
-            vehicle.current_stop_sequence = _get_nullable_field(
-                vehicle_position, "current_stop_sequence"
+        yield _build_vehicle(identifier, trip_id, descriptors, vehicle_position)
+
+
+def _build_vehicle(identifier, trip_id, descriptors, vehicle_position):
+    vehicle = parse.Vehicle(id=identifier.vehicle_id, trip_id=trip_id)
+    for vehicle_desc in descriptors:
+        if vehicle_desc.HasField("label"):
+            vehicle.label = vehicle_desc.label
+        if vehicle_desc.HasField("license_plate"):
+            vehicle.license_plate = vehicle_desc.license_plate
+
+    if vehicle_position is not None:
+        for field_name in ["latitude", "longitude", "bearing", "odometer", "speed"]:
+            setattr(
+                vehicle,
+                field_name,
+                _get_nullable_field(vehicle_position.position, field_name),
             )
-            vehicle.current_stop_id = _get_nullable_field(vehicle_position, "stop_id")
-            vehicle.current_status = parse.Vehicle.Status(
-                vehicle_position.current_status
+        vehicle.current_stop_sequence = _get_nullable_field(
+            vehicle_position, "current_stop_sequence"
+        )
+        vehicle.current_stop_id = _get_nullable_field(vehicle_position, "stop_id")
+        vehicle.current_status = parse.Vehicle.Status(vehicle_position.current_status)
+        vehicle.congestion_level = parse.Vehicle.CongestionLevel(
+            vehicle_position.congestion_level
+        )
+        if vehicle_position.HasField("occupancy_status"):
+            vehicle.occupancy_status = parse.Vehicle.OccupancyStatus(
+                vehicle_position.occupancy_status
             )
-            vehicle.congestion_level = parse.Vehicle.CongestionLevel(
-                vehicle_position.congestion_level
-            )
-            if vehicle_position.HasField("occupancy_status"):
-                vehicle.occupancy_status = parse.Vehicle.OccupancyStatus(
-                    vehicle_position.occupancy_status
-                )
-        yield vehicle
+    return vehicle
+
+
+class _VehicleIdentifier:
+    vehicle_id: str = None
+    trip_id: str = None
+
+    def is_valid(self):
+        return self.vehicle_id is not None or self.trip_id is not None
+
+    def __hash__(self):
+        if self.vehicle_id is not None:
+            return hash((self.vehicle_id, None))
+        return hash((None, self.trip_id))
+
+    def __eq__(self, other):
+        if self.vehicle_id is not None:
+            return self.vehicle_id == other.vehicle_id
+        return self.trip_id == other.trip_id
+
+    def __repr__(self):
+        return f"({self.vehicle_id}, {self.trip_id})"
 
 
 if __name__ == "__main__":

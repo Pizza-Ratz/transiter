@@ -21,7 +21,9 @@ class Vehicle(Base):
 
     pk = Column(Integer, primary_key=True)
     id = Column(String)
-    source_pk = Column(Integer, ForeignKey("feed_update.pk"), index=True, nullable=False)
+    source_pk = Column(
+        Integer, ForeignKey("feed_update.pk"), index=True, nullable=False
+    )
     system_pk = Column(Integer, ForeignKey("system.pk"), nullable=False, index=True)
     trip_pk = Column(Integer, ForeignKey("trip.pk"), index=True, unique=True)
 

@@ -34,7 +34,9 @@ class Trip(Base):
 
     source = relationship("FeedUpdate", cascade="none")
     route = relationship("Route", back_populates="trips", cascade="none")
-    vehicle = relationship("Vehicle", back_populates="trip", cascade="none", uselist=False)
+    vehicle = relationship(
+        "Vehicle", back_populates="trip", cascade="none", uselist=False
+    )
     stop_times = relationship(
         "TripStopTime",
         back_populates="trip",
