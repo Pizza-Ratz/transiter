@@ -276,6 +276,17 @@ class ServiceMapWithStops(View):
 
 
 @dataclasses.dataclass
+class VehicleInTrip(View):
+    id: typing.Optional[str]
+
+    @classmethod
+    def from_model(cls, vehicle: typing.Optional[models.Vehicle]):
+        if vehicle is None:
+            return None
+        return cls(id=vehicle.id)
+
+
+@dataclasses.dataclass
 class Trip(View):
     id: str
     direction_id: bool
@@ -284,6 +295,7 @@ class Trip(View):
     _system_id: str
     _route_id: str
     delay: int = None
+    vehicle: VehicleInTrip = NULL
     route: Route = NULL
     last_stop: Stop = NULL
     stop_times: list = NULL
@@ -297,6 +309,7 @@ class Trip(View):
             started_at=trip.started_at,
             updated_at=trip.updated_at,
             delay=trip.delay,
+            vehicle=VehicleInTrip.from_model(trip.vehicle),
             _system_id=trip.route.system.id,
             _route_id=trip.route.id,
         )

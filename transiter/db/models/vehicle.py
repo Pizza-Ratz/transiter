@@ -59,7 +59,7 @@ class Vehicle(Base):
 
     source = relationship("FeedUpdate", cascade="none")
     system = relationship("System", back_populates="vehicles", cascade="none")
-    trip = relationship("Trip", back_populates="vehicle", cascade="none")
+    trip = relationship("Trip", back_populates="vehicle", cascade="none", lazy="joined")
     current_stop = relationship("Stop", cascade="none")
 
     __table_args__ = (UniqueConstraint(system_pk, id),)
