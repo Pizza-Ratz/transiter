@@ -4,6 +4,7 @@ The GTFS Realtime Util contains the logic for reading feeds of this format.
 The official reference is here: https://gtfs.org/reference/realtime/v2/
 """
 import collections
+import dataclasses
 import datetime
 import sys
 import typing
@@ -219,12 +220,22 @@ def _get_nullable_field(entity, field_name, default=None):
     return getattr(entity, field_name)
 
 
+@dataclasses.dataclass(unsafe_hash=True)
+class _TripVehicleLink:
+    trip_id: str
+    vehicle_id: str
+
+
 def parse_vehicles(feed_message):
-    identifier_to_descriptors = collections.defaultdict(list)
-    identifier_to_position = {}
-    identifier_to_trip_ids = collections.defaultdict(list)
-    all_identifiers = set()
-    trip_id_to_identifiers = collections.defaultdict(set)
+    all_trips_ids = set()
+    all_vehicle_ids = set()
+    all_links = set()
+
+    trip_id_to_descriptors = collections.defaultdict(list)
+    trip_id_to_position = {}
+
+    vehicle_id_to_descriptors = collections.defaultdict(list)
+    vehicle_id_to_position = {}
 
     for entity in feed_message.entity:
         for sub_entity_key in ("vehicle", "trip_update"):
@@ -232,47 +243,73 @@ def parse_vehicles(feed_message):
                 continue
             sub_entity = getattr(entity, sub_entity_key)
 
-            identifier = _VehicleIdentifier()
-            if sub_entity.HasField("vehicle") and sub_entity.vehicle.HasField("id"):
-                identifier.vehicle_id = sub_entity.vehicle.id
-            if sub_entity.HasField("trip") and sub_entity.trip.HasField("trip_id"):
-                identifier.trip_id = sub_entity.trip.trip_id
-                identifier_to_trip_ids[identifier].append(identifier.trip_id)
-                trip_id_to_identifiers[identifier.trip_id].add(identifier)
-
-            if not identifier.is_valid():
-                continue
-
-            all_identifiers.add(identifier)
-            if sub_entity.HasField("vehicle"):
-                identifier_to_descriptors[identifier].append(sub_entity.vehicle)
-            if sub_entity_key == "vehicle":
-                identifier_to_position[identifier] = sub_entity
-
-    for identifier in all_identifiers:
-        trip_ids = identifier_to_trip_ids[identifier]
-        if len(trip_ids) > 1:
-            continue
-        elif len(trip_ids) == 1:
-            trip_id = trip_ids[0]
-        else:
             trip_id = None
-        if (
-            identifier.trip_id is not None
-            and len(trip_id_to_identifiers[identifier.trip_id]) > 1
-        ):
-            continue
+            vehicle_id = None
+            if sub_entity.HasField("vehicle") and sub_entity.vehicle.HasField("id"):
+                vehicle_id = sub_entity.vehicle.id
+                all_vehicle_ids.add(vehicle_id)
+            if sub_entity.HasField("trip") and sub_entity.trip.HasField("trip_id"):
+                trip_id = sub_entity.trip.trip_id
+                all_trips_ids.add(trip_id)
 
-        descriptors = identifier_to_descriptors[identifier]
-        vehicle_position = identifier_to_position.get(identifier)
+            if trip_id is None and vehicle_id is None:
+                continue
+            if trip_id is not None and vehicle_id is not None:
+                all_links.add(_TripVehicleLink(trip_id=trip_id, vehicle_id=vehicle_id))
+
+            if sub_entity.HasField("vehicle"):
+                if trip_id is not None:
+                    trip_id_to_descriptors[trip_id].append(sub_entity.vehicle)
+                if vehicle_id is not None:
+                    vehicle_id_to_descriptors[vehicle_id].append(sub_entity.vehicle)
+            if sub_entity_key == "vehicle":
+                if trip_id is not None:
+                    trip_id_to_position[trip_id] = sub_entity
+                if vehicle_id is not None:
+                    vehicle_id_to_position[vehicle_id] = sub_entity
+
+    for trip_id, vehicle_id in _trip_id_vehicle_id_tuples(
+        all_trips_ids, all_vehicle_ids, all_links
+    ):
+        descriptors = (
+            trip_id_to_descriptors[trip_id] + vehicle_id_to_descriptors[vehicle_id]
+        )
+        vehicle_position = vehicle_id_to_position.get(vehicle_id)
+        if vehicle_position is None:
+            vehicle_position = trip_id_to_position.get(trip_id)
         if len(descriptors) == 0 and vehicle_position is None:
             continue
+        yield _build_vehicle(vehicle_id, trip_id, descriptors, vehicle_position)
 
-        yield _build_vehicle(identifier, trip_id, descriptors, vehicle_position)
+
+def _trip_id_vehicle_id_tuples(all_trip_ids, all_vehicle_ids, all_links):
+    trip_id_to_links = collections.defaultdict(set)
+    vehicle_id_to_links = collections.defaultdict(set)
+    for link in all_links:
+        trip_id_to_links[link.trip_id].add(link)
+        vehicle_id_to_links[link.vehicle_id].add(link)
+
+    for trip_id in all_trip_ids:
+        links = trip_id_to_links[trip_id]
+        if len(links) == 1:
+            vehicle_id = links.pop().vehicle_id
+            if len(vehicle_id_to_links[vehicle_id]) > 1:
+                continue
+            yield trip_id, vehicle_id
+        elif len(links) == 0:
+            yield trip_id, None
+        else:
+            # Skip trips with more than one vehicle
+            pass
+
+    for vehicle_id in all_vehicle_ids:
+        if vehicle_id in vehicle_id_to_links:
+            continue
+        yield None, vehicle_id
 
 
-def _build_vehicle(identifier, trip_id, descriptors, vehicle_position):
-    vehicle = parse.Vehicle(id=identifier.vehicle_id, trip_id=trip_id)
+def _build_vehicle(vehicle_id, trip_id, descriptors, vehicle_position):
+    vehicle = parse.Vehicle(id=vehicle_id, trip_id=trip_id)
     for vehicle_desc in descriptors:
         if vehicle_desc.HasField("label"):
             vehicle.label = vehicle_desc.label
