@@ -760,7 +760,13 @@ class VehicleImporter(syncer(models.Vehicle)):
                 continue
             if vehicle.id in vehicle_id_to_pk:
                 vehicle.pk = vehicle_id_to_pk[vehicle.id]
-            elif trip is not None and trip.vehicle is not None:
+            if trip is not None and trip.vehicle is not None:
+                # Easy way to get around the edge case when a new vehicle is the merging
+                # of two existing vehicles. We just skip that vehicle, and hope that
+                # next import it will be dealt with correctly. Dealing with this
+                # properly is hard because of the database's unique constraints.
+                if vehicle.pk is not None and vehicle.pk != trip.vehicle.pk:
+                    continue
                 vehicle.pk = trip.vehicle.pk
             vehicles.append(vehicle)
 

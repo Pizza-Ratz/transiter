@@ -871,6 +871,23 @@ def test_vehicle__duplicate_trip_ids(
     assert (1, 0, 0) == result
 
 
+def test_vehicle__merged_vehicle_edge_case(
+    db_session, previous_update, current_update, trip_for_vehicle, stop_1_3,
+):
+    vehicle_1 = parse.Vehicle(id=None, trip_id="trip_id")
+    vehicle_2 = parse.Vehicle(id="vehicle_id", trip_id=None)
+    vehicle_3 = parse.Vehicle(id="vehicle_id", trip_id="trip_id")
+
+    importdriver.run_import(
+        previous_update.pk, ParserForTesting([vehicle_1, vehicle_2])
+    )
+    db_session.refresh(trip_for_vehicle)
+
+    result = importdriver.run_import(current_update.pk, ParserForTesting([vehicle_3]))
+
+    assert (0, 0, 2) == result
+
+
 def test_vehicle__delete_with_trip_attached(
     db_session,
     add_model,
