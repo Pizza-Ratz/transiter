@@ -306,6 +306,8 @@ class Trip:
     need to correspond to a trip in the schedule (i.e., a trip coming from GTFS
     Static and parsed as a `ScheduledTrip` type.)
     Each trip must also have a valid route ID.
+    However, if the trip ID refers to a scheduled trip then the route ID can
+    be omitted and will be copied from the scheduled trip.
     """
 
     class ScheduleRelationship(enum.Enum):
@@ -317,7 +319,7 @@ class Trip:
         UNKNOWN = 10
 
     id: str
-    route_id: foreign_key_str(Route, "id")
+    route_id: typing.Optional[foreign_key_str(Route, "id")] = None
     direction_id: typing.Optional[bool] = None
     schedule_relationship: ScheduleRelationship = ScheduleRelationship.UNKNOWN
     start_time: typing.Optional[datetime.datetime] = None
