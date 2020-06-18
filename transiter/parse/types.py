@@ -1,3 +1,18 @@
+"""
+# Parser output types reference
+
+This file contains a full description of the possible types that can be output
+by a feed parser in Transiter.
+This page is auto-generated from the
+`transiter.parse.types` module, where the parser types are defined.
+Most of the types and fields correspond to fields in the
+[GTFS Static](https://developers.google.com/transit/gtfs/reference/) and
+[GTFS Realtime](https://developers.google.com/transit/gtfs-realtime/reference)
+specifications.
+It may be useful to consult those specs for more information on particular fields.
+
+
+"""
 import datetime
 import enum
 import typing
@@ -283,6 +298,16 @@ class ScheduledTripStopTime:
 
 @dataclass
 class Trip:
+    """
+    Represents a realtime trip in a transit system.
+    This type corresponds to the TripUpdate and TripDescriptor types in GTFS Realtime.
+
+    In Transiter, every trip must have a unique trip ID, but this trip ID does not
+    need to correspond to a trip in the schedule (i.e., a trip coming from GTFS
+    Static and parsed as a `ScheduledTrip` type.)
+    Each trip must also have a valid route ID.
+    """
+
     class ScheduleRelationship(enum.Enum):
         SCHEDULED = 0
         ADDED = 1
@@ -292,7 +317,7 @@ class Trip:
         UNKNOWN = 10
 
     id: str
-    route_id: typing.Optional[str] = None
+    route_id: foreign_key_str(Route, "id")
     direction_id: typing.Optional[bool] = None
     schedule_relationship: ScheduleRelationship = ScheduleRelationship.UNKNOWN
     start_time: typing.Optional[datetime.datetime] = None
@@ -303,6 +328,11 @@ class Trip:
 
 @dataclass
 class TripStopTime:
+    """
+    Contains data on when a specific realtime trip calls at a specific stop.
+    Corresponds to GTFS Realtime StopTimeUpdate data.
+    """
+
     class ScheduleRelationship(enum.Enum):
         SCHEDULED = 0
         SKIPPED = 1
@@ -323,6 +353,20 @@ class TripStopTime:
 
 @dataclass
 class Vehicle:
+    """
+    Represents a (realtime) vehicle moving through the transit system.
+    This type is based on the GTFS Realtime VehiclePosition and VehicleDescriptor
+    types.
+
+    There are two types of vehicle supported in Transiter:
+
+    - Vehicle with a valid trip ID. The vehicle ID is optional for these vehicles
+        as the vehicle can be uniquely identified using its trip.
+
+    - Vehicles with no associated trip. These vehicles must have a valid and
+        unique vehicle ID.
+    """
+
     class Status(enum.Enum):
         INCOMING_AT = 0
         STOPPED_AT = 1
@@ -346,7 +390,7 @@ class Vehicle:
         UNKNOWN = 100
 
     id: typing.Optional[str] = None
-    trip_id: typing.Optional[str] = None
+    trip_id: foreign_key_str(Trip, "id") = None
     label: str = None
     license_plate: str = None
     current_stop_sequence: int = None
@@ -438,9 +482,21 @@ class AlertActivePeriod:
 
 @dataclass
 class DirectionRule:
+    """
+    A direction rule is a Transiter-only type.
+    It enables assigning a "direction" or "direction name" to a realtime trip
+    stop time.
+
+    At a given stop, all of the direction rules for that stop are retrieved and
+    ordered by priority (lowest first).
+    Each rule is checked in order to see if it matches data in the the trip stop time,
+    like the direction ID of the trip or the track.
+    The first rule that matches determines the direction.
+    """
+
     name: str
     id: str = None
     priority: int = None
-    stop_id: str = None
+    stop_id: foreign_key_str(Stop, "id") = None
     direction_id: bool = None
     track: str = None

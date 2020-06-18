@@ -18,4 +18,5 @@ markdown_extensions: []
 nav:
   - index.md
   - feedparsers.md
+  - parser-output-types.md
   - api.md

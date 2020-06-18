@@ -14,7 +14,7 @@ def convert_type_to_type_desc(type_, default, plural=False):
         type_ = type_.__args__[0]
     if isinstance(type_, typing.ForwardRef):
         # type_ = type_.__args__[0]
-        return f"Object{s} of type `{type_.__forward_arg__}`"
+        return f"Object{s} of type `{type_.__forward_arg__}`."
     if getattr(type_, "__origin__", None) == list:
         base = convert_type_to_type_desc(
             type_.__args__[0], dataclasses.MISSING, plural=True
@@ -31,14 +31,12 @@ def convert_type_to_type_desc(type_, default, plural=False):
     if type_ == datetime.datetime:
         return (
             "Datetime object. "
-            "If no timezone is provided, the importer will add the timezone of the system to it."
+            "If no timezone is provided, the importer will add the timezone of the transit system to it."
         )
     if type_ == datetime.date:
         return f"Date object{s}."
     if type_ == datetime.time:
         return f"Time object{s}."
-    if dataclasses.is_dataclass(type_):
-        return "Object of type "
     if getattr(type_, "__fk_type__", None) is not None:
         return f"String foreign key reference{s} to the `{type_.__fk_field__}` attribute of the `{type_.__fk_type__.__name__}` class."
 
@@ -52,7 +50,7 @@ def convert_type_to_type_desc(type_, default, plural=False):
             result += f" Default is `{default.name}`."
         return result
 
-    return "??"
+    raise ValueError
 
 
 def process(parse_type, f, first):
@@ -122,34 +120,17 @@ def _ancestors(root, key_to_children):
         yield from _ancestors(child, key_to_children)
 
 
-"""
-x = typing.List['A']
-
-print(x.__dict__)
-
-if getattr(x, '__origin__', None) != list:
-    exit(1)
-forward_ref = x.__args__[0]
-if isinstance(forward_ref, typing.ForwardRef):
-    print("YES")
-print(x.__origin__)
-print(dir(forward_ref))
-print(forward_ref.__forward_arg__)
-class A:
-    pass
-exit(0)
-
-"""
-
 with open("transiter/parse/types.py") as f:
     parse = {}
     exec(f.read(), parse)
 
-with open("docs/docs/feedparsers.md", "w") as f:
-    print("# Feed parser types reference", file=f)
+with open("docs/docs/parser-output-types.md", "w") as f:
+    print(parse["__doc__"], file=f)
 
     dependencies = list(resolve_dependencies(parse))
-    print(f"Feed parsers can return one of {len(dependencies)} types:\n", file=f)
+    print(
+        f"Transiter feed parsers can return one of {len(dependencies)} types:\n", file=f
+    )
     for elements in dependencies:
         print(f"- [{elements[0].__name__}](#{elements[0].__name__.lower()})\n", file=f)
 
