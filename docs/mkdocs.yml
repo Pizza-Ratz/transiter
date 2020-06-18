@@ -1,15 +1,21 @@
 site_name: Transiter 0.5
-theme: cinder
-nav:
-- 'api.md'
-- 'systems.md'
-- 'feedparsers.md'
-- 'deployment.md'
-
+theme:
+  name: material
+  palette:
+    scheme: default
+    primary: teal
+    accent: teal
+  extra_css: extra.css
+  extensions: []
+plugins:
+  - search
 copyright: >
   Transiter is licensed under the
   <a href='https://raw.githubusercontent.com/jamespfennell/transiter/master/LICENSE'>MIT license</a>
   <!-- 6808e24437044a523cf793e1f93f6924-90388b1a0c91760551522c59a4088557-7a55dcd8cb6f2093d5ab9a9b7997d9cc -->
-
-# This disables the search feature
-plugins: []
+markdown_extensions: []
+# Page tree
+nav:
+  - index.md
+  - feedparsers.md
+  - api.md
