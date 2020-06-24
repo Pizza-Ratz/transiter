@@ -83,7 +83,7 @@ and configure the volume `data-volume` appropriately.
 
 ## Interlude: Transiter service topology
 
-As of version 0.4, Transiter uses five Docker containers to run, as
+Transiter uses five Docker containers to run, as
 well as an sixth init container:
 
 1. The web service, which is a Gunicorn process 
@@ -108,8 +108,7 @@ well as an sixth init container:
 1. The init container, which is based on the the Transiter Docker image.
     This container just initializes the database schema and then exits.
     
-The topology is identical for non-Docker deployments, described below,
-though of course Docker images are not used.
+The topology is identical for non-Docker deployments, described below.
 
 ## Running Transiter without containers
 

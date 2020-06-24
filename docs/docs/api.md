@@ -2,7 +2,6 @@
 
 
 This page details the HTTP endpoints exposed by Transiter.
-The API is largely RESTful.
 
 Endpoints mostly return JSON data; exceptions are specifically noted.
 In order to avoid stale documentation,

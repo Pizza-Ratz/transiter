@@ -1,4 +1,6 @@
-# Transiter 0.5 documentation
+# Transiter: web service for transit data
+
+
 
 ## Contents
 
