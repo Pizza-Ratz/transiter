@@ -20,17 +20,17 @@ class Endpoint:
 
 groups = [
     Group("Transit system", "transiter.http.endpoints.systemendpoints"),
-    Group("Stops", "transiter.http.endpoints.stopendpoints"),
-    Group("Routes", "transiter.http.endpoints.routeendpoints"),
-    Group("Trips", "transiter.http.endpoints.tripendpoints"),
-    Group("Feeds", "transiter.http.endpoints.feedendpoints"),
-    Group("Admin", "transiter.http.endpoints.adminendpoints")
+    Group("Stop", "transiter.http.endpoints.stopendpoints"),
+    Group("Route", "transiter.http.endpoints.routeendpoints"),
+    Group("Trip", "transiter.http.endpoints.tripendpoints"),
+    Group("Feed", "transiter.http.endpoints.feedendpoints"),
+    Group("Admin", "transiter.http.endpoints.adminendpoints"),
 ]
 
 
 def match_group(endpoint):
     for group in groups:
-        if group.module == endpoint[:len(group.module)]:
+        if group.module == endpoint[: len(group.module)]:
             return group
     return None
 
@@ -54,14 +54,16 @@ def populate_endpoints():
         doc = doc.strip()
         first_new_line = doc.find("\n")
         if first_new_line >= 0:
-            title = doc[: first_new_line].strip()
-            body = doc[first_new_line + 1: ]
+            title = doc[:first_new_line].strip()
+            body = doc[first_new_line + 1 :]
         else:
             title = doc
             body = ""
 
         if title[-1] == ".":
-            print(f"Warning: first line of documentation for {rule.endpoint} ends with a period, skipping.")
+            print(
+                f"Warning: first line of documentation for {rule.endpoint} ends with a period, skipping."
+            )
             continue
 
         group.endpoints.append(
@@ -69,16 +71,20 @@ def populate_endpoints():
                 title=title,
                 rule=rule.rule,
                 method=calculate_method(rule.methods),
-                doc=body
+                doc=body,
             )
         )
+
 
 def calculate_method(methods):
     for method in ["GET", "POST", "PUT", "DELETE"]:
         if method in methods:
             return method
 
-a  = ""
+
+a = ""
+
+
 def build_quick_reference_row(endpoint: Endpoint):
     internal_url = endpoint.title.replace(" ", "-").lower()
     return f"[{endpoint.title}](#{internal_url}) | `{endpoint.method} {endpoint.rule}`"
@@ -86,8 +92,23 @@ def build_quick_reference_row(endpoint: Endpoint):
 
 populate_endpoints()
 
+base = """
+# API reference
+
+
+This page details the HTTP endpoints exposed by Transiter.
+
+Endpoints mostly return JSON data; exceptions are specifically noted.
+In order to avoid stale documentation,
+the structure of the JSON data returned by each endpoint
+ is not described here, but can be inspected on the
+[demo site](https://demo.transiter.io) or
+by clicking any of the example links below.
+
+"""
 with open("docs/docs/api.md", "w") as f:
 
+    print(base, file=f)
     print("## Quick reference", file=f)
     print("Operation | API endpoint", file=f)
     print("----------|-------------", file=f)
@@ -106,4 +127,3 @@ with open("docs/docs/api.md", "w") as f:
             print(f"`{endpoint.method} {endpoint.rule}`", file=f)
             print("", file=f)
             print(endpoint.doc, file=f)
-
