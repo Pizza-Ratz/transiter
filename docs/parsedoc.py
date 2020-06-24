@@ -5,6 +5,9 @@ import enum
 import datetime
 
 
+# TODO: run this script during the build process
+
+
 def convert_type_to_type_desc(type_, default, plural=False):
     if plural:
         s = "s"
@@ -120,6 +123,8 @@ def _ancestors(root, key_to_children):
         yield from _ancestors(child, key_to_children)
 
 
+# TODO: take the file name as a command line argument
+# TODO: make this relative to the file location
 with open("transiter/parse/types.py") as f:
     parse = {}
     exec(f.read(), parse)
