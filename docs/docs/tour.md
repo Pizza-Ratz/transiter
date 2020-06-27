@@ -396,5 +396,27 @@ It's possible to search for more stops by passing a distance URL parameter to th
 
 ## Add cross-system transfers
 
+Transiter supports installing multiple transit system side-by-side.
+In many cases, these transit systems have admissible transfers between them,
+    although there is no data feed that provides these transfers.
+However
 
+To demo this, let's first install the Caltrain system:
+
+```
+?
+```
+
+```
+curl -X POST "http://localhost:8000/admin/transfers-config/preview?system_id=bart&system_id=caltrain&distance=1000"
+```
+
+Can do this with multiple distance parameters
+If we set it to 1000, we also get the San Bruno connection
+
+
+Then, add the transfers
+```
+http://localhost:8000/systems/bart/stops/place_MLBR
+```
 ## Where to go next?
