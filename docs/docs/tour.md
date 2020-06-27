@@ -220,7 +220,7 @@ In the BART example there are two maps presented in the routes endpoint: `all-ti
   ]
 ```
 
-Transiter enables generating service maps from two source:
+Transiter enables generating service maps from two sources:
 
 1. The realtime trips in the GTFS Realtime feeds.
     The `realtime` service map was generated in this way.
@@ -239,9 +239,160 @@ More information on configuring service maps can be found in the
 
 Having looked at routes, let's look at some stops data.
 The endpoint for the BART transit system (`http://localhost:8000/systems/bart`)
+tells us where the find the list of all stops (`http://localhost:8000/systems/bart/stops`).
+Let's go straight to the Downtown Berkeley station, which has stop ID `place_DBRK`
+    and URL `http://localhost:8000/systems/bart/stops/place_DBRK` 
+    (both the ID and the URL can be found in the Orange Line's service map).
+This is the start of what comes back:
+
+```json
+{
+  "id": "place_DBRK",
+  "name": "Downtown Berkeley",
+  "longitude": "-122.268109",
+  "latitude": "37.870110",
+  "url": "",
+  "service_maps": [
+    {
+      "group_id": "weekday",
+      "routes": [
+        {
+          "id": "3",
+          "color": "FF9933",
+          "href": "http://localhost:8000/systems/bart/routes/3"
+        },
+        {
+          "id": "4",
+          "color": "FF9933",
+          "href": "http://localhost:8000/systems/bart/routes/4"
+        },
+        {
+          "id": "7",
+          "color": "FF0000",
+          "href": "http://localhost:8000/systems/bart/routes/7"
+        },
+        {
+          "id": "8",
+          "color": "FF0000",
+          "href": "http://localhost:8000/systems/bart/routes/8"
+        }
+      ]
+    }
+  // more data
+  ]
+}
+```
+
+The basic data at the start again comes directly from GTFS Static.
+
+Next, we again see service maps!
+In the route endpoint, the service maps returned the list of stops a route called at.
+At the stop endpoint we see the inverse of this: the list of routes that a stop is included in.
+Like for routes, this is important data that consumers associate with a station
+    ("at Downtown Berkeley, I can get on the Orange Line"),
+    which is not given explicitly in the GTFS Static feed,
+    and which Transiter calculates automatically.
+The two service maps shown are `weekday`, which is built using the weekday schedule, and `realtime`.
+
+Going further down we see *alerts* (as mentioned above) and *transfers* (will be mentioned below).
+Probably the most important data at the stop however is the *stop times*:
+    these show the realtime arrivals for the station.
+```json
+{
+  // ...
+  "stop_times": [
+    {
+      "arrival": {
+        "time": 1593271377.0,
+        "delay": 0,
+        "uncertainty": 30
+      },
+      "departure": {
+        "time": 1593271401.0,
+        "delay": 0,
+        "uncertainty": 30
+      },
+      "track": null,
+      "future": true,
+      "stop_sequence": 12,
+      "direction": null,
+      "trip": {
+        "id": "2570751",
+        "direction_id": false,
+        "started_at": null,
+        "updated_at": null,
+        "delay": null,
+        "vehicle": null,
+        "route": {
+          "id": "3",
+          "color": "FF9933",
+          "href": "http://localhost:8000/systems/bart/routes/3"
+        },
+        "last_stop": {
+          "id": "DELN",
+          "name": "El Cerrito Del Norte",
+          "href": "http://localhost:8000/systems/bart/stops/DELN"
+        },
+        "href": "http://localhost:8000/systems/bart/routes/3/trips/2570751"
+      }
+    }
+  ]
+}
+```
+
+The response shows the arrival and departure times, as well as details
+    on the associated trip, the associated vehicle (if defined in the feed),
+    the route of trip,
+    and the last stop the trip will make.
 
 
-## Search for stops using GPS
+## Search for stops by location
+
+So far we have navigated though Transiter's data using the links in each endpoint,
+    starting from the system, to a route, to a stop.
+Apps built on top of Transiter (like [realtimerail.nyc](https://www.realtimerail.nyc)) often follow this pattern.
+
+Another way to find stops is to search for them by location,
+    and Transiter supports this too.
+Suppose we're at [Union Square in San Francisco](https://en.wikipedia.org/wiki/Union_Square%2C_San_Francisco)
+    whose coordinates are latitude 37.788056 and longitude -122.4075.
+    and we want to see what BART stations are nearby.
+We can perform a geographical search in Transiter by sending a `POST` requqsts to the stops endpoint.
+Using `curl`,
+
+```
+curl -X POST "http://localhost:8000/systems/bart/stops?latitude=37.788056&longitude=-122.4075"
+```
+
+This returns two stations, starting with Powell Street, which is closest to Union Square.
+Its distance is returned as 383 meters.
+The next closest station is Montgomery Street, which is 534 meters away.
+
+```json
+
+[
+  {
+    "id": "place_POWL",
+    "name": "Powell Street",
+    "distance": 383,
+    "service_maps": [
+      // ...
+    ],
+    "href": "http://localhost:8000/systems/bart/stops/place_POWL"
+  },
+  {
+    "id": "place_MONT",
+    "name": "Montgomery Street",
+    "distance": 534,
+    "service_maps": [
+      // ...
+    ],
+    "href": "http://localhost:8000/systems/bart/stops/place_MONT"
+  }
+]
+```
+
+It's possible to search for more stops by passing a distance URL parameter to the search.
 
 ## Add cross-system transfers
 
