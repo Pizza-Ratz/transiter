@@ -16,10 +16,12 @@ copyright: >
 markdown_extensions:
   - admonition
   - codehilite
+  - pymdownx.details
 # Page tree
 nav:
   - Home: index.md
-  - HTTP API reference: api.md
+  - tour.md
+  - api.md
   - Configuring transit systems: systems.md
   - Custom feed parsers:
     - feedparsers.md

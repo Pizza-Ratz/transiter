@@ -93,7 +93,7 @@ def build_quick_reference_row(endpoint: Endpoint):
 populate_endpoints()
 
 base = """
-# API reference
+# HTTP API reference
 
 
 This page details the HTTP endpoints exposed by Transiter.

@@ -213,10 +213,10 @@ When people think of a stop, like
 they usually think of the routes available at that stop (the A and E lines).
 
 The GTFS static specification does not contain this data *explicitly*.
-The observation that led to Transiter service maps is that this data is contained
+Transiter service maps are built on the idea that this data is contained
 in the static data *implicitly*.
 Namely, if you have the complete timetable for a transit system, it is
-be possible to auto-generate the list of stops for each route by
+possible to auto-generate the list of stops for each route by
 merging together the paths
  taken by each trip in that route.
 Once you have this list worked out for each route, for a given stop
