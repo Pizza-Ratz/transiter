@@ -1,5 +1,5 @@
 
-# API reference
+# HTTP API reference
 
 
 This page details the HTTP endpoints exposed by Transiter.

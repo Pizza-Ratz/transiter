@@ -17,6 +17,8 @@ markdown_extensions:
   - admonition
   - codehilite
   - pymdownx.details
+  - toc:
+      baselevel: 1
 # Page tree
 nav:
   - Home: index.md
@@ -26,5 +28,5 @@ nav:
   - Custom feed parsers:
     - feedparsers.md
     - parser-output-types.md
-  - Inter system transfers: cross-system-transfers.md
+  - Inter-system transfers: cross-system-transfers.md
   - Deploying Transiter: deployment.md
