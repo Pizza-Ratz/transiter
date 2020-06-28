@@ -24,6 +24,7 @@ groups = [
     Group("Route", "transiter.http.endpoints.routeendpoints"),
     Group("Trip", "transiter.http.endpoints.tripendpoints"),
     Group("Feed", "transiter.http.endpoints.feedendpoints"),
+    Group("Transfer config", "transiter.http.endpoints.transfersconfigendpoints"),
     Group("Admin", "transiter.http.endpoints.adminendpoints"),
 ]
 
@@ -41,6 +42,7 @@ def populate_endpoints():
             continue
         group = match_group(rule.endpoint)
         if group is None:
+            print(f"Warning: no group for {rule.endpoint}, skipping ")
             continue
         # print(type(rule.endpoint))
         # print(rule.endpoint)

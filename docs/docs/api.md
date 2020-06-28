@@ -39,6 +39,13 @@ Operation | API endpoint
 [Get a feed in a system](#get-a-feed-in-a-system) | `GET /systems/<system_id>/feeds/<feed_id>`
 [Perform a feed update](#perform-a-feed-update) | `POST /systems/<system_id>/feeds/<feed_id>`
 [List feeds in a system](#list-feeds-in-a-system) | `GET /systems/<system_id>/feeds`
+**Transfer config endpoints**
+[Preview a transfers config](#preview-a-transfers-config) | `POST /admin/transfers-config/preview`
+[List all transfers configs](#list-all-transfers-configs) | `GET /admin/transfers-config`
+[Create a transfers config](#create-a-transfers-config) | `POST /admin/transfers-config`
+[Get a transfers config](#get-a-transfers-config) | `GET /admin/transfers-config/<int:config_id>`
+[Update a transfers config](#update-a-transfers-config) | `PUT /admin/transfers-config/<int:config_id>`
+[Delete a transfers config](#delete-a-transfers-config) | `DELETE /admin/transfers-config/<int:config_id>`
 **Admin endpoints**
 [List scheduler tasks](#list-scheduler-tasks) | `GET /admin/scheduler`
 [Refresh scheduler tasks](#refresh-scheduler-tasks) | `POST /admin/scheduler`
@@ -356,6 +363,57 @@ Return code     | Description
 ----------------|-------------
 `200 OK`        | Returned if the system with this ID exists.
 `404 NOT FOUND` | Returned if no system with the provided ID is installed.
+
+## Transfer config endpoints
+
+### Preview a transfers config
+
+`POST /admin/transfers-config/preview`
+
+
+This endpoint returns a preview of the transfers that would be created
+using a specific config.
+
+URL parameter | type | description
+--------------|------|------------
+`system_id`   | multiple string values | The system IDs to create transfers between
+`distance`    | float | the maximum distance, in meters, between two stops in order for a transfer to be created between them
+
+### List all transfers configs
+
+`GET /admin/transfers-config`
+
+
+List all of the transfers configs that are installed.
+
+### Create a transfers config
+
+`POST /admin/transfers-config`
+
+
+This endpoint is identical to the preview endpoint, except that the resulting
+transfers are persisted and a new transfer config is created.
+
+### Get a transfers config
+
+`GET /admin/transfers-config/<int:config_id>`
+
+
+
+### Update a transfers config
+
+`PUT /admin/transfers-config/<int:config_id>`
+
+
+This endpoint is identical to the preview endpoint, except that the resulting
+transfers are persisted and a new transfer config is created.
+
+### Delete a transfers config
+
+`DELETE /admin/transfers-config/<int:config_id>`
+
+
+This endpoint deletes the config as well as all transfers associated to the config.
 
 ## Admin endpoints
 
