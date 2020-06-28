@@ -19,6 +19,7 @@ class Endpoint:
 
 
 groups = [
+    Group("Entrypoint", "static"),
     Group("Transit system", "transiter.http.endpoints.systemendpoints"),
     Group("Stop", "transiter.http.endpoints.stopendpoints"),
     Group("Route", "transiter.http.endpoints.routeendpoints"),
@@ -40,6 +41,8 @@ def populate_endpoints():
     for rule in app.url_map.iter_rules():
         if rule.rule[-1] == "/":
             continue
+        if rule.endpoint == "static":
+            print(rule.__dict__)
         group = match_group(rule.endpoint)
         if group is None:
             print(f"Warning: no group for {rule.endpoint}, skipping ")

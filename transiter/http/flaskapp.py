@@ -19,7 +19,7 @@ from transiter.http.httpmanager import (
 )
 from transiter.services import systemservice
 
-app = flask.Flask("transiter")
+app = flask.Flask("transiter", static_folder=None)
 
 app.register_blueprint(endpoints.docs_endpoints, url_prefix="/docs")
 app.register_blueprint(endpoints.admin_endpoints, url_prefix="/admin")
@@ -65,6 +65,7 @@ def page_not_found(__=None):
     """
     What to return if a user requests an endpoint that doesn't exist.
     """
+    print(app.root_path)
     return transiter_error_handler(exceptions.PageNotFound(flask.request.path))
 
 

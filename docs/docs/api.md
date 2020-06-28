@@ -15,6 +15,7 @@ by clicking any of the example links below.
 ## Quick reference
 Operation | API endpoint
 ----------|-------------
+**Entrypoint endpoints**
 **Transit system endpoints**
 [List all systems](#list-all-systems) | `GET /systems`
 [Configure system auto-update](#configure-system-auto-update) | `PUT /systems/<system_id>/auto-update`
@@ -51,6 +52,8 @@ Operation | API endpoint
 [Refresh scheduler tasks](#refresh-scheduler-tasks) | `POST /admin/scheduler`
 [Upgrade database](#upgrade-database) | `POST /admin/upgrade`
 [Transiter health status](#transiter-health-status) | `GET /admin/health`
+
+## Entrypoint endpoints
 
 ## Transit system endpoints
 
