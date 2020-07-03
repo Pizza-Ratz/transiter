@@ -1,7 +1,7 @@
 """
 Agencies
 
-Doc
+Endpoints for getting data on transit system agencies in a system.
 """
 import flask
 

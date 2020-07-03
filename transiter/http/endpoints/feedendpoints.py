@@ -1,7 +1,7 @@
 """
 Feeds
 
-Docs
+Endpoints for getting information on feeds and for triggering feed updates.
 """
 
 import flask

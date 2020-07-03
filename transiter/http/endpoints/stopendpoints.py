@@ -1,7 +1,7 @@
 """
 Stations and stops
 
-Doc
+Endpoints for getting data on stations and stops.
 """
 
 

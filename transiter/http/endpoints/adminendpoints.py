@@ -1,7 +1,7 @@
 """
 Admin
 
-The actual documentation
+These endpoints are used for administering the Transiter instance.
 """
 import logging
 

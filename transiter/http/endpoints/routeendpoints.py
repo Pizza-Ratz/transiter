@@ -1,7 +1,7 @@
 """
 Routes
 
-Doc
+Endpoints for getting data on transit system routes.
 """
 import flask
 
