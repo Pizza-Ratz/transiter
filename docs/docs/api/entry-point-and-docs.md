@@ -1,5 +1,4 @@
-
-# Entrypoint and docs
+# Entry point and docs
 
 
 

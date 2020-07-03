@@ -25,14 +25,14 @@ nav:
   - tour.md
   - HTTP API Reference:
       - api/index.md
-      - api/entrypoint.md
+      - api/entry-point-and-docs.md
       - api/systems.md
-      - api/stops.md
+      - api/stations-and-stops.md
       - api/routes.md
-      - api/trips.md
+      - api/realtime-trips.md
       - api/agencies.md
       - api/feeds.md
-      - api/inter-system-transfers.md
+      - api/inter-system-transfers-management.md
       - api/admin.md
   - Configuring transit systems: systems.md
   - Custom feed parsers:

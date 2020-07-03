@@ -1,5 +1,5 @@
 """
-Entrypoint and docs
+Entry point and docs
 """
 import datetime
 import logging

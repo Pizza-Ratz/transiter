@@ -410,7 +410,19 @@ Transiter provides a feature to create these inter-system transfers
 We'll demo this by showing to crate inter-system transfers between the BART and Caltrain.
 
 
-First install the Caltrain system:
+First, put the following system config for the Caltrain in a file `caltrain.yaml` in your current working directory:
+```yaml
+name: Caltrain
+
+feeds:
+  GTFS-Static:
+    http:
+      url: http://data.trilliumtransit.com/gtfs/caltrain-ca-us/caltrain-ca-us.zip
+    parser:
+      built_in: GTFS_STATIC
+``` 
+
+Then install the Caltrain system:
 
 ```
 curl -X PUT "localhost:8000/systems/caltrain?sync=true"  -F 'config_file=@caltrain.yaml'
@@ -497,7 +509,7 @@ Because the Caltrain transfer is an inter-system transfer,
     its system is included in the response.
     
 Full documentation for the inter-system transfers feature can be found in the
-    [relevant API page](api/inter-system-transfers.md).
+    [relevant API page](api/inter-system-transfers-management.md).
     
    
 ## Where to go next?

@@ -1,11 +1,13 @@
+"""
+Script to build the feed parsers API reference automatically using the Transiter
+Python code.
+"""
+
 import dataclasses
+import datetime
+import enum
 import inspect
 import typing
-import enum
-import datetime
-
-
-# TODO: run this script during the build process?
 
 
 def convert_type_to_type_desc(type_, default, plural=False):
