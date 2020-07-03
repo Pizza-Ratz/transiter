@@ -5,7 +5,7 @@ import enum
 import datetime
 
 
-# TODO: run this script during the build process
+# TODO: run this script during the build process?
 
 
 def convert_type_to_type_desc(type_, default, plural=False):

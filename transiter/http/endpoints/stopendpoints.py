@@ -1,3 +1,10 @@
+"""
+Stations and stops
+
+Doc
+"""
+
+
 import flask
 
 from transiter.http.httpmanager import (

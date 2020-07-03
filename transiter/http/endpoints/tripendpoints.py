@@ -1,3 +1,9 @@
+"""
+Realtime trips
+
+Doc
+"""
+
 import flask
 
 from transiter.http.httpmanager import (

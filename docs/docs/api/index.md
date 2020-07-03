@@ -30,6 +30,7 @@ Operation | API endpoint
 **Trips endpoints**
 [List trips in a route](trips.md#list-trips-in-a-route) | `GET /systems/<system_id>/routes/<route_id>/trips`
 [Get a trip in a route](trips.md#get-a-trip-in-a-route) | `GET /systems/<system_id>/routes/<route_id>/trips/<trip_id>`
+**Agencies endpoints**
 **Feeds endpoints**
 [List feeds in a system](feeds.md#list-feeds-in-a-system) | `GET /systems/<system_id>/feeds`
 [Get a feed in a system](feeds.md#get-a-feed-in-a-system) | `GET /systems/<system_id>/feeds/<feed_id>`

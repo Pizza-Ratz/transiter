@@ -1,3 +1,8 @@
+"""
+System
+
+details
+"""
 import flask
 import requests
 

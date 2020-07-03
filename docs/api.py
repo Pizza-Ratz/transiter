@@ -1,7 +1,7 @@
 import dataclasses
 import inspect
 
-from transiter.http import endpoints
+from transiter.http import endpoints, flaskapp
 from transiter.http import httpmanager
 from transiter.http.flaskapp import app
 
@@ -26,14 +26,15 @@ class Endpoint:
 
 
 groups = [
-    Group("Entrypoint", "static"),
-    Group("Systems", "transiter.http.endpoints.systemendpoints"),
-    Group("Stops", "transiter.http.endpoints.stopendpoints"),
-    Group("Routes", "transiter.http.endpoints.routeendpoints"),
-    Group("Trips", "transiter.http.endpoints.tripendpoints"),
-    Group("Feeds", "transiter.http.endpoints.feedendpoints"),
+    Group("Entrypoint", flaskapp),
+    Group("Systems", endpoints.systemendpoints),
+    Group("Stops", endpoints.stopendpoints),
+    Group("Routes", endpoints.routeendpoints),
+    Group("Trips", endpoints.tripendpoints),
+    Group("Agencies", endpoints.agencyendpoints),
+    Group("Feeds", endpoints.feedendpoints),
     Group("Inter-system transfers", endpoints.transfersconfigendpoints),
-    Group("Admin", endpoints.adminendpoints)
+    Group("Admin", endpoints.adminendpoints),
 ]
 
 
@@ -48,20 +49,19 @@ def match_group(endpoint, endpoint_module):
     return None
 
 
-
 def clean_doc(raw_doc):
     if raw_doc is None:
-        print("Warning: doc string not provided")
-        return "", ""
+        return "Title unknown", "No doc provided!"
     doc = inspect.cleandoc(raw_doc).strip()
     first_new_line = doc.find("\n")
     if first_new_line >= 0:
         title = doc[:first_new_line].strip()
-        body = doc[first_new_line + 1:]
+        body = doc[first_new_line + 1 :]
     else:
         title = doc
         body = ""
     return title, body
+
 
 def populate_endpoints():
     func_to_rule = {}
@@ -101,7 +101,7 @@ def populate_endpoints():
                 rule=rule.rule,
                 method=calculate_method(rule.methods),
                 doc=body,
-                module=group.module
+                module=group.module,
             )
         )
 
@@ -118,8 +118,6 @@ a = ""
 def build_quick_reference_row(endpoint: Endpoint, page: str):
     internal_url = endpoint.title.replace(" ", "-").lower()
     return f"[{endpoint.title}]({page}#{internal_url}) | `{endpoint.method} {endpoint.rule}`"
-
-
 
 
 populate_endpoints()

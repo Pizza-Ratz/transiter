@@ -122,14 +122,9 @@ def get_documented_endpoints():
 
 
 def _register_documented_endpoint(flask_rule, method):
-
     def decorator_(func):
         _documented_endpoints.append(
-            _DocumentedEndpoint(
-                rule=flask_rule,
-                method=method,
-                func=func,
-            )
+            _DocumentedEndpoint(rule=flask_rule, method=method, func=func,)
         )
         return func
 

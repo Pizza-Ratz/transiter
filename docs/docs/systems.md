@@ -12,7 +12,7 @@ It contains information such as:
 - Definitions of "service maps" for the system.
 
 The transit system is installed by sending the YAML
-configuration file to the [system install endpoint](api.md#install-a-system).
+configuration file to the [system install endpoint](api/index.md#install-a-system).
 
 
 ## Basic configuration
@@ -184,7 +184,7 @@ That way configurations can be safely shared without also sharing private keys.
 To support these situations, Transiter interprets every configuration
 file as a Jinja template and processes the template before parsing the YAML.
 Variables can be provided to the template using URL parameters in the
-[system install endpoint](api.md#install-a-system).
+[system install endpoint](api/index.md#install-a-system).
 
 The following is a simple example of providing an API key using Jinja:
 ```yaml
@@ -290,6 +290,6 @@ corresponding to trips that:
 
 Finally, `use_for_routes_at_stop` being set to true 
 indicates that the service map should be returned by the 
-[stop endpoint](api.md#get-a-stop-in-a-system).
+[stop endpoint](api/index.md#get-a-stop-in-a-system).
 The parameter `use_for_stops_in_route` 
-does the same for the [route endpoint](api.md#get-a-route-in-a-system).
+does the same for the [route endpoint](api/index.md#get-a-route-in-a-system).

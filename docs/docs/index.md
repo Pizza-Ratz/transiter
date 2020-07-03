@@ -5,7 +5,7 @@
 ## Contents
 
 
-### [API reference](api.md)
+### [API reference](api/index.md)
 *Description of the HTTP endpoints/REST API exposed by Transiter.*
 
 ### [Configuring transit systems](systems.md)

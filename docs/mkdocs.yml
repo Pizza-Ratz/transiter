@@ -30,6 +30,7 @@ nav:
       - api/stops.md
       - api/routes.md
       - api/trips.md
+      - api/agencies.md
       - api/feeds.md
       - api/inter-system-transfers.md
       - api/admin.md

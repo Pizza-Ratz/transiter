@@ -1,3 +1,9 @@
+"""
+Feeds
+
+Docs
+"""
+
 import flask
 from flask import Blueprint
 

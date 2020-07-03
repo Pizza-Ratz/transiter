@@ -1,5 +1,8 @@
 
-# Systems
+# System
+
+
+details
 
 ## List all systems
 
