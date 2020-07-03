@@ -1,13 +1,22 @@
 
-# Quick reference
+# Endpoints list
 
-Endpoints mostly return JSON data; exceptions are specifically noted.
+Transiter's HTTP endpoints mostly return JSON data; exceptions are specifically noted.
 In order to avoid stale documentation,
 the structure of the JSON data returned by each endpoint
  is not described here, but can be inspected on the
 [demo site](https://demo.transiter.io) or
 by clicking any of the example links below.
 
+!!! warning "Permissions levels"
+    Every endpoint has an associated *permissions level* to enable access control.
+    In production, you will likely *not* want to allow access to all endpoints - 
+        for example, you will want to prohibit users from deleting systems.
+    The [permissions documentation page](deployment/permissions.md) describes
+        the permissions system and how you can use it to deploy Transiter safely.
+        
+    If an endpoint does not describe a permissions level, then it does
+    not impose any permissions restrictions.
 
 Operation | API endpoint
 ----------|-------------

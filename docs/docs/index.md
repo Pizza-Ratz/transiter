@@ -1,21 +1,22 @@
 # Transiter: web service for transit data
 
-
+Welcome to the Transiter documentation!
+If this is your first time encountering Transiter,
+the [Transiter Tour](tour.md) is the base place to start.
 
 ## Contents
 
+- [API reference](api/index.md).
+    Description of the HTTP endpoints/REST API exposed by Transiter.
 
-### [API reference](api/index.md)
-*Description of the HTTP endpoints/REST API exposed by Transiter.*
+- [Configuring transit systems](systems.md).
+    Learn how to integrate a transit system you're interested in with Transiter.
+    
+- [Custom feed parser](feedparsers.md).
+    Transiter's custom feed parser API for reading transit feeds of any format.
 
-### [Configuring transit systems](systems.md)
-*Learn how to integrate a transit system you're interested in with Transiter.*
-
-### [Custom feed parser](feedparsers.md)
-*Transiter's custom feed parser API for reading transit feeds of any format.*
-
-### [Deployment](deployment.md)
-*Running Transiter in production.*
+- [Deployment](deployment.md).
+    Running Transiter locally and in production.
 
 ## External links
 

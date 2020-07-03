@@ -1,5 +1,11 @@
 # The Transiter Tour
 
+The Tour is an introduction to Transiter - a getting started tutorial
+    that will show you how to launch the software,
+     configure it for transit systems you're interested in,
+     and getting the data you want.
+
+
 ## Launch Transiter
 
 

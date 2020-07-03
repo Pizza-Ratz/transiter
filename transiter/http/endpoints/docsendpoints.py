@@ -53,7 +53,19 @@ def docs(path="index.html", retry_with_index_dot_html=True, perform_validation=T
     """
     Internal documentation
 
-    More details
+    If internal documentation is enabled, this endpoint returns the requested
+    documentation HTML page.
+    The internal documentation system is described in a
+    [dedicated documentation page](deployment/documentation.md).
+
+    If internal documentation is disabled, this endpoint always returns a 404 error -
+    i.e., Transiter behaves as if this endpoint doesn't exist.
+
+    Return code | Description
+    ------------|-------------
+    `200 OK` | Internal documentation is enabled and the relevant page does not exist.
+    `404 NOT FOUND` | Internal documentation is disabled, or it is enabled and the requested page does not exist.
+    `503 SERVICE UNAVAILABLE` | Internal documentation is enabled but mis-configured. See the documentation page and the logs for debugging help.
     """
     if not config.DOCUMENTATION_ENABLED:
         logger.debug(f"Documentation not enabled so returning a 404 for docs/{path}.")
