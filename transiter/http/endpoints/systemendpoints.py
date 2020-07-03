@@ -202,9 +202,9 @@ def delete_by_id(system_id):
         system_id, error_if_not_exists=True, sync=httpmanager.is_sync_request()
     )
     if httpmanager.is_sync_request():
-        status=HttpStatus.NO_CONTENT
+        status = HttpStatus.NO_CONTENT
     else:
-        status=HttpStatus.ACCEPTED
+        status = HttpStatus.ACCEPTED
     return flask.Response(response="", status=status, content_type="")
 
 

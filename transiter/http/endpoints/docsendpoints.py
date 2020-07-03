@@ -6,7 +6,11 @@ from werkzeug import exceptions as werkzeug_exceptions
 
 from transiter import config, exceptions
 from transiter.http import httpviews
-from transiter.http.httpmanager import link_target, HttpStatus, register_documented_endpoint
+from transiter.http.httpmanager import (
+    link_target,
+    HttpStatus,
+    register_documented_endpoint,
+)
 
 docs_endpoints = flask.Blueprint(__name__, __name__)
 
