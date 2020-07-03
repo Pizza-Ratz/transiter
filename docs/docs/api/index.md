@@ -28,7 +28,7 @@ Operation | API endpoint
 [Get a specific system](systems.md#get-a-specific-system) | `GET /systems/<system_id>`
 [List all transfers in a system](systems.md#list-all-transfers-in-a-system) | `GET /systems/<system_id>/transfers`
 [Install a system](systems.md#install-a-system) | `PUT /systems/<system_id>`
-[Uninstall a system](systems.md#uninstall-a-system) | `DELETE /systems/<system_id>`
+[Uninstall (delete) a system](systems.md#uninstall-(delete)-a-system) | `DELETE /systems/<system_id>`
 [Configure system auto-update](systems.md#configure-system-auto-update) | `PUT /systems/<system_id>/auto-update`
 **Stops endpoints**
 [List stops in a system](stops.md#list-stops-in-a-system) | `GET /systems/<system_id>/stops`

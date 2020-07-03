@@ -1,8 +1,8 @@
 
-# System
+# Systems
 
 
-details
+Endpoints for installing, reading, configuring and deleting transit systems.
 
 ## List all systems
 
@@ -41,7 +41,7 @@ Return code | Description
 
 
 This endpoint is used to install or update transit systems.
-Installs can be performed asynchronously (recommended)
+Installs/updates can be performed asynchronously (recommended)
 or synchronously (using the optional URL parameter `sync=true`; not recommended);
 see below for more information.
 
@@ -66,7 +66,7 @@ the response will detail which parameters you're missing.
 
 #### Async versus sync
 
-Often the install process is long because it often involves performing
+Often the install/update process is long because it often involves performing
 large feed updates
 of static feeds - for example, in the case of the New York City Subway,
 an install takes close to two minutes.
@@ -82,15 +82,13 @@ Synchronous installs are supported and useful when writing new
 transit system configs, in which case getting feedback from a single request
 is quicker.
 
-
 Return code         | Description
 --------------------|-------------
-`200 OK`            | Returned if the system already exists, in which case this is a no-op.
 `201 CREATED`       | For synchronous installs, returned if the transit system was successfully installed.
-`202 ACCEPTED`      | For asynchronous installs, returned if the install is successfully triggered.
+`202 ACCEPTED`      | For asynchronous installs, returned if the install is successfully triggered. This does not necessarily mean the system will be succesfully installed.
 `400 BAD REQUEST`   | Returned if the YAML configuration file cannot be retrieved. For synchronous installs, this code is also returned if there is any kind of install error.
 
-## Uninstall a system
+## Uninstall (delete) a system
 
 `DELETE /systems/<system_id>`
 
@@ -101,8 +99,8 @@ optional URL parameter `sync=true`).
 You should almost always use the asynchronous version of this endpoint.
 It works by changing the system ID to be a new "random" ID, and then performs
 the delete asynchronously.
-This means that at soon as the asynchronous request ends (within a few milliseconds)
-the system ID is available.
+This means that at soon as the HTTP request ends (within a few milliseconds)
+the system is invisible to users, and available for installing a new system.
 
 The actual delete takes up to a few minutes for large transit systems like
 the NYC Subway.
