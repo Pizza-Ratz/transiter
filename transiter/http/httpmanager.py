@@ -84,7 +84,7 @@ def http_endpoint(
         appropriate HTTP headers
     """
     decorators = [
-        _register_documented_endpoint(flask_rule, method.value),
+        register_documented_endpoint(flask_rule, method.value),
         flask_entity.route(flask_rule + "/", methods=[method.value]),
         flask_entity.route(flask_rule, methods=[method.value]),
     ]
@@ -101,7 +101,7 @@ def http_endpoint(
 
 @dataclasses.dataclass
 class _DocumentedEndpoint:
-    rule: str
+    rule: str  # TODO; remove, unused
     method: str
     func: str
 
@@ -121,7 +121,7 @@ def get_documented_endpoints():
     return _documented_endpoints
 
 
-def _register_documented_endpoint(flask_rule, method):
+def register_documented_endpoint(flask_rule, method):
     def decorator_(func):
         _documented_endpoints.append(
             _DocumentedEndpoint(rule=flask_rule, method=method, func=func,)

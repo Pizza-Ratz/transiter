@@ -1,6 +1,6 @@
 import dataclasses
 import inspect
-
+import typing
 from transiter.http import endpoints, flaskapp
 from transiter.http import httpmanager
 from transiter.http.flaskapp import app
@@ -9,11 +9,19 @@ from transiter.http.flaskapp import app
 @dataclasses.dataclass
 class Group:
     name: str
-    module: str
+    module: typing.Any
+    extra_modules: list = dataclasses.field(default_factory=list)
     endpoints: list = dataclasses.field(default_factory=list)
+    extra_endpoints: list = dataclasses.field(default_factory=list)
 
     def page(self):
         return f"api/{self.name}.md".replace(" ", "-").lower()
+
+    def all_modules(self):
+        return [self.module] + self.extra_modules
+
+    def all_endpoints(self):
+        return self.endpoints + self.extra_endpoints
 
 
 @dataclasses.dataclass
@@ -26,7 +34,7 @@ class Endpoint:
 
 
 groups = [
-    Group("Entrypoint", flaskapp),
+    Group("Entrypoint", flaskapp, [endpoints.docsendpoints]),
     Group("Systems", endpoints.systemendpoints),
     Group("Stops", endpoints.stopendpoints),
     Group("Routes", endpoints.routeendpoints),
@@ -40,12 +48,8 @@ groups = [
 
 def match_group(endpoint, endpoint_module):
     for group in groups:
-        if isinstance(group.module, str):
-            if group.module == endpoint[: len(group.module)]:
-                return group
-        else:
-            if endpoint_module is group.module:
-                return group
+        if endpoint_module in group.all_modules():
+            return group
     return None
 
 
@@ -66,7 +70,7 @@ def clean_doc(raw_doc):
 def populate_endpoints():
     func_to_rule = {}
     for rule in app.url_map.iter_rules():
-        if rule.rule[-1] == "/" and rule.rule != "/":
+        if rule.rule[-1] == "/" and rule.rule != "/" and rule.rule[:5] != "/docs":
             continue
         func_to_rule[app.view_functions[rule.endpoint]] = rule
 
@@ -75,6 +79,7 @@ def populate_endpoints():
         if rule is None:
             print("Skipping")
             continue
+        del func_to_rule[endpoint.func]
         group = match_group(rule.endpoint, inspect.getmodule(endpoint.func))
         if group is None:
             print(f"Warning: no group for {rule.endpoint}, skipping ")
@@ -95,7 +100,11 @@ def populate_endpoints():
             )
             continue
 
-        group.endpoints.append(
+        if group.module is inspect.getmodule(endpoint.func):
+            add_to = group.endpoints
+        else:
+            add_to = group.extra_endpoints
+        add_to.append(
             Endpoint(
                 title=title,
                 rule=rule.rule,
@@ -103,6 +112,11 @@ def populate_endpoints():
                 doc=body,
                 module=group.module,
             )
+        )
+
+    for func, rule in func_to_rule.items():
+        print(
+            f"The function {func} is registered as a flask route but has no documentation"
         )
 
 
@@ -142,7 +156,7 @@ with open("docs/docs/api/index.md", "w") as f:
     print("----------|-------------", file=f)
     for group in groups:
         print(f"**{group.name} endpoints**", file=f)
-        for endpoint in group.endpoints:
+        for endpoint in group.all_endpoints():
             print(build_quick_reference_row(endpoint, group.page()[4:]), file=f)
 
 for group in groups:
@@ -158,7 +172,7 @@ for group in groups:
         else:
             print("Warning: module refered to as string")
             print(f"# {group.name}", file=f)
-        for endpoint in group.endpoints:
+        for endpoint in group.all_endpoints():
             print("", file=f)
             print(f"## {endpoint.title}", file=f)
             print("", file=f)

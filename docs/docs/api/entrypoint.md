@@ -1,5 +1,19 @@
 
-# This module contains the actual Flask app and is a such the 'root' of the HTTP
+# Entrypoint and docs
 
-server. All other HTTP endpoints are linked to the app via blueprints in this
-module.
+
+
+## HTTP API entry point
+
+`GET /`
+
+
+Provides basic information about this Transiter instance and the Transit
+systems it contains.
+
+## Internal documentation
+
+`GET /docs/<path:path>`
+
+
+More details

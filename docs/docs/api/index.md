@@ -12,6 +12,8 @@ by clicking any of the example links below.
 Operation | API endpoint
 ----------|-------------
 **Entrypoint endpoints**
+[HTTP API entry point](entrypoint.md#http-api-entry-point) | `GET /`
+[Internal documentation](entrypoint.md#internal-documentation) | `GET /docs/<path:path>`
 **Systems endpoints**
 [List all systems](systems.md#list-all-systems) | `GET /systems`
 [Get a specific system](systems.md#get-a-specific-system) | `GET /systems/<system_id>`
@@ -31,6 +33,8 @@ Operation | API endpoint
 [List trips in a route](trips.md#list-trips-in-a-route) | `GET /systems/<system_id>/routes/<route_id>/trips`
 [Get a trip in a route](trips.md#get-a-trip-in-a-route) | `GET /systems/<system_id>/routes/<route_id>/trips/<trip_id>`
 **Agencies endpoints**
+[List agencies in a system](agencies.md#list-agencies-in-a-system) | `GET /systems/<system_id>/agencies`
+[Get an agency in a system](agencies.md#get-an-agency-in-a-system) | `GET /systems/<system_id>/agencies/<agency_id>`
 **Feeds endpoints**
 [List feeds in a system](feeds.md#list-feeds-in-a-system) | `GET /systems/<system_id>/feeds`
 [Get a feed in a system](feeds.md#get-a-feed-in-a-system) | `GET /systems/<system_id>/feeds/<feed_id>`

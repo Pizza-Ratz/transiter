@@ -6,7 +6,7 @@ from werkzeug import exceptions as werkzeug_exceptions
 
 from transiter import config, exceptions
 from transiter.http import httpviews
-from transiter.http.httpmanager import link_target, HttpStatus
+from transiter.http.httpmanager import link_target, HttpStatus, register_documented_endpoint
 
 docs_endpoints = flask.Blueprint(__name__, __name__)
 
@@ -47,9 +47,16 @@ calculated relative to the Transiter WSGI app's directory, which is:
 # links. We need to redirect onto the URL with the slash in order for these to work.
 @docs_endpoints.route("/", strict_slashes=True)
 @docs_endpoints.route("/<path:path>", strict_slashes=True)
+@register_documented_endpoint(None, "GET")
 @link_target(httpviews.InternalDocumentationLink)
 def docs(path="index.html", retry_with_index_dot_html=True, perform_validation=True):
+    """
+    Internal documentation
+
+    More details
+    """
     if not config.DOCUMENTATION_ENABLED:
+        logger.debug(f"Documentation not enabled so returning a 404 for docs/{path}.")
         flask.abort(HttpStatus.NOT_FOUND)
     if perform_validation and not _documentation_root_is_valid():
         logger.error(
