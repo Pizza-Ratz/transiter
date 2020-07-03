@@ -19,7 +19,7 @@ systems it contains.
 If internal documentation is enabled, this endpoint returns the requested
 documentation HTML page.
 The internal documentation system is described in a
-[dedicated documentation page](deployment/documentation.md).
+[dedicated documentation page](../deployment/documentation.md).
 
 If internal documentation is disabled, this endpoint always returns a 404 error -
 i.e., Transiter behaves as if this endpoint doesn't exist.

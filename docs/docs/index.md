@@ -2,7 +2,7 @@
 
 Welcome to the Transiter documentation!
 If this is your first time encountering Transiter,
-the [Transiter Tour](tour.md) is the base place to start.
+the [Transiter Tour](tour.md) is the best place to start.
 
 ## Contents
 
@@ -15,7 +15,7 @@ the [Transiter Tour](tour.md) is the base place to start.
 - [Custom feed parsers](feedparsers.md).
     Transiter's custom feed parser API for reading transit feeds of any format.
 
-- [Deployment](deployment.md).
+- [Deployment](deployment/running-transiter.md).
     Running Transiter locally and in production.
 
 ## External links
@@ -28,4 +28,3 @@ the [Transiter Tour](tour.md) is the base place to start.
 - Official Google Transit pages for:
     - [The GTFS Static format](https://developers.google.com/transit/gtfs)
     - [The GTFS Realtime format](https://developers.google.com/transit/gtfs-realtime)
-

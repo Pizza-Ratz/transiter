@@ -38,8 +38,8 @@ nav:
   - Custom feed parsers:
     - feedparsers.md
     - parser-output-types.md
-  - Running and deploying:
-    - Running Transiter: deployment.md
-    - Building and serving the docs: deployment.md
-    - Controlling permissions: deployment.md
-    - Reverse proxying advice: deployment.md
+  - Running and deployment:
+    - Running Transiter: deployment/running-transiter.md
+    - Building and serving the docs: deployment/documentation.md
+    - Controlling permissions: deployment/permissions.md
+    - Production advice: deployment/production.md

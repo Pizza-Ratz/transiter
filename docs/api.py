@@ -150,7 +150,7 @@ by clicking any of the example links below.
     Every endpoint has an associated *permissions level* to enable access control.
     In production, you will likely *not* want to allow access to all endpoints - 
         for example, you will want to prohibit users from deleting systems.
-    The [permissions documentation page](deployment/permissions.md) describes
+    The [permissions documentation page](/deployment/permissions.md) describes
         the permissions system and how you can use it to deploy Transiter safely.
         
     If an endpoint does not describe a permissions level, then it does
