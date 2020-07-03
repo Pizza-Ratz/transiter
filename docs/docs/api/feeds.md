@@ -2,7 +2,7 @@
 # Feeds
 
 
-Docs
+Endpoints for getting information on feeds and for triggering feed updates.
 
 ## List feeds in a system
 

@@ -12,7 +12,7 @@ the [Transiter Tour](tour.md) is the base place to start.
 - [Configuring transit systems](systems.md).
     Learn how to integrate a transit system you're interested in with Transiter.
     
-- [Custom feed parser](feedparsers.md).
+- [Custom feed parsers](feedparsers.md).
     Transiter's custom feed parser API for reading transit feeds of any format.
 
 - [Deployment](deployment.md).

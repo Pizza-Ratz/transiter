@@ -1,7 +1,22 @@
 """
-Inter-system transfers admin
+Inter-system transfers management
 
-More information
+These endpoints are used to manage inter-system transfers using
+*transfers config*.
+A transfers config describes which transit systems Transiter should create
+    transfers between, and how to determine which stops should have transfers between
+    them.
+
+As of version 0.5, Transiter supports a single mechanism for creating
+    inter-system transfers: geographical proximity.
+Given a collection of systems and a distance (always in meters),
+    Transiter will create transfers for stops in distinct systems
+    which are less than the given distance apart.
+When creating a new config, it's best to start by using the preview endpoint
+    to see what transfers would create using that config.
+Then, when satisfied with the parameters, the config can be persisted using
+    the create endpoint below.
+
 """
 
 import flask

@@ -2,7 +2,7 @@
 # Agencies
 
 
-Doc
+Endpoints for getting data on transit system agencies in a system.
 
 ## List agencies in a system
 

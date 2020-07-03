@@ -2,7 +2,7 @@
 # Stations and stops
 
 
-Doc
+Endpoints for getting data on stations and stops.
 
 ## List stops in a system
 

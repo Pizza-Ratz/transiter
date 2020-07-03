@@ -2,7 +2,7 @@
 # Realtime trips
 
 
-Doc
+Endpoints for getting data on realtime trips in a route.
 
 ## List trips in a route
 

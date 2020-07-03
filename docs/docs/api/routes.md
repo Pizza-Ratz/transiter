@@ -2,7 +2,7 @@
 # Routes
 
 
-Doc
+Endpoints for getting data on transit system routes.
 
 ## List routes in a system
 
