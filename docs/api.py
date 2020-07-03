@@ -1,5 +1,8 @@
 import dataclasses
 import inspect
+
+from transiter.http import endpoints
+from transiter.http import httpmanager
 from transiter.http.flaskapp import app
 
 
@@ -9,6 +12,9 @@ class Group:
     module: str
     endpoints: list = dataclasses.field(default_factory=list)
 
+    def page(self):
+        return f"api/{self.name}.md".replace(" ", "-").lower()
+
 
 @dataclasses.dataclass
 class Endpoint:
@@ -16,34 +22,60 @@ class Endpoint:
     rule: str
     method: str
     doc: str
+    module: str
 
 
 groups = [
     Group("Entrypoint", "static"),
-    Group("Transit system", "transiter.http.endpoints.systemendpoints"),
-    Group("Stop", "transiter.http.endpoints.stopendpoints"),
-    Group("Route", "transiter.http.endpoints.routeendpoints"),
-    Group("Trip", "transiter.http.endpoints.tripendpoints"),
-    Group("Feed", "transiter.http.endpoints.feedendpoints"),
-    Group("Transfer config", "transiter.http.endpoints.transfersconfigendpoints"),
-    Group("Admin", "transiter.http.endpoints.adminendpoints"),
+    Group("Systems", "transiter.http.endpoints.systemendpoints"),
+    Group("Stops", "transiter.http.endpoints.stopendpoints"),
+    Group("Routes", "transiter.http.endpoints.routeendpoints"),
+    Group("Trips", "transiter.http.endpoints.tripendpoints"),
+    Group("Feeds", "transiter.http.endpoints.feedendpoints"),
+    Group("Inter-system transfers", endpoints.transfersconfigendpoints),
+    Group("Admin", endpoints.adminendpoints)
 ]
 
 
-def match_group(endpoint):
+def match_group(endpoint, endpoint_module):
     for group in groups:
-        if group.module == endpoint[: len(group.module)]:
-            return group
+        if isinstance(group.module, str):
+            if group.module == endpoint[: len(group.module)]:
+                return group
+        else:
+            if endpoint_module is group.module:
+                return group
     return None
 
 
+
+def clean_doc(raw_doc):
+    if raw_doc is None:
+        print("Warning: doc string not provided")
+        return "", ""
+    doc = inspect.cleandoc(raw_doc).strip()
+    first_new_line = doc.find("\n")
+    if first_new_line >= 0:
+        title = doc[:first_new_line].strip()
+        body = doc[first_new_line + 1:]
+    else:
+        title = doc
+        body = ""
+    return title, body
+
 def populate_endpoints():
+    func_to_rule = {}
     for rule in app.url_map.iter_rules():
-        if rule.rule[-1] == "/":
+        if rule.rule[-1] == "/" and rule.rule != "/":
             continue
-        if rule.endpoint == "static":
-            print(rule.__dict__)
-        group = match_group(rule.endpoint)
+        func_to_rule[app.view_functions[rule.endpoint]] = rule
+
+    for endpoint in httpmanager.get_documented_endpoints():
+        rule = func_to_rule.get(endpoint.func)
+        if rule is None:
+            print("Skipping")
+            continue
+        group = match_group(rule.endpoint, inspect.getmodule(endpoint.func))
         if group is None:
             print(f"Warning: no group for {rule.endpoint}, skipping ")
             continue
@@ -55,15 +87,7 @@ def populate_endpoints():
             print(f"Warning: no documentation for {rule.endpoint}, skipping")
             continue
 
-        doc = inspect.cleandoc(doc)
-        doc = doc.strip()
-        first_new_line = doc.find("\n")
-        if first_new_line >= 0:
-            title = doc[:first_new_line].strip()
-            body = doc[first_new_line + 1 :]
-        else:
-            title = doc
-            body = ""
+        title, body = clean_doc(doc)
 
         if title[-1] == ".":
             print(
@@ -77,6 +101,7 @@ def populate_endpoints():
                 rule=rule.rule,
                 method=calculate_method(rule.methods),
                 doc=body,
+                module=group.module
             )
         )
 
@@ -90,18 +115,17 @@ def calculate_method(methods):
 a = ""
 
 
-def build_quick_reference_row(endpoint: Endpoint):
+def build_quick_reference_row(endpoint: Endpoint, page: str):
     internal_url = endpoint.title.replace(" ", "-").lower()
-    return f"[{endpoint.title}](#{internal_url}) | `{endpoint.method} {endpoint.rule}`"
+    return f"[{endpoint.title}]({page}#{internal_url}) | `{endpoint.method} {endpoint.rule}`"
+
+
 
 
 populate_endpoints()
 
 base = """
-# HTTP API reference
-
-
-This page details the HTTP endpoints exposed by Transiter.
+# Quick reference
 
 Endpoints mostly return JSON data; exceptions are specifically noted.
 In order to avoid stale documentation,
@@ -111,24 +135,39 @@ the structure of the JSON data returned by each endpoint
 by clicking any of the example links below.
 
 """
-with open("docs/docs/api.md", "w") as f:
+
+pages = ["api.md"]
+with open("docs/docs/api/index.md", "w") as f:
 
     print(base, file=f)
-    print("## Quick reference", file=f)
     print("Operation | API endpoint", file=f)
     print("----------|-------------", file=f)
     for group in groups:
         print(f"**{group.name} endpoints**", file=f)
         for endpoint in group.endpoints:
-            print(build_quick_reference_row(endpoint), file=f)
+            print(build_quick_reference_row(endpoint, group.page()[4:]), file=f)
 
-    for group in groups:
+for group in groups:
+    pages.append(group.page())
+    with open(f"docs/docs/{group.page()}", "w") as f:
         print("", file=f)
-        print(f"## {group.name} endpoints", file=f)
+
+        if not isinstance(group.module, str):
+            title, doc = clean_doc(group.module.__doc__)
+            print(f"# {title}", file=f)
+            print("", file=f)
+            print(doc, file=f)
+        else:
+            print("Warning: module refered to as string")
+            print(f"# {group.name}", file=f)
         for endpoint in group.endpoints:
             print("", file=f)
-            print(f"### {endpoint.title}", file=f)
+            print(f"## {endpoint.title}", file=f)
             print("", file=f)
             print(f"`{endpoint.method} {endpoint.rule}`", file=f)
             print("", file=f)
             print(endpoint.doc, file=f)
+
+
+for page in pages:
+    print(f"  - {page}")

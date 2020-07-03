@@ -23,10 +23,18 @@ markdown_extensions:
 nav:
   - Home: index.md
   - tour.md
-  - api.md
+  - HTTP API Reference:
+      - api/index.md
+      - api/entrypoint.md
+      - api/systems.md
+      - api/stops.md
+      - api/routes.md
+      - api/trips.md
+      - api/feeds.md
+      - api/inter-system-transfers.md
+      - api/admin.md
   - Configuring transit systems: systems.md
   - Custom feed parsers:
     - feedparsers.md
     - parser-output-types.md
-  - Inter-system transfers: cross-system-transfers.md
   - Deploying Transiter: deployment.md

@@ -1,3 +1,9 @@
+"""
+Transfers config
+
+More information
+"""
+
 import flask
 
 from transiter.http.httpmanager import (

@@ -1,3 +1,8 @@
+"""
+Admin
+
+The actual documentation
+"""
 import logging
 
 from flask import Blueprint
