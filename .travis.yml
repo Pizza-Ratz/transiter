@@ -38,7 +38,7 @@ jobs:
         - pip install --quiet .
       before_script:
         - docker run -d --name postgres --env POSTGRES_USER=transiter --env POSTGRES_PASSWORD=transiter --env POSTGRES_DB=transiter -p 5432:5432 postgres:12
-        - docker exec postgres pg_restore -U transiter -d transiter test/upgrade/dump.sql
+        - docker exec postgres pg_restore -U transiter -d transiter tests/upgrade/dump.sql
       script:
         - transiterclt db upgrade
 
