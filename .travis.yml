@@ -38,7 +38,7 @@ jobs:
         - pip install --quiet .
       before_script:
         - docker run -d -v $TRAVIS_BUILD_DIR/tests/upgrade:/dumps --name postgres --env POSTGRES_USER=transiter --env POSTGRES_PASSWORD=transiter --env POSTGRES_DB=transiter -p 5432:5432 postgres:12
-        - docker exec postgres psql -U transiter -p transiter -d transiter -f dumps/dump.sql
+        - docker exec postgres psql -U transiter -d transiter -f dumps/dump.sql
       script:
         - transiterclt db upgrade
 
