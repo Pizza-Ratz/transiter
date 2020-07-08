@@ -28,6 +28,11 @@ def upgrade():
     )
     op.alter_column("stop", "source_pk", existing_type=sa.INTEGER(), nullable=False)
     op.alter_column("trip", "source_pk", existing_type=sa.INTEGER(), nullable=False)
+    op.create_check_constraint(
+        "transfer_source_constraint",
+        "transfer",
+        "NOT(source_pk IS NULL AND config_source_pk IS NULL)",
+    )
 
 
 def downgrade():

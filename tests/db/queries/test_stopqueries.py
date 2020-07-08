@@ -7,16 +7,31 @@ from transiter.db.queries import stopqueries
 
 
 @pytest.fixture
-def transfers(add_model, system_1, stop_1_1, stop_1_2, stop_1_3):
+def transfers(add_model, system_1, stop_1_1, stop_1_2, stop_1_3, feed_1_1_update_1):
     return [
         add_model(
-            models.Transfer(from_stop=stop_1_1, to_stop=stop_1_2, system=system_1)
+            models.Transfer(
+                from_stop=stop_1_1,
+                to_stop=stop_1_2,
+                system=system_1,
+                source=feed_1_1_update_1,
+            )
         ),
         add_model(
-            models.Transfer(from_stop=stop_1_2, to_stop=stop_1_3, system=system_1)
+            models.Transfer(
+                from_stop=stop_1_2,
+                to_stop=stop_1_3,
+                system=system_1,
+                source=feed_1_1_update_1,
+            )
         ),
         add_model(
-            models.Transfer(from_stop=stop_1_3, to_stop=stop_1_1, system=system_1)
+            models.Transfer(
+                from_stop=stop_1_3,
+                to_stop=stop_1_1,
+                system=system_1,
+                source=feed_1_1_update_1,
+            )
         ),
     ]
 
