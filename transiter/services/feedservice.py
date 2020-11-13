@@ -49,6 +49,12 @@ def get_in_system_by_id(system_id, feed_id) -> views.Feed:
         )
     response = views.FeedLarge.from_model(feed)
     response.updates = views.UpdatesInFeedLink.from_model(feed)
+    end_time = datetime.datetime.now()
+    start_time = end_time - datetime.timedelta(minutes=60)
+    feed_pk_to_window = build_feed_windows(
+        [feed.pk], start_time, end_time
+    )
+    response.statistics = [feed_pk_to_window[feed.pk]]
     return response
 
 
@@ -119,6 +125,54 @@ def get_update_in_feed_by_pk(system_id, feed_id, feed_update_pk):
             feed_update_id=str(feed_update_pk),
         )
     return views.FeedUpdate.from_model(feed_update)
+
+
+def build_feed_windows(
+    feed_pks, start_time, end_time
+) -> typing.Dict[int, views.FeedStatistics]:
+    result: typing.Dict[int, views.FeedStatistics] = {
+        feed_pk: views.FeedStatistics(start_time=start_time, end_time=end_time)
+        for feed_pk in feed_pks
+    }
+
+    for feed_pk, data in feedqueries.list_aggregated_updates(
+        feed_pks, start_time
+    ).items():
+        result[feed_pk] = build_statistics_from_data(data, start_time, end_time)
+    return result
+
+
+def build_statistics_from_data(data, start_time, end_time):
+    earliest_time = data[0][3]
+    latest_time = data[0][4]
+    total_count = 0
+    success_count = 0
+    outcomes = []
+    for count, status, result, time_1, time_2 in data:
+        total_count += count
+        print(time_1, time_2)
+        earliest_time = min(earliest_time, time_1)
+        latest_time = max(latest_time, time_2)
+        outcomes.append(
+            views.FeedWStatisticsOutcome(status=status, result=result, count=count)
+        )
+        if (
+            status == models.FeedUpdate.Status.SUCCESS
+            and result == models.FeedUpdate.Result.UPDATED
+        ):
+            success_count = count
+    print(earliest_time)
+    print(latest_time)
+    return views.FeedStatistics(
+        start_time=start_time,
+        end_time=end_time,
+        outcomes=outcomes,
+        count=total_count,
+        update_periodicity=(latest_time.timestamp() - earliest_time.timestamp())
+        / success_count
+        if success_count > 1
+        else None,
+    )
 
 
 def trim_feed_updates():
