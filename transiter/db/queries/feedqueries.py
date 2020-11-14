@@ -158,6 +158,9 @@ def list_aggregated_updates(feed_pks, start_time):
         .filter(
             models.FeedUpdate.feed_pk.in_(feed_pks),
             models.FeedUpdate.completed_at > start_time,
+            models.FeedUpdate.status.in_(
+                {models.FeedUpdate.Status.SUCCESS, models.FeedUpdate.Status.FAILURE}
+            ),
         )
     )
     feed_pk_to_updates = {}
