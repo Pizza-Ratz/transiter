@@ -49,12 +49,13 @@ def get_in_system_by_id(system_id, feed_id) -> views.Feed:
         )
     response = views.FeedLarge.from_model(feed)
     response.updates = views.UpdatesInFeedLink.from_model(feed)
-    end_time = datetime.datetime.now()
-    start_time = end_time - datetime.timedelta(minutes=60)
-    feed_pk_to_window = build_feed_windows(
-        [feed.pk], start_time, end_time
-    )
-    response.statistics = [feed_pk_to_window[feed.pk]]
+    end_time = datetime.datetime.utcnow()
+    response.statistics = []
+    for minutes in [15, 60, 60 * 24]:
+        start_time = end_time - datetime.timedelta(minutes=minutes)
+        response.statistics.append(
+            build_feed_windows([feed.pk], start_time, end_time)[feed.pk]
+        )
     return response
 
 
@@ -144,15 +145,12 @@ def build_feed_windows(
 
 def build_statistics_from_data(data, start_time, end_time):
     earliest_time = data[0][3]
-    latest_time = data[0][4]
     total_count = 0
     success_count = 0
     outcomes = []
-    for count, status, result, time_1, time_2 in data:
+    for count, status, result, time_1, _ in data:
         total_count += count
-        print(time_1, time_2)
         earliest_time = min(earliest_time, time_1)
-        latest_time = max(latest_time, time_2)
         outcomes.append(
             views.FeedWStatisticsOutcome(status=status, result=result, count=count)
         )
@@ -161,14 +159,12 @@ def build_statistics_from_data(data, start_time, end_time):
             and result == models.FeedUpdate.Result.UPDATED
         ):
             success_count = count
-    print(earliest_time)
-    print(latest_time)
     return views.FeedStatistics(
         start_time=start_time,
         end_time=end_time,
         outcomes=outcomes,
         count=total_count,
-        update_periodicity=(latest_time.timestamp() - earliest_time.timestamp())
+        update_periodicity=(end_time.timestamp() - earliest_time.timestamp())
         / success_count
         if success_count > 1
         else None,
@@ -197,7 +193,7 @@ def trim_feed_updates():
 
     logger.info("Trimming old feed updates.")
     before_datetime = (
-        datetime.datetime.now() - datetime.timedelta(minutes=60)
+        datetime.datetime.utcnow() - datetime.timedelta(hours=30)
     ).replace(microsecond=0, second=0)
 
     for feed_pk in _list_all_feed_pks():
