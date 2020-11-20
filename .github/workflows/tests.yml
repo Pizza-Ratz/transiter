@@ -1,4 +1,4 @@
-name: learn-github-actions
+name: Native host build and tests
 on: [push]
 jobs:
   unit-tests:
@@ -17,5 +17,32 @@ jobs:
         run: docker run -d --env POSTGRES_USER=transiter --env POSTGRES_PASSWORD=transiter --env POSTGRES_DB=transiter -p 5432:5432 postgres:12
       - name: Run unit tests
         run: coverage run --source=transiter --omit="transiter/alembic/*","*pb2/*" -m pytest --color=yes tests/unit tests/db
+      - name: Post coverage to Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
+  end-to-end-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Install Transiter and other Python packages
+        run: |
+          pip install --quiet .
+          pip install --quiet -r dev-requirements.txt
+      - name: Launch Postgres, RabbitMQ, and Transiter services
+        run: |
+          docker run -d --env POSTGRES_USER=transiter --env POSTGRES_PASSWORD=transiter --env POSTGRES_DB=transiter -p 5432:5432 postgres:12
+          docker run -d -p 5672:5672 rabbitmq:3
+          transiterclt db reset --yes
+          transiterclt launch webservice > webservice.log 2>&1 &
+          transiterclt launch executor > executor.log 2>&1 &
+          transiterclt launch scheduler > scheduler.log  2>&1 &
+          python tests/endtoend/sourceserver.py > sourceserver.log  2>&1 &
+      - name: Run end to end tests
+        run: pytest --color=yes tests/endtoend
 
