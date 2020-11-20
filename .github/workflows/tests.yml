@@ -1,0 +1,19 @@
+name: learn-github-actions
+on: [push]
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+            python-version: 3.7
+      - name: Install Transiter and other Python packages
+        run: |
+          pip install --quiet .
+          pip install --quiet -r dev-requirements.text
+      - name: Run unit tests
+        run: coverage run --source=transiter --omit="transiter/alembic/*","*pb2/*" -m pytest --color=yes tests/unit
+
+
