@@ -1,8 +1,8 @@
 name: Native host build and tests
-on: [push]
+on: [push, pull_request]
 jobs:
   unit-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
@@ -24,7 +24,7 @@ jobs:
       #    github-token: ${{ secrets.GITHUB_TOKEN }}
 
   end-to-end-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
@@ -48,7 +48,7 @@ jobs:
         run: pytest --color=yes tests/endtoend
 
   database-upgrade-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
@@ -67,7 +67,7 @@ jobs:
         run: transiterclt db upgrade
 
   formatting-enforcement:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
