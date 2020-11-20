@@ -13,7 +13,9 @@ jobs:
         run: |
           pip install --quiet .
           pip install --quiet -r dev-requirements.txt
+      - name: Launch Postgres
+        run: docker run -d --env POSTGRES_USER=transiter --env POSTGRES_PASSWORD=transiter --env POSTGRES_DB=transiter -p 5432:5432 postgres:12
       - name: Run unit tests
-        run: coverage run --source=transiter --omit="transiter/alembic/*","*pb2/*" -m pytest --color=yes tests/unit
+        run: coverage run --source=transiter --omit="transiter/alembic/*","*pb2/*" -m pytest --color=yes tests/unit tests/db
 
 
