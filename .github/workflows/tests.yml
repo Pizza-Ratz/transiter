@@ -117,7 +117,7 @@ jobs:
           TRAVIS_BRANCH: ${{ github.ref }}
           TRAVIS_PULL_REQUEST: ${{ github.base_ref != null }}
           TRAVIS_TAG: a # use the branch instead
-          TRAVIS_BUILD_NUMBER: ${{ github.run_number + 1200 }}
+          TRAVIS_BUILD_NUMBER: 2000${{ github.run_number }}
           TRAVIS_JOB_WEB_URL: a# TODO
           TRAVIS_COMMIT: ${{ github.sha }}
           TRAVIS_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
