@@ -17,10 +17,10 @@ jobs:
         run: docker run -d --env POSTGRES_USER=transiter --env POSTGRES_PASSWORD=transiter --env POSTGRES_DB=transiter -p 5432:5432 postgres:12
       - name: Run unit tests
         run: coverage run --source=transiter --omit="transiter/alembic/*","*pb2/*" -m pytest --color=yes tests/unit tests/db
-      - name: Post coverage to Coveralls
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+      #- name: Post coverage to Coveralls
+      #  uses: coverallsapp/github-action@master
+      #  with:
+      #    github-token: ${{ secrets.GITHUB_TOKEN }}
 
   end-to-end-tests:
     runs-on: ubuntu-latest
@@ -46,3 +46,21 @@ jobs:
       - name: Run end to end tests
         run: pytest --color=yes tests/endtoend
 
+  database-upgrade-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Install Transiter and other Python packages
+        run: |
+          pip install --quiet .
+      - name: Launch Postgres and restore the legacy database
+        run: |
+          docker run -d -v $(pwd)/tests/upgrade:/dumps --name postgres --env POSTGRES_USER=transiter --env POSTGRES_PASSWORD=transiter --env POSTGRES_DB=transiter -p 5432:5432 postgres:12
+          sleep 10
+          docker exec postgres pg_restore -U transiter -d transiter dumps/db.dump
+      - name: Upgrade the database (this is the test)
+        run: transiterclt db upgrade
