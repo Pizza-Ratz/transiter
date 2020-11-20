@@ -63,6 +63,7 @@ jobs:
           docker run -d -v $(pwd)/tests/upgrade:/dumps --name postgres --env POSTGRES_USER=transiter --env POSTGRES_PASSWORD=transiter --env POSTGRES_DB=transiter -p 5432:5432 postgres:12
           sleep 10
           docker exec postgres pg_restore -U transiter -d transiter dumps/db.dump
+        # TODO is this ^ actually working
       - name: Upgrade the database (this is the test)
         run: transiterclt db upgrade
 
@@ -80,3 +81,26 @@ jobs:
         run: |
           black transiter tests *py
           pycodestyle --ignore=E203,E501,W503 --exclude="*pb2.py" transiter tests *py
+
+  containerized-build-and-tests:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Install dependencies
+        run: pip install --quiet docker
+      - name: Build and launch containerized Transiter
+        run: |
+          python travis.py before
+          make docker-ci
+          pip install --quiet docker
+      - name: Run tests
+        run: |
+          make containerized-unit-tests
+          make containerized-db-tests
+          make end-to-end-tests
+      - name: Success triggers
+        run: python travis.py after
