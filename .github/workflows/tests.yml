@@ -67,14 +67,16 @@ jobs:
         run: transiterclt db upgrade
 
   formatting-enforcement:
-    - uses: actions/checkout@v2
-    - name: Set up Python 3.7
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.7
-    - name: Install Black and PyCodeStyle
-      run: pip install --quiet black==19.10b pycodestyle==2.5.0
-    - name: Run formatting checks
-      run: |
-        black transiter tests *py
-        pycodestyle --ignore=E203,E501,W503 --exclude="*pb2.py" transiter tests *py
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Install Black and PyCodeStyle
+        run: pip install --quiet black==19.10b pycodestyle==2.5.0
+      - name: Run formatting checks
+        run: |
+          black transiter tests *py
+          pycodestyle --ignore=E203,E501,W503 --exclude="*pb2.py" transiter tests *py
