@@ -83,6 +83,11 @@ jobs:
           pycodestyle --ignore=E203,E501,W503 --exclude="*pb2.py" transiter tests *py
 
   containerized-build-and-tests:
+    #needs:
+    #  - unit-tests
+    #  - end-to-end-tests
+    #  - database-upgrade-test
+    #  - formatting-enforcement
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -94,13 +99,14 @@ jobs:
         run: pip install --quiet docker
       - name: Build and launch containerized Transiter
         run: |
+          pip install --quiet docker
           python travis.py before
           make docker-ci
-          pip install --quiet docker
+          docker-compose -p transiter -f docker/docker-compose.yml up -d
       - name: Run tests
         run: |
           make containerized-unit-tests
           make containerized-db-tests
           make end-to-end-tests
-      - name: Success triggers
+      - name: Push artifacts to Docker Hub and PyPI
         run: python travis.py after
