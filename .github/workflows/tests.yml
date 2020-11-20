@@ -17,7 +17,8 @@ jobs:
         run: docker run -d --env POSTGRES_USER=transiter --env POSTGRES_PASSWORD=transiter --env POSTGRES_DB=transiter -p 5432:5432 postgres:12
       - name: Run unit tests
         run: coverage run --source=transiter --omit="transiter/alembic/*","*pb2/*" -m pytest --color=yes tests/unit tests/db
-      #- name: Post coverage to Coveralls
+      # TODO
+      # - name: Post coverage to Coveralls
       #  uses: coverallsapp/github-action@master
       #  with:
       #    github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -64,3 +65,16 @@ jobs:
           docker exec postgres pg_restore -U transiter -d transiter dumps/db.dump
       - name: Upgrade the database (this is the test)
         run: transiterclt db upgrade
+
+  formatting-enforcement:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
+    - name: Install Black and PyCodeStyle
+      run: pip install --quiet black==19.10b pycodestyle==2.5.0
+    - name: Run formatting checks
+      run: |
+        black transiter tests *py
+        pycodestyle --ignore=E203,E501,W503 --exclude="*pb2.py" transiter tests *py
