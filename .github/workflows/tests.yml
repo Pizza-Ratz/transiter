@@ -1,4 +1,4 @@
-name: Native host build and tests
+name: Transiter build and tests
 on: [push, pull_request]
 jobs:
   unit-tests:
@@ -91,6 +91,10 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
       - name: Set up Python 3.7
         uses: actions/setup-python@v2
         with:
@@ -109,4 +113,16 @@ jobs:
           make containerized-db-tests
           make end-to-end-tests
       - name: Push artifacts to Docker Hub and PyPI
+        env:
+          TRAVIS_BRANCH: a # ${{ github.ref }}
+          TRAVIS_PULL_REQUEST: b  # ${{ github.base_ref }}
+          TRAVIS_TAG: c
+          TRAVIS_BUILD_NUMBER: d
+          TRAVIS_JOB_WEB_URL: e
+          TRAVIS_COMMIT: ${{ github.sha }}
+          TRAVIS_COMMIT_MESSAGE: g
+          DOCKER_USERNAME: h
+          DOCKER_PASSWORD: i
+          TWINE_USERNAME: j
+          TWINE_PASSWORD: k
         run: python travis.py after
