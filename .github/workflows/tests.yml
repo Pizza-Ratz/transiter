@@ -123,7 +123,7 @@ jobs:
           # TODO: move these ^ to command line arguments
 
           TRAVIS_BRANCH: ${{ github.ref }}  # TDOO delete this variable
-          TRAVIS_PULL_REQUEST: ${{ github.base_ref != null }}  # TODO: or != ""
+          TRAVIS_PULL_REQUEST: ${{ github.base_ref == '' }}  # TODO: or != ""
           TRAVIS_TAG: a # TODO delete his variable
           TRAVIS_BUILD_NUMBER: 2000${{ github.run_number }}
           TRAVIS_JOB_WEB_URL: a # TODO
