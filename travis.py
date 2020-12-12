@@ -1,5 +1,5 @@
 """
-Helper script for running the Travis job.
+Helper script for running the CI job.
 """
 import os
 import subprocess
@@ -10,7 +10,7 @@ import docker
 
 METADATA_FILE = "transiter/__metadata__.py"
 METADATA_FILE_TEMPLATE = """
-# NOTE: the following were set by Travis CI
+# NOTE: the following were set by the CI process
 __version__ = "{version}"
 __build_number__ = {build_number}
 __build_timestamp__ = {build_timestamp}
@@ -35,20 +35,20 @@ def calculate_base_version():
 
 def calculate_version():
     """
-    If not running on Travis, the version is the same as the base version.
+    If not running on CI, the version is the same as the base version.
 
     Otherwise, if this is a tagged release, then the version is the tag which is
     required to be equal to the version in __metadata__.py.
 
     If this is not a tagged release the version is the base version with an
-    additional ".dev#" postfix, where the number is the Travis job num,ber.
+    additional ".dev#" postfix where # is the build ID.
     """
     version = calculate_base_version()
 
-    travis_build_number = os.environ.get("TRAVIS_BUILD_NUMBER")
-    if travis_build_number is not None:
+    build_number = os.environ.get("BUILD_ID")
+    if build_number is not None:
         if not is_release():
-            version += ".dev{}".format(travis_build_number)
+            version += ".dev{}".format(build_number)
 
     return version
 
@@ -59,10 +59,10 @@ def set_version(new_version):
     """
     new_content = METADATA_FILE_TEMPLATE.format(
         version=new_version,
-        build_number=os.environ.get("TRAVIS_BUILD_NUMBER"),
+        build_number=os.environ.get("BUILD_NUMBER"),
         build_timestamp=int(time.time()),
-        build_href=os.environ.get("TRAVIS_JOB_WEB_URL"),
-        git_commit_hash=os.environ.get("TRAVIS_COMMIT"),
+        build_href=os.environ.get("CI_WEB_URL"),
+        git_commit_hash=os.environ.get("GIT_COMMIT_HASH"),
     )
     print("Updating __metadata__.py by appending:")
     print(new_content)
@@ -74,21 +74,31 @@ def is_release():
     """
     True if this is a build on a release tag.
     """
-    travis_branch = os.environ.get("TRAVIS_BRANCH")
-    return (
-        travis_branch is not None
-        and travis_branch == os.environ.get("TRAVIS_TAG")
-        and travis_branch == calculate_base_version()
-    )
+    git_ref = os.environ.get("GIT_REF")
+    if git_ref is None:
+        print("This is not a release because the git_ref env variable is not set")
+        return False
+    if not git_ref.startswith("refs/tags"):
+        print("This is not a release because the commit is not tagged")
+        return False
+    return git_ref == "refs/tags/" + calculate_base_version()
 
 
 def is_mainline_build():
     """
     True if this is a build on master or a release tag.
     """
-    return os.environ.get("TRAVIS_PULL_REQUEST") == "false" and (
-        os.environ.get("TRAVIS_BRANCH") == "master" or is_release()
-    )
+    if os.environ.get("IS_PULL_REQUEST") == "false":
+        print("This is not a mainline build because it is a pull request")
+        return False
+    if os.environ.get("GIT_REF") == "refs/heads/master":
+        print("This is a mainline build because the branch is 'master'")
+        return True
+    if is_release():
+        print("This is a mainline build it is a release")
+        return True
+    print("This is not a mainline build")
+    return False
 
 
 def get_artifacts_to_push():
@@ -101,7 +111,7 @@ def get_artifacts_to_push():
         return set()
     if is_release():
         return {"docker", "pypi"}
-    message = os.environ.get("TRAVIS_COMMIT_MESSAGE", "").splitlines()
+    message = os.environ.get("GIT_COMMIT_MESSAGE", "").splitlines()
     result = {"docker"}
     for line in message:
         if line[:6] != "push: ":
