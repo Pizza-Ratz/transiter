@@ -78,10 +78,13 @@ def is_release():
     if git_ref is None:
         print("This is not a release because the git_ref env variable is not set")
         return False
+    else:
+        print("Git ref is:", git_ref)
     if not git_ref.startswith("refs/tags"):
         print("This is not a release because the commit is not tagged")
         return False
-    return git_ref == "refs/tags/" + calculate_base_version()
+    print("This commit is tagged")
+    return git_ref == ("refs/tags/" + calculate_base_version())
 
 
 def is_mainline_build():
@@ -91,13 +94,17 @@ def is_mainline_build():
     if os.environ.get("IS_PULL_REQUEST") == "false":
         print("This is not a mainline build because it is a pull request")
         return False
+    else:
+        print("This is NOT a pull request")
     if os.environ.get("GIT_REF") == "refs/heads/master":
         print("This is a mainline build because the branch is 'master'")
         return True
+    else:
+        print("This is NOT a build on 'master'")
     if is_release():
-        print("This is a mainline build it is a release")
+        print("This is a mainline build because it is a release")
         return True
-    print("This is not a mainline build")
+    print("This is not a release or a mainline build")
     return False
 
 

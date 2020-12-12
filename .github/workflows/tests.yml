@@ -114,10 +114,11 @@ jobs:
           make end-to-end-tests
       - name: Push artifacts to Docker Hub and PyPI
         env:
+          # TODO: move these to command line arguments
           GIT_REF: ${{ github.ref }}
           GIT_COMMIT_HASH: ${{ github.sha }}
           GIT_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-          IS_PULL_REQUEST: ${{ github.base_ref != null }}  # TODO: or != ""
+          IS_PULL_REQUEST: ${{ github.base_ref != "" }}  # TODO: or != ""
           BUILD_ID: _ga${{ github.run_number }}
           CI_WEB_URL: "TODO"
 
