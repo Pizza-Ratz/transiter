@@ -128,6 +128,7 @@ def get_artifacts_to_push():
             if artifact in line:
                 result.add(artifact)
         break
+    print("Will push the following artifacts:", result)
     return result
 
 
