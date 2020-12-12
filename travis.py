@@ -114,9 +114,11 @@ def get_artifacts_to_push():
 
     Returns a set possibly containing "docker" and "pypi"
     """
-    if not is_mainline_build():
-        return set()
+    #if not is_mainline_build():
+    #    print("Not pushing any artifacts because this is not a mainline release")
+    #    return set()
     if is_release():
+        print("Pushing docker and pypi automatically as this is a release")
         return {"docker", "pypi"}
     message = os.environ.get("GIT_COMMIT_MESSAGE", "").splitlines()
     result = {"docker"}
@@ -180,11 +182,11 @@ def upload_to_docker_hub():
 
 command = sys.argv[1]
 
+print("Transiter version:", calculate_version())
 if command == "before":
     set_version(calculate_version())
 elif command == "after":
     upload_to_py_pi()
     upload_to_docker_hub()
-    print(calculate_version())
 else:
     raise ValueError("Unknown command '{}'!".format(command))
