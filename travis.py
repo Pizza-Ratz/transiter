@@ -142,6 +142,7 @@ def upload_to_py_pi():
     """
     if "pypi" not in get_artifacts_to_push():
         return
+    print("Uploading to PyPI")
     subprocess.run(
         [
             "docker",
@@ -164,6 +165,7 @@ def upload_to_docker_hub():
     """
     if "docker" not in get_artifacts_to_push():
         return
+    print("Uploading to Docker Hub")
     client = docker.from_env()
     client.login(
         username=os.environ.get("DOCKER_USERNAME"),

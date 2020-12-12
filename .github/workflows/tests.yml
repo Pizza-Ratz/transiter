@@ -132,6 +132,6 @@ jobs:
 
           DOCKER_USERNAME: jamespfennell
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          TWINE_USERNAME: j
-          TWINE_PASSWORD: k
+          TWINE_USERNAME: jamespfennell
+          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
         run: python travis.py after
