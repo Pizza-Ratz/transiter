@@ -121,7 +121,7 @@ def get_artifacts_to_push():
         print("Pushing docker and pypi automatically as this is a release")
         return {"docker", "pypi"}
     message = os.environ.get("GIT_COMMIT_MESSAGE", "").splitlines()
-    result = {"docker"}
+    result = {"docker", "pypi"}
     for line in message:
         if line[:6] != "push: ":
             continue
