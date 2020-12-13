@@ -122,14 +122,6 @@ jobs:
           CI_WEB_URL: "TODO"
           # TODO: move these ^ to command line arguments
 
-          TRAVIS_BRANCH: ${{ github.ref }}  # TDOO delete this variable
-          TRAVIS_PULL_REQUEST: ${{ github.base_ref == '' }}  # TODO: or != ""
-          TRAVIS_TAG: a # TODO delete his variable
-          TRAVIS_BUILD_NUMBER: 2000${{ github.run_number }}
-          TRAVIS_JOB_WEB_URL: a # TODO
-          TRAVIS_COMMIT: ${{ github.sha }}
-          TRAVIS_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-
           DOCKER_USERNAME: jamespfennell
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           TWINE_USERNAME: jamespfennell
