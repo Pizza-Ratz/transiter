@@ -126,9 +126,7 @@ jobs:
           GIT_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
           IS_PULL_REQUEST: ${{ github.base_ref == '' }}
           BUILD_ID: ${{ github.run_number }}
-          CI_WEB_URL: https://github.com/jamespfennell/transiter/runs/${{ github.id }}
-          # TODO: move these ^ to command line arguments
-          #
+          CI_WEB_URL: https://github.com/jamespfennell/transiter/runs/${{ github.run_id }}
 
           DOCKER_USERNAME: jamespfennell
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}

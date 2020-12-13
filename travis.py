@@ -1,5 +1,8 @@
 """
 Helper script for running the CI job.
+
+TODO: it would be great to not use environment variables
+ as input to the script but use command line args instead.
 """
 import os
 import subprocess
@@ -115,9 +118,9 @@ def get_artifacts_to_push():
 
     Returns a set possibly containing "docker" and "pypi"
     """
-    #if not is_mainline_build():
-    #    print("Not pushing any artifacts because this is not a mainline release")
-    #    return set()
+    if not is_mainline_build():
+        print("Not pushing any artifacts because this is not a mainline release")
+        return set()
     if is_release():
         print("Pushing docker and pypi automatically as this is a release")
         return {"docker", "pypi"}
