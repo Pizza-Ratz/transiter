@@ -232,9 +232,13 @@ def _build_service_map_from_paths(paths):
     Given a list of paths build the service map.
     """
     labels = []
-    for graph in _build_sorted_graph_from_paths(paths):
-        for node in graph.nodes():
-            labels.append(node.label)
+    try:
+        for graph in _build_sorted_graph_from_paths(paths):
+            for node in graph.nodes():
+                labels.append(node.label)
+    # If the graph can't be topologically sorted just return an empty list
+    except graphutils.topologicalsort.ImpossibleToTopologicallySortGraph:
+        pass
     return _convert_sorted_graph_to_service_pattern(labels)
 
 
