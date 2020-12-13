@@ -111,7 +111,7 @@ jobs:
           CI_WEB_URL: https://github.com/jamespfennell/transiter/runs/${{ github.id }}
         run: |
           pip install --quiet docker
-          python travis.py before
+          python ci.py before
           make docker-ci
           docker-compose -p transiter -f docker/docker-compose.yml up -d
       - name: Run tests
@@ -132,4 +132,4 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           TWINE_USERNAME: jamespfennell
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
-        run: python travis.py after
+        run: python ci.py after
