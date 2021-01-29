@@ -231,15 +231,20 @@ class MetricsManager:
     def __init__(self):
         self.feed_pk_to_system_id_and_feed_id = {}
 
-        self.c = prometheus.Counter(
-            "num_feed_updates",
+        self.num_updates = prometheus.Counter(
+            "transiter_num_feed_updates",
             "Number of feed updates of a given feed, status and result",
             ["system_id", "feed_id", "status", "result"],
         )
-        self.g = prometheus.Gauge(
-            "last_feed_update",
+        self.last_update = prometheus.Gauge(
+            "transiter_last_feed_update",
             "Time since the last update of a given feed, status and result",
             ["system_id", "feed_id", "status", "result"],
+        )
+        self.num_entities = prometheus.Gauge(
+            "transiter_num_entities",
+            "Number of entities of a given type present from a given feed",
+            ["system_id", "feed_id", "entity_type"],
         )
 
     def refresh(self):
@@ -264,18 +269,22 @@ class MetricsManager:
         if system_id is None:
             return "unknown feed_pk '{}'".format(blob["feed_pk"])
 
-        self.c.labels(
+        self.num_updates.labels(
             system_id=system_id,
             feed_id=feed_id,
             status=blob["status"],
             result=blob["result"],
         ).inc()
-        self.g.labels(
+        self.last_update.labels(
             system_id=system_id,
             feed_id=feed_id,
             status=blob["status"],
             result=blob["result"],
         ).set_to_current_time()
+        for entity_type, count in blob.get("entity_type_to_count", {}).items():
+            self.num_entities.labels(
+                system_id=system_id, feed_id=feed_id, entity_type=entity_type
+            ).set(int(count))
 
         logger.info(
             "Reporting %s/%s result=%s status=%s",

@@ -94,10 +94,11 @@ def execute_feed_update(
     else:
         actions = _REGULAR_UPDATE_ACTIONS
 
+    stats = None
     exception = None
     for action in actions:
         try:
-            action(context)
+            stats = action(context)
         except Exception as e:
             logger.exception("Exception encountered during update")
             exception_type_to_outcome = getattr(
@@ -137,6 +138,7 @@ def execute_feed_update(
         context.feed_update.feed_pk,
         context.feed_update.status,
         context.feed_update.result,
+        stats.entity_type_to_num_in_db(),
     )
     return context.feed_update, exception
 
@@ -267,16 +269,17 @@ def _load_content_into_parser(context: _UpdateContext):
 def _import(context: _UpdateContext):
     feed_update = context.feed_update
     with dbconnection.inline_unit_of_work() as session:
-        (
-            feed_update.num_added_entities,
-            feed_update.num_updated_entities,
-            feed_update.num_deleted_entities,
-        ) = import_.run_import(feed_update.pk, context.parser)
+        stats = import_.run_import(feed_update.pk, context.parser)
+
+        feed_update.num_added_entities = stats.num_added()
+        feed_update.num_updated_entities = stats.num_updated()
+        feed_update.num_deleted_entities = stats.num_deleted()
         feed_update.num_parsed_entities = -1
         feed_update.status = models.FeedUpdate.Status.SUCCESS
         feed_update.result = models.FeedUpdate.Result.UPDATED
+
         session.merge(feed_update)
-        return feed_update
+        return stats
 
 
 _REGULAR_UPDATE_ACTIONS = [

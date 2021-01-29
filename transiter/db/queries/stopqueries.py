@@ -105,9 +105,9 @@ def build_stop_pk_to_descendant_pks_map(
         .cte(name="descendent_cte", recursive=True)
     )
     recursive_part = session.query(
-        descendant_cte.c.ancestor_pk.label("ancestor_pk"),
+        descendant_cte.num_updates.ancestor_pk.label("ancestor_pk"),
         models.Stop.pk.label("descendent_pk"),
-    ).filter(models.Stop.parent_stop_pk == descendant_cte.c.descendent_pk)
+    ).filter(models.Stop.parent_stop_pk == descendant_cte.num_updates.descendent_pk)
     if stations_only:
         recursive_part = recursive_part.filter(
             models.Stop.type.in_(models.Stop.STATION_TYPES)
@@ -134,7 +134,7 @@ def list_all_stops_in_stop_tree(stop_pk) -> typing.Iterable[models.Stop]:
     )
     ancestor_cte = ancestor_cte.union_all(
         session.query(models.Stop.pk, models.Stop.parent_stop_pk).filter(
-            models.Stop.pk == ancestor_cte.c.parent_stop_pk
+            models.Stop.pk == ancestor_cte.num_updates.parent_stop_pk
         )
     )
 
@@ -143,15 +143,17 @@ def list_all_stops_in_stop_tree(stop_pk) -> typing.Iterable[models.Stop]:
     # all stops in the tree.
     relation_cte = (
         session.query(models.Stop.pk, models.Stop.parent_stop_pk)
-        .filter(models.Stop.pk == ancestor_cte.c.pk)
+        .filter(models.Stop.pk == ancestor_cte.num_updates.pk)
         .cte(name="relation", recursive=True)
     )
     relation_cte = relation_cte.union_all(
         session.query(models.Stop.pk, models.Stop.parent_stop_pk).filter(
-            models.Stop.parent_stop_pk == relation_cte.c.pk
+            models.Stop.parent_stop_pk == relation_cte.num_updates.pk
         )
     )
-    query = session.query(models.Stop).filter(models.Stop.pk == relation_cte.c.pk)
+    query = session.query(models.Stop).filter(
+        models.Stop.pk == relation_cte.num_updates.pk
+    )
     return query.all()
 
 
