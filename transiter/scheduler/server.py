@@ -15,8 +15,9 @@ import typing
 import apscheduler.schedulers.background
 import flask
 import inflection
+import prometheus_client as prometheus
 from sqlalchemy.exc import SQLAlchemyError
-
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
 from transiter.executor import celeryapp
 from transiter.services import feedservice
 
@@ -230,6 +231,17 @@ class MetricsManager:
     def __init__(self):
         self.feed_pk_to_system_id_and_feed_id = {}
 
+        self.c = prometheus.Counter(
+            "num_feed_updates",
+            "Number of feed updates of a given feed, status and result",
+            ["system_id", "feed_id", "status", "result"],
+        )
+        self.g = prometheus.Gauge(
+            "last_feed_update",
+            "Time since the last update of a given feed, status and result",
+            ["system_id", "feed_id", "status", "result"],
+        )
+
     def refresh(self):
         self.feed_pk_to_system_id_and_feed_id = (
             feedservice.get_feed_pk_to_system_id_and_feed_id_map()
@@ -251,6 +263,19 @@ class MetricsManager:
         )
         if system_id is None:
             return "unknown feed_pk '{}'".format(blob["feed_pk"])
+
+        self.c.labels(
+            system_id=system_id,
+            feed_id=feed_id,
+            status=blob["status"],
+            result=blob["result"],
+        ).inc()
+        self.g.labels(
+            system_id=system_id,
+            feed_id=feed_id,
+            status=blob["status"],
+            result=blob["result"],
+        ).set_to_current_time()
 
         logger.info(
             "Reporting %s/%s result=%s status=%s",
@@ -304,6 +329,10 @@ def create_app():
         "feed_update_callback",
         app_feed_update_callback,
         methods=["POST"],
+    )
+    # Add prometheus wsgi middleware to route /metrics requests
+    app.wsgi_app = DispatcherMiddleware(
+        app.wsgi_app, {"/metrics": prometheus.make_wsgi_app()}
     )
 
     logger.setLevel(logging.INFO)
