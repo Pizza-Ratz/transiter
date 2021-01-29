@@ -43,6 +43,7 @@ from transiter.db import dbconnection, models
 from transiter.db.queries import feedqueries
 from transiter.executor import celeryapp
 from transiter.parse import parser, gtfsstatic, gtfsrealtime, TransiterParser
+from transiter.scheduler import client
 
 logger = logging.getLogger(__name__)
 
@@ -131,6 +132,11 @@ def execute_feed_update(
             context.feed_update.total_duration,
             context.feed_update.feed_pk,
         )
+    )
+    client.feed_update_callback(
+        context.feed_update.feed_pk,
+        context.feed_update.status,
+        context.feed_update.result,
     )
     return context.feed_update, exception
 

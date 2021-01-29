@@ -126,6 +126,7 @@ class FeedAutoUpdateTask(Task):
         )
         # NOTE: access the task like a static method to avoid the current instance
         # being unnecessarily being sent through RabbitMQ.
+        logger.info("Triggering task update %s/%s", self._system_id, self._feed_id)
         FeedAutoUpdateTask._create_feed_update.apply_async(
             args=(None, self._system_id, self._feed_id), expires=expires
         )
@@ -247,10 +248,24 @@ def app_refresh_tasks():
     return "", 204
 
 
+def app_feed_update_callback():
+    # TODO: add a time.sleep and verify that this is blocking
+    content = flask.request.json
+    logger.info("Received feed update callback")
+    logger.info(content)
+    return "", 200
+
+
 def create_app():
     app = flask.Flask(__name__)
     app.add_url_rule("/", "ping", app_ping, methods=["GET"])
     app.add_url_rule("/", "refresh_tasks", app_refresh_tasks, methods=["POST"])
+    app.add_url_rule(
+        "/feed_update_callback",
+        "feed_update_callback",
+        app_feed_update_callback,
+        methods=["POST"],
+    )
 
     logger.setLevel(logging.INFO)
     handler = logging.StreamHandler()

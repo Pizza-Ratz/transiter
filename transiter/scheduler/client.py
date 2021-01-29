@@ -42,3 +42,19 @@ def refresh_tasks():
     except requests.RequestException:
         logger.info("Could not connect to the Transiter scheduler")
     return False
+
+
+def feed_update_callback(feed_pk, status, result):
+    """
+    Send a message to the scheduler that a feed update has completed
+    """
+    try:
+        # TODO: need an aggressive timeout on this
+        requests.post(
+            "http://{}:{}/feed_update_callback".format(
+                config.SCHEDULER_HOST, config.SCHEDULER_PORT
+            ),
+            json={"feed_pk": feed_pk, "status": status.name, "result": result.name},
+        )
+    except requests.RequestException as e:
+        pass
