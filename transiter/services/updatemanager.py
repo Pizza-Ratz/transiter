@@ -138,7 +138,7 @@ def execute_feed_update(
         context.feed_update.feed_pk,
         context.feed_update.status,
         context.feed_update.result,
-        stats.entity_type_to_num_in_db(),
+        stats.entity_type_to_num_in_db() if stats is not None else {},
     )
     return context.feed_update, exception
 
