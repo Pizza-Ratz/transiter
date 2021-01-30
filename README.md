@@ -91,7 +91,7 @@ at San Francisco International Airport (stop ID `SFIA`), just execute:
 - Write a [custom feed parser](https://docs.transiter.io/docs/feedparsers/) to import data in non-standard format into Transiter.
     
 The [documentation website](https://docs.transiter.io) has much more
-including advice on deployment.
+including advice on deployment and monitoring.
 
 ## Development indicators
 

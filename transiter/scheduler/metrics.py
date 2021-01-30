@@ -7,7 +7,7 @@ import prometheus_client as prometheus
 from transiter.services import feedservice
 from transiter.db import models
 
-logger = logging.getLogger("transiter")
+logger = logging.getLogger(__name__)
 
 
 # These are the names of the Prometheus metrics
@@ -60,6 +60,11 @@ class MetricsPopulator:
             return "missing field 'feed_pk'"
         except ValueError:
             return "could not parse feed_pk='{}' as an integer".format(blob["feed_pk"])
+        system_id, feed_id = self._feed_pk_to_system_id_and_feed_id.get(
+            feed_pk, (None, None)
+        )
+        if system_id is None:
+            return "unknown feed_pk={}".format(feed_pk)
 
         if "result" not in blob:
             return "missing field 'result'"
@@ -79,12 +84,6 @@ class MetricsPopulator:
                 blob["status"]
             )
 
-        system_id, feed_id = self._feed_pk_to_system_id_and_feed_id.get(
-            feed_pk, (None, None)
-        )
-        if system_id is None:
-            return "unknown feed_pk '{}'".format(feed_pk)
-
         self._num_updates.labels(
             system_id=system_id,
             feed_id=feed_id,
@@ -96,7 +95,7 @@ class MetricsPopulator:
         ).set_to_current_time()
         self._report_latency(feed_pk, result, system_id, feed_id)
         for entity_type, count in blob.get("entity_type_to_count", {}).items():
-            # TODO: verify each entity_type is valid
+            # TODO: verify each entity_type is valid or skip?
             self._num_entities.labels(
                 system_id=system_id, feed_id=feed_id, entity_type=entity_type
             ).set(int(count))
