@@ -18,7 +18,9 @@ import inflection
 import prometheus_client as prometheus
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
+
 from transiter.executor import celeryapp
+from transiter.scheduler import metrics
 from transiter.services import feedservice
 
 logger = logging.getLogger("transiter")
@@ -227,78 +229,9 @@ class TransiterRegistry(Registry):
         return self._tasks
 
 
-class MetricsManager:
-    def __init__(self):
-        self.feed_pk_to_system_id_and_feed_id = {}
-
-        self.num_updates = prometheus.Counter(
-            "transiter_num_feed_updates",
-            "Number of feed updates of a given feed, status and result",
-            ["system_id", "feed_id", "status", "result"],
-        )
-        self.last_update = prometheus.Gauge(
-            "transiter_last_feed_update",
-            "Time since the last update of a given feed, status and result",
-            ["system_id", "feed_id", "status", "result"],
-        )
-        self.num_entities = prometheus.Gauge(
-            "transiter_num_entities",
-            "Number of entities of a given type present from a given feed",
-            ["system_id", "feed_id", "entity_type"],
-        )
-
-    def refresh(self):
-        self.feed_pk_to_system_id_and_feed_id = (
-            feedservice.get_feed_pk_to_system_id_and_feed_id_map()
-        )
-
-    def report(self, blob):
-        if "feed_pk" not in blob:
-            return "missing feed_pk"
-        if "result" not in blob:
-            return "missing field 'result'"
-        if "status" not in blob:
-            return "missing field 'status'"
-
-        # TODO: what if feed_pk is not an int?
-        # TODO: what if status and result aren't valid values of the enum? There is a resource consideration here
-        #  because adding arbitrary labels to the metric is bad
-        system_id, feed_id = self.feed_pk_to_system_id_and_feed_id.get(
-            int(blob["feed_pk"]), (None, None)
-        )
-        if system_id is None:
-            return "unknown feed_pk '{}'".format(blob["feed_pk"])
-
-        self.num_updates.labels(
-            system_id=system_id,
-            feed_id=feed_id,
-            status=blob["status"],
-            result=blob["result"],
-        ).inc()
-        self.last_update.labels(
-            system_id=system_id,
-            feed_id=feed_id,
-            status=blob["status"],
-            result=blob["result"],
-        ).set_to_current_time()
-        for entity_type, count in blob.get("entity_type_to_count", {}).items():
-            self.num_entities.labels(
-                system_id=system_id, feed_id=feed_id, entity_type=entity_type
-            ).set(int(count))
-
-        logger.info(
-            "Reporting %s/%s result=%s status=%s",
-            system_id,
-            feed_id,
-            str(blob["result"]),
-            str(blob["status"]),
-        )
-        return None
-
-
 feed_auto_update_registry = FeedAutoUpdateRegistry()
 transiter_registry = TransiterRegistry()
-metrics_manager = MetricsManager()
+metrics_populator = metrics.MetricsPopulator()
 
 
 def app_ping():
@@ -316,13 +249,13 @@ def app_ping():
 def app_refresh_tasks():
     logger.info("Received external refresh tasks command via HTTP")
     feed_auto_update_registry.refresh()
-    metrics_manager.refresh()
+    metrics_populator.refresh()
     return "", 204
 
 
 def app_feed_update_callback():
     # TODO: add a time.sleep and verify that this is blocking
-    error_message = metrics_manager.report(flask.request.json)
+    error_message = metrics_populator.report(flask.request.json)
     if error_message is None:
         return "", 200
     logger.info(error_message)
@@ -356,7 +289,7 @@ def create_app():
     scheduler.start()
     feed_auto_update_registry.initialize()
     transiter_registry.initialize()
-    metrics_manager.refresh()
+    metrics_populator.refresh()
 
     logger.info("Launching HTTP server")
     return app
