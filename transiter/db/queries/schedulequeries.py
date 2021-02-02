@@ -83,7 +83,7 @@ def list_scheduled_trips_with_times_in_system(system_pk):
     )
     query = (
         session.query(
-            models.ScheduledTrip, first_stop_query.c.time, last_stop_query.c.time,
+            models.ScheduledTrip, first_stop_query.c.time, last_stop_query.c.time
         )
         .join(
             models.ScheduledService,
@@ -92,8 +92,8 @@ def list_scheduled_trips_with_times_in_system(system_pk):
                 models.ScheduledService.system_pk == system_pk,
             ),
         )
-        .join(first_stop_query, models.ScheduledTrip.pk == first_stop_query.c.trip_pk,)
-        .join(last_stop_query, models.ScheduledTrip.pk == last_stop_query.c.trip_pk,)
+        .join(first_stop_query, models.ScheduledTrip.pk == first_stop_query.c.trip_pk)
+        .join(last_stop_query, models.ScheduledTrip.pk == last_stop_query.c.trip_pk)
     )
     result = query.all()
     logger.info(
