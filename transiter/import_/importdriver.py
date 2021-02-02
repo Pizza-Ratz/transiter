@@ -38,38 +38,28 @@ from transiter.services.servicemap import servicemapmanager
 logger = logging.getLogger(__name__)
 
 
-@dataclasses.dataclass
 class ImportStats:
-    entity_type_to_num_added: typing.Dict[str, int]
-    entity_type_to_num_updated: typing.Dict[str, int]
-    entity_type_to_num_deleted: typing.Dict[str, int]
+    def __init__(self):
+        self._entity_type_to_data = {}
 
-    @staticmethod
-    def _num(m):
-        return sum(m.values())
+    def add_data(self, entity_type, num_added, num_updated, num_deleted):
+        if num_added == 0 and num_updated == 0 and num_deleted == 0:
+            return
+        self._entity_type_to_data[entity_type] = (num_added, num_updated, num_deleted)
 
     def num_added(self):
-        return self._num(self.entity_type_to_num_added)
+        return sum(x for x, _, _ in self._entity_type_to_data.values())
 
     def num_updated(self):
-        return self._num(self.entity_type_to_num_updated)
+        return sum(x for _, x, _ in self._entity_type_to_data.values())
 
     def num_deleted(self):
-        return self._num(self.entity_type_to_num_deleted)
+        return sum(x for _, _, x in self._entity_type_to_data.values())
 
     def entity_type_to_num_in_db(self):
         result = {}
-        entity_types = set()
-        entity_types.update(self.entity_type_to_num_added.keys())
-        entity_types.update(self.entity_type_to_num_updated.keys())
-        entity_types.update(self.entity_type_to_num_deleted.keys())
-        for entity_type in entity_types:
-            num_added = self.entity_type_to_num_added.get(entity_type, 0)
-            num_updated = self.entity_type_to_num_updated.get(entity_type, 0)
-            num_deleted = self.entity_type_to_num_deleted.get(entity_type, 0)
-            if num_added == 0 and num_updated == 0 and num_deleted == 0:
-                continue
-            result[entity_type] = num_added + num_updated
+        for entity_type, data in self._entity_type_to_data.items():
+            result[entity_type] = data[0] + data[1]
         return result
 
 
@@ -97,11 +87,7 @@ def run_import(feed_update_pk, parser_object: parse.TransiterParser):
     if feed_update.update_type == feed_update.Type.FLUSH:
         syncers_in_order.reverse()
 
-    stats = ImportStats(
-        entity_type_to_num_added={},
-        entity_type_to_num_updated={},
-        entity_type_to_num_deleted={},
-    )
+    stats = ImportStats()
     for syncer_class in syncers_in_order:
         if syncer_class.feed_entity() not in parser_object.supported_types:
             continue
@@ -113,11 +99,8 @@ def run_import(feed_update_pk, parser_object: parse.TransiterParser):
         if num_added == 0 and num_updated == 0 and num_deleted == 0:
             continue
 
-        # TODO: put this on the syncer?
         entity = syncer_class.__feed_entity__.__name__.upper()
-        stats.entity_type_to_num_added[entity] = num_added
-        stats.entity_type_to_num_updated[entity] = num_updated
-        stats.entity_type_to_num_deleted[entity] = num_deleted
+        stats.add_data(entity, num_added, num_updated, num_deleted)
 
     return stats
 

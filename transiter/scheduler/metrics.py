@@ -106,7 +106,7 @@ class MetricsPopulator:
         return None
 
     def _report_latency(self, feed_pk, result, system_id, feed_id):
-        # TODO: get the update time from the callback
+        # TODO: get the update time from the callback?
         update_time, latency = self._feed_pk_to_successful_update_data.get(
             feed_pk, (None, None)
         )
