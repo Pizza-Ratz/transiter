@@ -173,6 +173,7 @@ class SyncerBase:
         processed_ids = set()
         session = dbconnection.get_session()
         num_updated_entities = 0
+        num_added_entities = 0
         for entity in entities:
             if entity.id is not None and entity.id in processed_ids:
                 continue
@@ -181,13 +182,13 @@ class SyncerBase:
                 entity.pk = id_to_pk[entity.id]
             if entity.pk is not None:
                 num_updated_entities += 1
+            else:
+                num_added_entities += 1
             entity.source_pk = self.feed_update.pk
             persisted_entities.append(session.merge(entity))
-        # TODO: figure this out
-        # assert len(processed_ids) - num_updated_entities >= 0
         return (
             persisted_entities,
-            len(processed_ids) - num_updated_entities,
+            num_added_entities,
             num_updated_entities,
         )
 
