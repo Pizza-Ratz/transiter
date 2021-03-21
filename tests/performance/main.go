@@ -6,71 +6,166 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"sync"
+	"time"
 )
 
 const baseURL = "https://demo.transiter.dev"
 
 func main() {
+
 	rand.Seed(303)
-
-	var response RootResponse
-	_ = get(baseURL, &response)
-	fmt.Println("Received system response, going to list systems")
-	var listSystemsResponse []ListSystemsResponse
-	_ = get(response.Systems.Href, &listSystemsResponse)
-	fmt.Println("Received list systems response, choosing system")
-	systemIndex := rand.Intn(len(listSystemsResponse))
-	fmt.Println("Chose", listSystemsResponse[systemIndex].Name, ", now looking at the system")
-	var systemResponse SystemResponse
-	_ = get(listSystemsResponse[systemIndex].Href, &systemResponse)
-	fmt.Println("Received system response, listing routes")
-	var listRoutesResponse []ListRoutesResponse
-	_ = get(systemResponse.Routes.Href, &listRoutesResponse)
-	fmt.Println("Received routes in system response, choosing route")
-	routeIndex := rand.Intn(len(listRoutesResponse))
-	fmt.Println("Chose", listRoutesResponse[routeIndex].Id, ", now looking at that route")
-	var routeResponse RouteResponse
-	panicIfErr(get(listRoutesResponse[routeIndex].Href, &routeResponse))
-	fmt.Println("Received route response, choosing random stop")
-	serviceMapIndex := rand.Intn(len(routeResponse.Service_maps))
-	stopIndex := rand.Intn(len(routeResponse.Service_maps[serviceMapIndex].Stops))
-	fmt.Println("Chose", routeResponse.Service_maps[serviceMapIndex].Stops[stopIndex].Name, "now looking at that stop")
-	var stopResponse StopResponse
-	_ = get(routeResponse.Service_maps[serviceMapIndex].Stops[stopIndex].Href, &stopResponse)
-
-}
-
-func panicIfErr(err error) {
-	if err != nil {
-		panic(err)
+	var wg sync.WaitGroup
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func() {
+			var state State
+			var err error
+			state = StartState{baseUrl: baseURL}
+			for {
+				state, err = state.Transition()
+				if err != nil {
+					fmt.Println("Error:", err)
+				}
+				if _, ok := state.(EndState); ok {
+					break
+				}
+				time.Sleep(1 * time.Second)
+			}
+			wg.Done()
+		}()
+		time.Sleep(50 * time.Millisecond)
 	}
+	wg.Wait()
 }
 
-func get(url string, v interface{}) error {
-	response, err := http.Get(url)
+type State interface {
+	Transition() (State, error)
+}
+
+type StartState struct {
+	baseUrl string
+}
+
+func (state StartState) Transition() (State, error) {
+	var response RootResponse
+	if _, err := get(state.baseUrl, &response); err != nil {
+		return state, err
+	}
+	var listSystemsResponse []ListSystemsResponse
+	if _, err := get(response.Systems.Href, &listSystemsResponse); err != nil {
+		return state, err
+	}
+	systemIndex := rand.Intn(len(listSystemsResponse))
+	var systemState SystemState
+	if _, err := get(listSystemsResponse[systemIndex].Href, &systemState.systemResponse); err != nil {
+		return state, err
+	}
+	return systemState, nil
+}
+
+type SystemState struct {
+	systemResponse SystemResponse
+}
+
+func (state SystemState) Transition() (State, error) {
+	var listRoutesResponse []ListRoutesResponse
+	if _, err := get(state.systemResponse.Routes.Href, &listRoutesResponse); err != nil {
+		return state, err
+	}
+	routeIndex := rand.Intn(len(listRoutesResponse))
+	routeState, err := NewRouteState(listRoutesResponse[routeIndex].Href)
 	if err != nil {
-		return err
+		return state, err
+	}
+	return routeState, nil
+}
+
+func NewRouteState(href string) (RouteState, error){
+	var routeState RouteState
+	d, err := get(href, &routeState.routeResponse)
+	fmt.Println("r", d)
+	return routeState, err
+}
+
+type RouteState struct {
+	routeResponse RouteResponse
+}
+
+func (state RouteState) Transition() (State, error) {
+	serviceMapIndex := state.selectServiceMap()
+	if serviceMapIndex < 0 {
+		return EndState{}, nil
+	}
+	stopIndex := rand.Intn(len(state.routeResponse.Service_maps[serviceMapIndex].Stops))
+	stopState, err := NewStopState(state.routeResponse.Service_maps[serviceMapIndex].Stops[stopIndex].Href)
+	if err != nil {
+		return state, err
+	}
+	return stopState, nil
+}
+
+func (state RouteState) selectServiceMap() int {
+	randIndex := rand.Intn(len(state.routeResponse.Service_maps))
+	if len(state.routeResponse.Service_maps[randIndex].Stops) > 0 {
+		return randIndex
+	}
+	for i := 0; i < len(state.routeResponse.Service_maps); i++ {
+		if len(state.routeResponse.Service_maps[i].Stops) > 0 {
+			return i
+		}
+	}
+	return -1
+}
+
+func NewStopState(href string) (StopState, error) {
+	var stopState StopState
+	d, err := get(href, &stopState.stopResponse)
+	fmt.Println("s", d)
+	return stopState, err
+}
+
+type StopState struct {
+	stopResponse StopResponse
+}
+
+func (state StopState) Transition() (State, error) {
+	return EndState{}, nil
+}
+
+type EndState struct{}
+
+func (state EndState) Transition() (State, error) {
+	panic("Can't transition out of the end state")
+}
+
+func get(url string, v interface{}) (time.Duration, error) {
+	start := time.Now()
+	response, err := http.Get(url)
+	d := time.Now().Sub(start)
+	if err != nil {
+		return d, err
 	}
 	content, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		_ = response.Body.Close()
-		return err
+		return d, err
 	}
 	if err := response.Body.Close(); err != nil {
-		return err
+		return d, err
 	}
-	return json.Unmarshal(content, v)
+	return d, json.Unmarshal(content, v)
 }
 
 type RootResponse struct {
 	Systems struct {
 		Count int
-		Href string
+		Href  string
 	}
 }
 
 type ListSystemsResponse struct {
-	Id string
+	Id   string
 	Name string
 	Href string
 }
@@ -78,20 +173,20 @@ type ListSystemsResponse struct {
 type SystemResponse struct {
 	Routes struct {
 		Count int
-		Href string
+		Href  string
 	}
 }
 
 type ListRoutesResponse struct {
-	Id string
+	Id   string
 	Href string
 }
 
 type RouteResponse struct {
 	Service_maps []struct {
 		Group_id string
-		Stops []struct{
-			Id string
+		Stops    []struct {
+			Id   string
 			Name string
 			Href string
 		}
@@ -99,11 +194,11 @@ type RouteResponse struct {
 }
 
 type StopResponse struct {
-	Id string
-	Name string
+	Id         string
+	Name       string
 	Stop_times []struct {
 		Trip struct {
-			Id string
+			Id   string
 			Href string
 		}
 	}
