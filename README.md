@@ -96,7 +96,7 @@ including advice on deployment and monitoring.
 
 ## Development indicators
 
-[![Build Status](https://github.com/jamespfennell/transiter/actions/workflows/tests.yml/badge.svg)
+[![Build Status](https://github.com/jamespfennell/transiter/actions/workflows/tests.yml/badge.svg)](https://github.com/jamespfennell/transiter/actions?query=branch%3Amaster)
 [![Coverage Status](https://coveralls.io/repos/github/jamespfennell/transiter/badge.svg?branch=master&service=github)](https://coveralls.io/github/jamespfennell/transiter?branch=master) 
 [![Requirements Status](https://requires.io/github/jamespfennell/transiter/requirements.svg?branch=master)](https://requires.io/github/jamespfennell/transiter/requirements/?branch=master)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
