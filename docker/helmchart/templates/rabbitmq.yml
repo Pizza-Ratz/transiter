@@ -6,17 +6,20 @@ kind: Deployment
 metadata:
   name: {{ .Values.name }}-rabbitmq
   labels:
-    app: {{ .Values.name }}-rabbitmq
+    app: {{ .Values.name }}
+    provides: rabbitmq
 
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ .Values.name }}-rabbitmq-pod
+      app: {{ .Values.name }}
+      provides: rabbitmq
   template:
     metadata:
       labels:
-        app: {{ .Values.name }}-rabbitmq-pod
+        app: {{ .Values.name }}
+        provides: rabbitmq
     spec:
       containers:
       - name: {{ .Values.name }}-rabbitmq
@@ -34,7 +37,8 @@ kind: Service
 metadata:
   name: {{ .Values.name }}-rabbitmq
   labels:
-    app: {{ .Values.name }}-rabbitmq
+    app: {{ .Values.name }}
+    provides: rabbitmq
 
 spec:
   ports:
@@ -45,6 +49,7 @@ spec:
     protocol: TCP
     port: 5672
   selector:
-    app: {{ .Values.name }}-rabbitmq-pod
+    app: {{ .Values.name }}
+    provides: rabbitmq
 
 

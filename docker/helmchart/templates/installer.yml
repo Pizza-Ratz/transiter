@@ -6,11 +6,12 @@ kind: Pod
 metadata:
   name: {{ .Values.name }}-installer
   labels:
-    app: {{ .Values.name }}-installer
+    app: {{ .Values.name }}
+    provides: installer
 spec:
   restartPolicy: Never
   containers:
-  - name: {{ .Values.name }}-installer-pod
+  - name: {{ .Values.name }}-installer
     image: jamespfennell/transiter:{{ .Values.version }}
     command:
     - transiterclt

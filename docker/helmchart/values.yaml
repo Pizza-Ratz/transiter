@@ -46,6 +46,7 @@ webservice:
 #
 pythonPackagesToProvide:
   - "transiter_nycsubway"
+  - "transiter_ny_mta"
 
 postgres:
   persistentVolume:
@@ -69,4 +70,4 @@ postgres:
 # advisable to disable the documentation to prevent a malicious user from
 # spending system resources serving the documentation.
 #
-documentationEnabled: true
+documentationEnabled: false

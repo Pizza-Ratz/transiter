@@ -6,16 +6,19 @@ kind: Deployment
 metadata:
   name: {{ .Values.name }}-executor
   labels:
-    app: {{ .Values.name }}-executor
+    app: {{ .Values.name }}
+    provides: executor
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ .Values.name }}-executor-pod
+      app: {{ .Values.name }}
+      provides: executor
   template:
     metadata:
       labels:
-        app: {{ .Values.name }}-executor-pod
+        app: {{ .Values.name }}
+        provides: executor
     spec:
       containers:
       - name: {{ .Values.name }}-executor

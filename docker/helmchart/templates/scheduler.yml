@@ -6,16 +6,19 @@ kind: Deployment
 metadata:
   name: {{ .Values.name }}-scheduler
   labels:
-    app: {{ .Values.name }}-scheduler
+    app: {{ .Values.name }}
+    provides: scheduler
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ .Values.name }}-scheduler-pod
+      app: {{ .Values.name }}
+      provides: scheduler
   template:
     metadata:
       labels:
-        app: {{ .Values.name }}-scheduler-pod
+        app: {{ .Values.name }}
+        provides: scheduler
     spec:
       containers:
       - name: {{ .Values.name }}-scheduler
@@ -33,10 +36,17 @@ spec:
         envFrom:
         - configMapRef:
             name: {{ .Values.name }}-config
+{{- if .Values.pythonPackagesToProvide }}
         lifecycle:
           postStart:
             exec:
-              command: ["pip", "install", "transiter-nycsubway"]
+              command:
+                - "pip"
+                - "install"
+{{- range $index, $element := .Values.pythonPackagesToProvide }}
+                - "{{ $element }}"
+{{- end}}
+{{- end }}
 
 ---
 
@@ -47,11 +57,13 @@ kind: Service
 metadata:
   name: {{ .Values.name }}-scheduler
   labels:
-    app: {{ .Values.name }}-scheduler
+    app: {{ .Values.name }}
+    provides: scheduler
 
 spec:
   ports:
   - port: 80
     protocol: TCP
   selector:
-    app: {{ .Values.name }}-scheduler-pod
+    app: {{ .Values.name }}
+    provides: scheduler

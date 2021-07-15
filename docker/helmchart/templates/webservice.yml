@@ -6,17 +6,20 @@ kind: Deployment
 metadata:
   name: {{ .Values.name }}-webservice
   labels:
-    app: {{ .Values.name }}-webservice
+    app: {{ .Values.name }}
+    provides: webservice
 
 spec:
   replicas: {{ .Values.webservice.replicaCount }}
   selector:
     matchLabels:
-      app: {{ .Values.name }}-webservice-pod
+      app: {{ .Values.name }}
+      provides: webservice
   template:
     metadata:
       labels:
-        app: {{ .Values.name }}-webservice-pod
+        app: {{ .Values.name }}
+        provides: webservice
     spec:
       containers:
       - name: {{ .Values.name }}-webservice
@@ -56,7 +59,9 @@ kind: Service
 metadata:
   name: {{ .Values.name }}-webservice
   labels:
-    app: {{ .Values.name }}-webservice
+    app: {{ .Values.name }}
+    provides: webservice
+
 
 spec:
   ports:
@@ -64,4 +69,6 @@ spec:
       port: 80
       protocol: TCP
   selector:
-    app: {{ .Values.name }}-webservice-pod
+    app: {{ .Values.name }}
+    provides: webservice
+
